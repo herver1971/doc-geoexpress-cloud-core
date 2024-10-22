@@ -622,35 +622,35 @@ class ResourceBaseViewSet(DynamicModelViewSet):
         - Removes all the permissions (except owner and admin ones) from a Resource:
 
             .. code-block:: bash
-            curl -v -X DELETE -u admin:admin -H "Content-Type: application/json" http://localhost:8000/api/v2/resources/<id>/permissions
+                curl -v -X DELETE -u admin:admin -H "Content-Type: application/json" http://localhost:8000/api/v2/resources/<id>/permissions
 
         - Changes the owner of a Resource:
 
             .. code-block:: bash
-            curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
-                --header 'Content-Type: application/json' \
-                --data-raw '{"groups": [],"organizations": [],"users": [{"id": 1001,"permissions": "owner"}]}'
+                curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
+                    --header 'Content-Type: application/json' \
+                    --data-raw '{"groups": [],"organizations": [],"users": [{"id": 1001,"permissions": "owner"}]}'
 
         - Assigns View permissions to some users:
 
             .. code-block:: bash
-            curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
-                --header 'Content-Type: application/json' \
-                --data-raw '{"groups": [],"organizations": [],"users": [{"id": 1000,"permissions": "view"}]}'
+                curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
+                    --header 'Content-Type: application/json' \
+                    --data-raw '{"groups": [],"organizations": [],"users": [{"id": 1000,"permissions": "view"}]}'
 
         - Assigns View permissions to anyone:
 
             .. code-block:: bash
-            curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
-                --header 'Content-Type: application/json' \
-                --data-raw '{"groups": [],"organizations": [],"users": [{"id": -1,"permissions": "view"}]}'
+                curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
+                    --header 'Content-Type: application/json' \
+                    --data-raw '{"groups": [],"organizations": [],"users": [{"id": -1,"permissions": "view"}]}'
 
         - Assigns View permissions to anyone and edit permissions to a Group on a Dataset:
 
             .. code-block:: bash
-            curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
-                --header 'Content-Type: application/json' \
-                --data-raw '{"groups": [{"id": 1,"permissions": "manage"}],"organizations": [],"users": [{"id": -1,"permissions": "view"}]}'
+                curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
+                    --header 'Content-Type: application/json' \
+                    --data-raw '{"groups": [{"id": 1,"permissions": "manage"}],"organizations": [],"users": [{"id": -1,"permissions": "view"}]}'
 
         """
 
