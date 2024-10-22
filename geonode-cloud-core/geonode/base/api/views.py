@@ -331,6 +331,7 @@ class OwnerViewSet(WithDynamicViewSetMixin, ListModelMixin, RetrieveModelMixin, 
         """
         Filter users with at least one resource
         """
+
         queryset = get_user_model().objects.exclude(pk=-1)
         filter_options = {}
         if self.request.query_params:
