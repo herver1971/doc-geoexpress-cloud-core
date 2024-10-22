@@ -615,8 +615,9 @@ class ResourceBaseViewSet(DynamicModelViewSet):
             }
 
         Sample Requests:
+
         - Removes all the permissions (except owner and admin ones) from a Resource:
-        curl -v -X DELETE -u admin:admin -H "Content-Type: application/json" http://localhost:8000/api/v2/resources/<id>/permissions
+            curl -v -X DELETE -u admin:admin -H "Content-Type: application/json" http://localhost:8000/api/v2/resources/<id>/permissions
 
         - Changes the owner of a Resource:
             curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions' \
@@ -639,6 +640,7 @@ class ResourceBaseViewSet(DynamicModelViewSet):
                 --data-raw '{"groups": [{"id": 1,"permissions": "manage"}],"organizations": [],"users": [{"id": -1,"permissions": "view"}]}'
 
         """
+
         config = Configuration.load()
         resource = get_object_or_404(ResourceBase, pk=pk)
         _user_can_manage = request.user.has_perm("change_resourcebase_permissions", resource.get_self_resource())
