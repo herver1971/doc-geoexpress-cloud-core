@@ -1,0 +1,1387 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.api.api &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../api.html">geonode.api</a></li>
+      <li class="breadcrumb-item active">geonode.api.api</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.api.api</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">django.apps</span> <span class="kn">import</span> <span class="n">apps</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Count</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">get_language</span>
+
+<span class="kn">from</span> <span class="nn">avatar.templatetags.avatar_tags</span> <span class="kn">import</span> <span class="n">avatar_url</span>
+
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">geoserver</span>
+<span class="kn">from</span> <span class="nn">geonode.api.paginator</span> <span class="kn">import</span> <span class="n">CrossSiteXHRPaginator</span>
+<span class="kn">from</span> <span class="nn">geonode.api.authorization</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GeoNodeStyleAuthorization</span><span class="p">,</span>
+    <span class="n">ApiLockdownAuthorization</span><span class="p">,</span>
+    <span class="n">GroupAuthorization</span><span class="p">,</span>
+    <span class="n">GroupProfileAuthorization</span><span class="p">,</span>
+    <span class="n">GeoNodePeopleAuthorization</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">guardian.shortcuts</span> <span class="kn">import</span> <span class="n">get_objects_for_user</span>
+<span class="kn">from</span> <span class="nn">tastypie.bundle</span> <span class="kn">import</span> <span class="n">Bundle</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span><span class="p">,</span> <span class="n">ThesaurusKeyword</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">TopicCategory</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">Region</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">HierarchicalKeyword</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ThesaurusKeywordLabel</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">Style</span>
+<span class="kn">from</span> <span class="nn">geonode.people.utils</span> <span class="kn">import</span> <span class="n">get_available_users</span>
+<span class="kn">from</span> <span class="nn">geonode.maps.models</span> <span class="kn">import</span> <span class="n">Map</span>
+<span class="kn">from</span> <span class="nn">geonode.geoapps.models</span> <span class="kn">import</span> <span class="n">GeoApp</span>
+<span class="kn">from</span> <span class="nn">geonode.documents.models</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span><span class="p">,</span> <span class="n">GroupCategory</span>
+<span class="kn">from</span> <span class="nn">django.core.serializers.json</span> <span class="kn">import</span> <span class="n">DjangoJSONEncoder</span>
+<span class="kn">from</span> <span class="nn">tastypie.serializers</span> <span class="kn">import</span> <span class="n">Serializer</span>
+<span class="kn">from</span> <span class="nn">tastypie</span> <span class="kn">import</span> <span class="n">fields</span>
+<span class="kn">from</span> <span class="nn">tastypie.resources</span> <span class="kn">import</span> <span class="n">ModelResource</span>
+<span class="kn">from</span> <span class="nn">tastypie.constants</span> <span class="kn">import</span> <span class="n">ALL</span><span class="p">,</span> <span class="n">ALL_WITH_RELATIONS</span>
+<span class="kn">from</span> <span class="nn">tastypie.utils</span> <span class="kn">import</span> <span class="n">trailing_slash</span>
+
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">check_ogc_backend</span>
+<span class="kn">from</span> <span class="nn">geonode.security.utils</span> <span class="kn">import</span> <span class="n">get_visible_resources</span>
+
+<div class="viewcode-block" id="FILTER_TYPES">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.FILTER_TYPES">[docs]</a>
+<span class="n">FILTER_TYPES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="n">Dataset</span><span class="p">,</span> <span class="s2">&quot;map&quot;</span><span class="p">:</span> <span class="n">Map</span><span class="p">,</span> <span class="s2">&quot;document&quot;</span><span class="p">:</span> <span class="n">Document</span><span class="p">,</span> <span class="s2">&quot;geoapp&quot;</span><span class="p">:</span> <span class="n">GeoApp</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="CountJSONSerializer">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.CountJSONSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">CountJSONSerializer</span><span class="p">(</span><span class="n">Serializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom serializer to post process the api and add counts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CountJSONSerializer.get_resources_counts">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.CountJSONSerializer.get_resources_counts">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_resources_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resources</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">],</span> <span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">)</span>
+
+        <span class="n">resources</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+            <span class="n">resources</span><span class="p">,</span>
+            <span class="n">options</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">],</span>
+            <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+            <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+            <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">subtypes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">resources</span> <span class="ow">and</span> <span class="n">resources</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;title_filter&quot;</span><span class="p">]:</span>
+                <span class="n">resources</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;title_filter&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;type_filter&quot;</span><span class="p">]:</span>
+                <span class="n">_type_filter</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;type_filter&quot;</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">apps</span><span class="o">.</span><span class="n">app_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">app</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;GEONODE_APP&quot;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;default_model&quot;</span><span class="p">):</span>
+                            <span class="n">_model</span> <span class="o">=</span> <span class="n">apps</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">default_model</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">_model</span><span class="p">,</span> <span class="n">_type_filter</span><span class="p">):</span>
+                                <span class="n">subtypes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resources</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">polymorphic_ctype__model</span><span class="o">=</span><span class="n">_model</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_type_filter</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">_type_filter</span> <span class="o">=</span> <span class="n">_type_filter</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">resources</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">polymorphic_ctype__model</span><span class="o">=</span><span class="n">_type_filter</span><span class="p">)</span>
+
+        <span class="n">counts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">subtypes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">subtype</span> <span class="ow">in</span> <span class="n">subtypes</span><span class="p">:</span>
+                <span class="n">counts</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">subtype</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]))))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">resources</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">])))</span>
+
+        <span class="n">_counts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">and</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]],</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">_counts</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">c</span><span class="p">[</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]]:</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]})</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_counts</span><span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]]]</span> <span class="o">+=</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">_counts</span></div>
+
+
+<div class="viewcode-block" id="CountJSONSerializer.to_json">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.CountJSONSerializer.to_json">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">options</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_simple</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resources_counts</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;objects&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;objects&quot;</span><span class="p">]:</span>
+                <span class="n">item</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Add in the current time.</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;requested_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">DjangoJSONEncoder</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TypeFilteredResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TypeFilteredResource">[docs]</a>
+<span class="k">class</span> <span class="nc">TypeFilteredResource</span><span class="p">(</span><span class="n">ModelResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Common resource used to apply faceting to categories, keywords, and</span>
+<span class="sd">    regions based on the type passed as query parameter in the form</span>
+<span class="sd">    type:dataset/map/document</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TypeFilteredResource.count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TypeFilteredResource.count">[docs]</a>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TypeFilteredResource.build_filters">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TypeFilteredResource.build_filters">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_bad_filters</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">filters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_filter</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title_filter</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">orm_filters</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build_filters</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;type&quot;</span> <span class="ow">in</span> <span class="n">filters</span> <span class="ow">and</span> <span class="n">filters</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">FILTER_TYPES</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type_filter</span> <span class="o">=</span> <span class="n">FILTER_TYPES</span><span class="p">[</span><span class="n">filters</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type_filter</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;title__icontains&quot;</span> <span class="ow">in</span> <span class="n">filters</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title_filter</span> <span class="o">=</span> <span class="n">filters</span><span class="p">[</span><span class="s2">&quot;title__icontains&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">orm_filters</span></div>
+
+
+<div class="viewcode-block" id="TypeFilteredResource.serialize">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TypeFilteredResource.serialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;title_filter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;title_filter&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;type_filter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;type_filter&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TagResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource">[docs]</a>
+<span class="k">class</span> <span class="nc">TagResource</span><span class="p">(</span><span class="n">TypeFilteredResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Tags api</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TagResource.serialize">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource.serialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;keywords&quot;</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TagResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="TagResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;keywords&quot;</span></div>
+
+<div class="viewcode-block" id="TagResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TagResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;slug&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="TagResource.Meta.serializer">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource.Meta.serializer">[docs]</a>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">CountJSONSerializer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TagResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TagResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">ApiLockdownAuthorization</span><span class="p">()</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource">[docs]</a>
+<span class="k">class</span> <span class="nc">ThesaurusKeywordResource</span><span class="p">(</span><span class="n">TypeFilteredResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ThesaurusKeyword api&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.thesaurus_identifier">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.thesaurus_identifier">[docs]</a>
+    <span class="n">thesaurus_identifier</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.label_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.label_id">[docs]</a>
+    <span class="n">label_id</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.build_filters">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.build_filters">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">{},</span> <span class="n">ignore_bad_filters</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;adds filtering by current language&quot;&quot;&quot;</span>
+        <span class="n">_filters</span> <span class="o">=</span> <span class="n">filters</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="n">_filters</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">orm_filters</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build_filters</span><span class="p">(</span><span class="n">_filters</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">orm_filters</span><span class="p">[</span><span class="s2">&quot;id__in&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">id</span>
+
+        <span class="k">if</span> <span class="s2">&quot;thesaurus&quot;</span> <span class="ow">in</span> <span class="n">_filters</span><span class="p">:</span>
+            <span class="n">orm_filters</span><span class="p">[</span><span class="s2">&quot;thesaurus__identifier&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_filters</span><span class="p">[</span><span class="s2">&quot;thesaurus&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">orm_filters</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.serialize">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.serialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tkeywords__id&quot;</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.dehydrate_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.dehydrate_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">id</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.dehydrate_label_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.dehydrate_label_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_label_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">id</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.dehydrate_thesaurus_identifier">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.dehydrate_thesaurus_identifier">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_thesaurus_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">identifier</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.dehydrate">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.dehydrate">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="n">lang</span> <span class="o">=</span> <span class="n">get_language</span><span class="p">()</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">ThesaurusKeywordLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">keyword</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;label_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">label</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;alt_label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">label</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;alt_label&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">bundle</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="ThesaurusKeywordResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">ThesaurusKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;alt_label&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;thesaurus&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;thesaurus/keywords&quot;</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+            <span class="s2">&quot;alt_label&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+            <span class="s2">&quot;thesaurus&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.Meta.serializer">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.Meta.serializer">[docs]</a>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">CountJSONSerializer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ThesaurusKeywordResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">ApiLockdownAuthorization</span><span class="p">()</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="RegionResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource">[docs]</a>
+<span class="k">class</span> <span class="nc">RegionResource</span><span class="p">(</span><span class="n">TypeFilteredResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Regions api&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RegionResource.serialize">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource.serialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RegionResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="RegionResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">Region</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegionResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;regions&quot;</span></div>
+
+<div class="viewcode-block" id="RegionResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="RegionResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+            <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">API_INCLUDE_REGIONS_COUNT</span><span class="p">:</span>
+<div class="viewcode-block" id="RegionResource.Meta.serializer">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource.Meta.serializer">[docs]</a>
+            <span class="n">serializer</span> <span class="o">=</span> <span class="n">CountJSONSerializer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RegionResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.RegionResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">ApiLockdownAuthorization</span><span class="p">()</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="TopicCategoryResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource">[docs]</a>
+<span class="k">class</span> <span class="nc">TopicCategoryResource</span><span class="p">(</span><span class="n">TypeFilteredResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Category api&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TopicCategoryResource.layers_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.layers_count">[docs]</a>
+    <span class="n">layers_count</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TopicCategoryResource.dehydrate_datasets_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.dehydrate_datasets_count">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_datasets_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span>
+        <span class="n">obj_with_perms</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">polymorphic_ctype__model</span><span class="o">=</span><span class="s2">&quot;dataset&quot;</span>
+        <span class="p">)</span>
+        <span class="n">filter_set</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">resourcebase_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">obj_with_perms</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">metadata_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
+            <span class="n">filter_set</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+                <span class="n">filter_set</span><span class="p">,</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="k">if</span> <span class="n">request</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+                <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+                <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">filter_set</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TopicCategoryResource.serialize">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.serialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;category&quot;</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TopicCategoryResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="TopicCategoryResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">TopicCategory</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TopicCategoryResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;categories&quot;</span></div>
+
+<div class="viewcode-block" id="TopicCategoryResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TopicCategoryResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;identifier&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="TopicCategoryResource.Meta.serializer">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.Meta.serializer">[docs]</a>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">CountJSONSerializer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TopicCategoryResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.TopicCategoryResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">ApiLockdownAuthorization</span><span class="p">()</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="GroupCategoryResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource">[docs]</a>
+<span class="k">class</span> <span class="nc">GroupCategoryResource</span><span class="p">(</span><span class="n">TypeFilteredResource</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupCategoryResource.detail_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.detail_url">[docs]</a>
+    <span class="n">detail_url</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GroupCategoryResource.member_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.member_count">[docs]</a>
+    <span class="n">member_count</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GroupCategoryResource.resource_counts">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.resource_counts">[docs]</a>
+    <span class="n">resource_counts</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupCategoryResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="GroupCategoryResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">GroupCategory</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GroupCategoryResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GroupCategoryResource.Meta.include_resource_uri">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.Meta.include_resource_uri">[docs]</a>
+        <span class="n">include_resource_uri</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="GroupCategoryResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;slug&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="GroupCategoryResource.Meta.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.Meta.ordering">[docs]</a>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GroupCategoryResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">ApiLockdownAuthorization</span><span class="p">()</span></div>
+</div>
+
+
+<div class="viewcode-block" id="GroupCategoryResource.apply_filters">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.apply_filters">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">applicable_filters</span><span class="p">):</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">apply_filters</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">applicable_filters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filtered</span></div>
+
+
+<div class="viewcode-block" id="GroupCategoryResource.dehydrate_detail_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.dehydrate_detail_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_detail_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupCategoryResource.dehydrate_member_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.dehydrate_member_count">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_member_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span>
+        <span class="n">filtered</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">or</span> <span class="n">user</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">:</span>
+            <span class="n">filtered</span> <span class="o">=</span> <span class="n">filtered</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="n">categories_ids</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">group_list_all</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;categories&quot;</span><span class="p">)</span>
+            <span class="n">filtered</span> <span class="o">=</span> <span class="n">filtered</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">categories_ids</span><span class="p">)</span> <span class="o">|</span> <span class="o">~</span><span class="n">Q</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">filtered</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupCategoryResource.dehydrate">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupCategoryResource.dehydrate">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide additional resource counts&quot;&quot;&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">_get_resource_counts</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">resourcebase_filter_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;group__groupprofile__categories&quot;</span><span class="p">:</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">resource_counts</span><span class="o">=</span><span class="n">counts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bundle</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GroupProfileResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource">[docs]</a>
+<span class="k">class</span> <span class="nc">GroupProfileResource</span><span class="p">(</span><span class="n">ModelResource</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupProfileResource.categories">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.categories">[docs]</a>
+    <span class="n">categories</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">ToManyField</span><span class="p">(</span><span class="n">GroupCategoryResource</span><span class="p">,</span> <span class="s2">&quot;categories&quot;</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.member_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.member_count">[docs]</a>
+    <span class="n">member_count</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.manager_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.manager_count">[docs]</a>
+    <span class="n">manager_count</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.logo_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.logo_url">[docs]</a>
+    <span class="n">logo_url</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.detail_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.detail_url">[docs]</a>
+    <span class="n">detail_url</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupProfileResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="GroupProfileResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;group_profile&quot;</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+            <span class="s2">&quot;slug&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+            <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="n">ALL_WITH_RELATIONS</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.Meta.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.Meta.ordering">[docs]</a>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;last_modified&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GroupProfileResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">GroupProfileAuthorization</span><span class="p">()</span></div>
+</div>
+
+
+<div class="viewcode-block" id="GroupProfileResource.dehydrate_member_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.dehydrate_member_count">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_member_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide relative URL to the geonode UI&#39;s page on the group&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">member_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupProfileResource.dehydrate_manager_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.dehydrate_manager_count">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_manager_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide relative URL to the geonode UI&#39;s page on the group&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">get_managers</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupProfileResource.dehydrate_detail_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.dehydrate_detail_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_detail_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return relative URL to the geonode UI&#39;s page on the group&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">slug</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;group_detail&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">slug</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="GroupProfileResource.dehydrate_logo_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupProfileResource.dehydrate_logo_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_logo_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">logo_url</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GroupResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource">[docs]</a>
+<span class="k">class</span> <span class="nc">GroupResource</span><span class="p">(</span><span class="n">ModelResource</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupResource.group_profile">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.group_profile">[docs]</a>
+    <span class="n">group_profile</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">ToOneField</span><span class="p">(</span><span class="n">GroupProfileResource</span><span class="p">,</span> <span class="s2">&quot;groupprofile&quot;</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupResource.resource_counts">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.resource_counts">[docs]</a>
+    <span class="n">resource_counts</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="GroupResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">groupprofile</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;groups&quot;</span></div>
+
+<div class="viewcode-block" id="GroupResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GroupResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+            <span class="s2">&quot;group_profile&quot;</span><span class="p">:</span> <span class="n">ALL_WITH_RELATIONS</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="GroupResource.Meta.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.Meta.ordering">[docs]</a>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_modified&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GroupResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">GroupAuthorization</span><span class="p">()</span></div>
+</div>
+
+
+<div class="viewcode-block" id="GroupResource.dehydrate">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.dehydrate">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide additional resource counts&quot;&quot;&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">_get_resource_counts</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">resourcebase_filter_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;metadata_only&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+
+        <span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">resource_counts</span><span class="o">=</span><span class="n">counts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bundle</span></div>
+
+
+<div class="viewcode-block" id="GroupResource.get_object_list">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GroupResource.get_object_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_object_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Overridden in order to exclude the ``anoymous`` group from the list</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">qs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_object_list</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">qs</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ProfileResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource">[docs]</a>
+<span class="k">class</span> <span class="nc">ProfileResource</span><span class="p">(</span><span class="n">TypeFilteredResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Profile api</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ProfileResource.avatar_100">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.avatar_100">[docs]</a>
+    <span class="n">avatar_100</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileResource.profile_detail_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.profile_detail_url">[docs]</a>
+    <span class="n">profile_detail_url</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProfileResource.email">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.email">[docs]</a>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileResource.layers_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.layers_count">[docs]</a>
+    <span class="n">layers_count</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileResource.maps_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.maps_count">[docs]</a>
+    <span class="n">maps_count</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileResource.documents_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.documents_count">[docs]</a>
+    <span class="n">documents_count</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileResource.current_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.current_user">[docs]</a>
+    <span class="n">current_user</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileResource.activity_stream_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.activity_stream_url">[docs]</a>
+    <span class="n">activity_stream_url</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.build_filters">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.build_filters">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ignore_bad_filters</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;adds filtering by group functionality&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">filters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filters</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">orm_filters</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build_filters</span><span class="p">(</span><span class="n">filters</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;group&quot;</span> <span class="ow">in</span> <span class="n">filters</span><span class="p">:</span>
+            <span class="n">orm_filters</span><span class="p">[</span><span class="s2">&quot;group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filters</span><span class="p">[</span><span class="s2">&quot;group&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;name__icontains&quot;</span> <span class="ow">in</span> <span class="n">filters</span><span class="p">:</span>
+            <span class="n">orm_filters</span><span class="p">[</span><span class="s2">&quot;username__icontains&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filters</span><span class="p">[</span><span class="s2">&quot;name__icontains&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">orm_filters</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.apply_filters">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.apply_filters">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">applicable_filters</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;filter by group if applicable by group functionality&quot;&quot;&quot;</span>
+
+        <span class="n">group</span> <span class="o">=</span> <span class="n">applicable_filters</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;group&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">applicable_filters</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;name__icontains&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">semi_filtered</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">apply_filters</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">applicable_filters</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">semi_filtered</span> <span class="o">=</span> <span class="n">semi_filtered</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">groupmember__group__slug</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">semi_filtered</span> <span class="o">=</span> <span class="n">semi_filtered</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">profile__first_name__icontains</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">group</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="n">semi_filtered</span> <span class="o">=</span> <span class="n">semi_filtered</span> <span class="o">&amp;</span> <span class="n">get_available_users</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">semi_filtered</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate_email">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate_email">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_email</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">email</span>
+
+        <span class="k">return</span> <span class="n">email</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate_datasets_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate_datasets_count">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_datasets_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="n">obj_with_perms</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">polymorphic_ctype__model</span><span class="o">=</span><span class="s2">&quot;dataset&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">resourcebase_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">obj_with_perms</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">metadata_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate_maps_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate_maps_count">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_maps_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="n">obj_with_perms</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">polymorphic_ctype__model</span><span class="o">=</span><span class="s2">&quot;map&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">resourcebase_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">obj_with_perms</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">metadata_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate_documents_count">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate_documents_count">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_documents_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="n">obj_with_perms</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">polymorphic_ctype__model</span><span class="o">=</span><span class="s2">&quot;document&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">resourcebase_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">obj_with_perms</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">metadata_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate_avatar_100">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate_avatar_100">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_avatar_100</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">avatar_url</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="mi">240</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate_profile_detail_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate_profile_detail_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_profile_detail_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">get_absolute_url</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate_current_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate_current_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_current_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span> <span class="o">==</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">username</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate_activity_stream_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate_activity_stream_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_activity_stream_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span>
+            <span class="s2">&quot;actstream_actor&quot;</span><span class="p">,</span>
+            <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;content_type_id&quot;</span><span class="p">:</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="s2">&quot;object_id&quot;</span><span class="p">:</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">pk</span><span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.dehydrate">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.dehydrate">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Protects user&#39;s personal information from non staff</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_owner</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">==</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span>
+        <span class="n">is_admin</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_staff</span> <span class="ow">or</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">is_owner</span> <span class="ow">or</span> <span class="n">is_admin</span><span class="p">):</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">username</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">first_name</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">last_name</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">avatar_100</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;avatar_100&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">profile_detail_url</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;profile_detail_url&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">documents_count</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;documents_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">maps_count</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;maps_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">layers_count</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;layers_count&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">organization</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;organization&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">bundle</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.prepend_urls">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.prepend_urls">[docs]</a>
+    <span class="k">def</span> <span class="nf">prepend_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">HAYSTACK_SEARCH</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">url</span><span class="p">(</span>
+                    <span class="sa">r</span><span class="s2">&quot;^(?P&lt;resource_name&gt;</span><span class="si">{}</span><span class="s2">)/search</span><span class="si">{}</span><span class="s2">$&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">trailing_slash</span><span class="p">()),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">wrap_view</span><span class="p">(</span><span class="s2">&quot;get_search&quot;</span><span class="p">),</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;api_get_search&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.serialize">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.serialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;owner&quot;</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="ProfileResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">is_active</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ProfileResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;profiles&quot;</span></div>
+
+<div class="viewcode-block" id="ProfileResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ProfileResource.Meta.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta.ordering">[docs]</a>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;date_joined&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ProfileResource.Meta.excludes">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta.excludes">[docs]</a>
+        <span class="n">excludes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;is_staff&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="s2">&quot;is_superuser&quot;</span><span class="p">,</span> <span class="s2">&quot;is_active&quot;</span><span class="p">,</span> <span class="s2">&quot;last_login&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ProfileResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="ProfileResource.Meta.serializer">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta.serializer">[docs]</a>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">CountJSONSerializer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProfileResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.ProfileResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">GeoNodePeopleAuthorization</span><span class="p">()</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="OwnersResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource">[docs]</a>
+<span class="k">class</span> <span class="nc">OwnersResource</span><span class="p">(</span><span class="n">TypeFilteredResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Owners api, lighter and faster version of the profiles api</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OwnersResource.full_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.full_name">[docs]</a>
+    <span class="n">full_name</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OwnersResource.apply_filters">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.apply_filters">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">applicable_filters</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;filter by group if applicable by group functionality&quot;&quot;&quot;</span>
+
+        <span class="n">semi_filtered</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">apply_filters</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">applicable_filters</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="n">semi_filtered</span> <span class="o">=</span> <span class="n">get_available_users</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">semi_filtered</span></div>
+
+
+<div class="viewcode-block" id="OwnersResource.dehydrate_full_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.dehydrate_full_name">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_full_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">get_full_name</span><span class="p">()</span> <span class="ow">or</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">username</span></div>
+
+
+<div class="viewcode-block" id="OwnersResource.dehydrate_email">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.dehydrate_email">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate_email</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="n">email</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">email</span>
+        <span class="k">return</span> <span class="n">email</span></div>
+
+
+<div class="viewcode-block" id="OwnersResource.dehydrate">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.dehydrate">[docs]</a>
+    <span class="k">def</span> <span class="nf">dehydrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bundle</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Protects user&#39;s personal information from non staff</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_owner</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">==</span> <span class="n">bundle</span><span class="o">.</span><span class="n">obj</span>
+        <span class="n">is_admin</span> <span class="o">=</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_staff</span> <span class="ow">or</span> <span class="n">bundle</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">is_owner</span> <span class="ow">or</span> <span class="n">is_admin</span><span class="p">):</span>
+            <span class="n">bundle</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">bundle</span><span class="o">.</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bundle</span></div>
+
+
+<div class="viewcode-block" id="OwnersResource.serialize">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.serialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">options</span><span class="p">[</span><span class="s2">&quot;count_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;owner&quot;</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OwnersResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="OwnersResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OwnersResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;owners&quot;</span></div>
+
+<div class="viewcode-block" id="OwnersResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="OwnersResource.Meta.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta.ordering">[docs]</a>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;date_joined&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="OwnersResource.Meta.excludes">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta.excludes">[docs]</a>
+        <span class="n">excludes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;is_staff&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="s2">&quot;is_superuser&quot;</span><span class="p">,</span> <span class="s2">&quot;is_active&quot;</span><span class="p">,</span> <span class="s2">&quot;last_login&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="OwnersResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="OwnersResource.Meta.serializer">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta.serializer">[docs]</a>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">CountJSONSerializer</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OwnersResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.OwnersResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">ApiLockdownAuthorization</span><span class="p">()</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="GeoserverStyleResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoserverStyleResource</span><span class="p">(</span><span class="n">ModelResource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Styles API for Geoserver backend.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GeoserverStyleResource.body">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.body">[docs]</a>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;sld_body&quot;</span><span class="p">,</span> <span class="n">use_in</span><span class="o">=</span><span class="s2">&quot;detail&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.title">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.title">[docs]</a>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;sld_title&quot;</span><span class="p">)</span></div>
+
+    <span class="c1"># dataset_default_style is polymorphic, so it will have many to many</span>
+    <span class="c1"># relation</span>
+<div class="viewcode-block" id="GeoserverStyleResource.layer">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.layer">[docs]</a>
+    <span class="n">layer</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span>
+        <span class="s2">&quot;geonode.api.resourcebase_api.LayerResource&quot;</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;dataset_default_style&quot;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.version">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.version">[docs]</a>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;sld_version&quot;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.style_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.style_url">[docs]</a>
+    <span class="n">style_url</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;sld_url&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.workspace">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.workspace">[docs]</a>
+    <span class="n">workspace</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;workspace&quot;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.type">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.type">[docs]</a>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;type&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoserverStyleResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="GeoserverStyleResource.Meta.paginator_class">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.Meta.paginator_class">[docs]</a>
+        <span class="n">paginator_class</span> <span class="o">=</span> <span class="n">CrossSiteXHRPaginator</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.Meta.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.Meta.queryset">[docs]</a>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.Meta.resource_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.Meta.resource_name">[docs]</a>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s2">&quot;styles&quot;</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.Meta.detail_uri_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.Meta.detail_uri_name">[docs]</a>
+        <span class="n">detail_uri_name</span> <span class="o">=</span> <span class="s2">&quot;id&quot;</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.Meta.authorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.Meta.authorization">[docs]</a>
+        <span class="n">authorization</span> <span class="o">=</span> <span class="n">GeoNodeStyleAuthorization</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.Meta.allowed_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.Meta.allowed_methods">[docs]</a>
+        <span class="n">allowed_methods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GeoserverStyleResource.Meta.filtering">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.Meta.filtering">[docs]</a>
+        <span class="n">filtering</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">ALL</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="n">ALL_WITH_RELATIONS</span><span class="p">}</span></div>
+</div>
+
+
+<div class="viewcode-block" id="GeoserverStyleResource.build_filters">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.build_filters">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply custom filters for layer.&quot;&quot;&quot;</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build_filters</span><span class="p">(</span><span class="n">filters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Convert dataset__ filters into dataset_styles__dataset__</span>
+        <span class="n">updated_filters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">filters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;dataset__&quot;</span><span class="p">,</span> <span class="s2">&quot;dataset_default_style__&quot;</span><span class="p">)</span>
+            <span class="n">updated_filters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">updated_filters</span></div>
+
+
+<div class="viewcode-block" id="GeoserverStyleResource.populate_object">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.populate_object">[docs]</a>
+    <span class="k">def</span> <span class="nf">populate_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Populate results with necessary fields</span>
+
+<span class="sd">        :param style: Style objects</span>
+<span class="sd">        :type style: Style</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s2">&quot;sld&quot;</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="GeoserverStyleResource.build_bundle">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.GeoserverStyleResource.build_bundle">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_bundle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Override build_bundle method to add additional info.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">object_class</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">object_class</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">obj</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="n">check_ogc_backend</span><span class="p">(</span><span class="n">geoserver</span><span class="o">.</span><span class="n">BACKEND_PACKAGE</span><span class="p">):</span>
+
+<div class="viewcode-block" id="StyleResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api.StyleResource">[docs]</a>
+    <span class="k">class</span> <span class="nc">StyleResource</span><span class="p">(</span><span class="n">GeoserverStyleResource</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrapper for Generic Style Resource&quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="_get_resource_counts">
+<a class="viewcode-back" href="../../../autoapi/geonode/api/api/index.html#geonode.api.api._get_resource_counts">[docs]</a>
+<span class="k">def</span> <span class="nf">_get_resource_counts</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">resourcebase_filter_kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a dict with counts of resources of various types</span>
+
+<span class="sd">    The ``resourcebase_filter_kwargs`` argument should be a dict with a suitable</span>
+<span class="sd">    queryset filter that can be applied to select only the relevant</span>
+<span class="sd">    ``ResourceBase`` objects to use when retrieving counts. For example::</span>
+
+<span class="sd">        _get_resource_counts(</span>
+<span class="sd">            request,</span>
+<span class="sd">            {</span>
+<span class="sd">                &#39;group__slug&#39;: &#39;my-group&#39;,</span>
+<span class="sd">            }</span>
+<span class="sd">        )</span>
+
+<span class="sd">    The above function call would result in only counting ``ResourceBase``</span>
+<span class="sd">    objects that belong to the group that has ``my-group`` as slug</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resources</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+        <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">**</span><span class="n">resourcebase_filter_kwargs</span><span class="p">),</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+        <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span>
+        <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+        <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+        <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+        <span class="s2">&quot;polymorphic_ctype__model&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;is_approved&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;is_published&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">counts</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="s2">&quot;polymorphic_ctype__model&quot;</span><span class="p">))</span>
+    <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">,</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span> <span class="s2">&quot;map&quot;</span><span class="p">,</span> <span class="s2">&quot;geoapp&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]</span>
+
+    <span class="n">subtypes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">apps</span><span class="o">.</span><span class="n">app_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">app</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;GEONODE_APP&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;default_model&quot;</span><span class="p">):</span>
+                <span class="n">_model</span> <span class="o">=</span> <span class="n">apps</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">default_model</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">_model</span><span class="p">,</span> <span class="n">GeoApp</span><span class="p">):</span>
+                    <span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_model</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+                    <span class="n">subtypes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_model</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">type_</span> <span class="ow">in</span> <span class="n">types</span><span class="p">:</span>
+        <span class="n">counts</span><span class="p">[</span><span class="n">type_</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;published&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;approved&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">qs</span><span class="p">:</span>
+        <span class="n">resource_type</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;polymorphic_ctype__model&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">resource_type</span> <span class="ow">in</span> <span class="n">subtypes</span><span class="p">:</span>
+            <span class="n">resource_type</span> <span class="o">=</span> <span class="s2">&quot;geoapp&quot;</span>
+        <span class="n">is_visible</span> <span class="o">=</span> <span class="nb">all</span><span class="p">((</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;is_approved&quot;</span><span class="p">],</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;is_published&quot;</span><span class="p">]))</span>
+        <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">][</span><span class="s2">&quot;total&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span>
+        <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">][</span><span class="s2">&quot;visible&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_visible</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">][</span><span class="s2">&quot;published&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;is_published&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">counts</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">][</span><span class="s2">&quot;approved&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;is_approved&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">section</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource_type</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">section</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">section</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span>
+            <span class="n">section</span><span class="p">[</span><span class="s2">&quot;visible&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_visible</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">section</span><span class="p">[</span><span class="s2">&quot;published&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;is_published&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">section</span><span class="p">[</span><span class="s2">&quot;approved&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;is_approved&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">counts</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

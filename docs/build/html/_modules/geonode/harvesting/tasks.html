@@ -1,0 +1,691 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.harvesting.tasks &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../harvesting.html">geonode.harvesting</a></li>
+      <li class="breadcrumb-item active">geonode.harvesting.tasks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.harvesting.tasks</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">from</span> <span class="nn">celery</span> <span class="kn">import</span> <span class="n">chord</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">F</span><span class="p">,</span>
+    <span class="n">Value</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">django.db.models.functions</span> <span class="kn">import</span> <span class="n">Concat</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">from</span> <span class="nn">geonode.celery_app</span> <span class="kn">import</span> <span class="n">app</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">.harvesters</span> <span class="kn">import</span> <span class="n">base</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span> <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="viewcode-block" id="harvesting_scheduler">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks.harvesting_scheduler">[docs]</a>
+<span class="k">def</span> <span class="nf">harvesting_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether any of the configured harvesters needs to be run or not.</span>
+
+<span class="sd">    This function is called periodically by celery beat. It is configured to run every</span>
+<span class="sd">    `HARVESTER_SCHEDULER_FREQUENCY_MINUTES` minutes. This can be configured in the GeoNode</span>
+<span class="sd">    settings. The default value is 0.5, which means that this function is called every</span>
+<span class="sd">    thirty seconds.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;+++++ harvesting_dispatcher starting... +++++&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">harvester</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">harvester</span><span class="o">.</span><span class="n">is_availability_check_due</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - Updating availability...&quot;</span><span class="p">)</span>
+            <span class="n">available</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">update_availability</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - is </span><span class="si">{</span><span class="s1">&#39;not &#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">available</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">available&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - No need to update availability yet&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">harvester</span><span class="o">.</span><span class="n">scheduling_enabled</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - scheduling_enabled: </span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">scheduling_enabled</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">harvester</span><span class="o">.</span><span class="n">is_harvestable_resources_refresh_due</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - Initiating update of harvestable resources...&quot;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">harvester</span><span class="o">.</span><span class="n">initiate_update_harvestable_resources</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - Could not initiate the update of harvestable resources&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - No need to update harvestable resources yet&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">harvester</span><span class="o">.</span><span class="n">is_harvesting_due</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - initiating harvesting...&quot;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">harvester</span><span class="o">.</span><span class="n">initiate_perform_harvesting</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - Could not initiate harvesting&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - No need to harvest yet&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - Scheduling is disabled for this harvester, skipping...&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;+++++ harvesting_dispatcher ending... +++++&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="harvesting_dispatcher">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks.harvesting_dispatcher">[docs]</a>
+<span class="k">def</span> <span class="nf">harvesting_dispatcher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvesting_session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform harvesting asynchronously.</span>
+
+<span class="sd">    This function kicks-off a harvesting session for the input harvester id.</span>
+<span class="sd">    It defines an async workflow that results in the harvestable resources being</span>
+<span class="sd">    checked and harvested onto the local GeoNode.</span>
+
+<span class="sd">    The implementation briefly consists of:</span>
+
+<span class="sd">    - start a harvesting session</span>
+<span class="sd">    - determine which of the known harvestable resources have to be harvested</span>
+<span class="sd">    - schedule each harvestable resource to be harvested asynchronously</span>
+<span class="sd">    - when all resources have been harvested, finish the harvesting session</span>
+
+<span class="sd">    Internally, the code uses celery&#39;s `chord` workflow primitive. This is used to</span>
+<span class="sd">    allow the harvesting of individual resources to be done in parallel (as much</span>
+<span class="sd">    as the celery worker config allows for) and still have a final synchronization</span>
+<span class="sd">    step, once all resources are harvested, that finalizes the harvesting session.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">harvesting_session_id</span><span class="p">)</span>
+    <span class="n">harvester</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">harvester</span>
+    <span class="n">harvestable_resources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">harvester</span><span class="o">.</span><span class="n">harvestable_resources</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">should_be_harvested</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">harvestable_resources</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">harvest_resources</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">harvestable_resources</span><span class="p">,</span> <span class="n">harvesting_session_id</span><span class="p">),</span> <span class="n">expiration</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;harvesting_dispatcher - Nothing to do&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">finish_asynchronous_session</span><span class="p">(</span>
+            <span class="n">harvesting_session_id</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">STATUS_FINISHED_ALL_OK</span><span class="p">,</span> <span class="n">final_details</span><span class="o">=</span><span class="n">message</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="harvest_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks.harvest_resources">[docs]</a>
+<span class="k">def</span> <span class="nf">harvest_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvestable_resource_ids</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">harvesting_session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Harvest a list of remote resources that all belong to the same harvester.&quot;&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">harvesting_session_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ABORTED</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">harvestable_resource_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">harvester</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">harvester</span>
+            <span class="k">if</span> <span class="n">harvester</span><span class="o">.</span><span class="n">update_availability</span><span class="p">():</span>
+                <span class="n">harvester</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">STATUS_PERFORMING_HARVESTING</span>
+                <span class="n">harvester</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ON_GOING</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">total_records_to_process</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">harvestable_resource_ids</span><span class="p">)</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="n">resource_tasks</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">harvestable_resource_id</span> <span class="ow">in</span> <span class="n">harvestable_resource_ids</span><span class="p">:</span>
+                    <span class="n">resource_tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">_harvest_resource</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">harvestable_resource_id</span><span class="p">,</span> <span class="n">harvesting_session_id</span><span class="p">))</span>
+                    <span class="p">)</span>
+                <span class="n">harvesting_finalizer</span> <span class="o">=</span> <span class="n">_finish_harvesting</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span>
+                    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">harvesting_session_id</span><span class="p">,),</span> <span class="n">immutable</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">on_error</span><span class="p">(</span>
+                    <span class="n">_handle_harvesting_error</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span>
+                        <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span>
+                            <span class="s2">&quot;harvesting_session_id&quot;</span><span class="p">:</span> <span class="n">harvesting_session_id</span><span class="p">,</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">harvesting_workflow</span> <span class="o">=</span> <span class="n">chord</span><span class="p">(</span><span class="n">resource_tasks</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">harvesting_finalizer</span><span class="p">)</span>
+                <span class="n">harvesting_workflow</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">expiration</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Skipping harvesting for harvester </span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> because the &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;remote </span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">remote_url</span><span class="si">!r}</span><span class="s2"> seems to be unavailable&quot;</span>
+                <span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="n">finish_asynchronous_session</span><span class="p">(</span>
+                    <span class="n">harvesting_session_id</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_FINISHED_ALL_FAILED</span><span class="p">,</span> <span class="n">final_details</span><span class="o">=</span><span class="n">message</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;harvest_resources - Nothing to do...&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="n">finish_asynchronous_session</span><span class="p">(</span>
+                <span class="n">harvesting_session_id</span><span class="p">,</span>
+                <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">STATUS_FINISHED_ALL_OK</span><span class="p">,</span>
+                <span class="n">final_details</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Session has been aborted, skipping...&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="_harvest_resource">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks._harvest_resource">[docs]</a>
+<span class="k">def</span> <span class="nf">_harvest_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvestable_resource_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">harvesting_session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Harvest a single resource from the input harvestable resource id&quot;&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">harvesting_session_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ABORTING</span><span class="p">:</span>
+        <span class="n">harvestable_resource</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">harvestable_resource_id</span><span class="p">)</span>
+        <span class="n">worker</span><span class="p">:</span> <span class="n">base</span><span class="o">.</span><span class="n">BaseHarvesterWorker</span> <span class="o">=</span> <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">get_harvester_worker</span><span class="p">()</span>
+        <span class="n">harvested_resource_info</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">get_resource</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="p">)</span>
+        <span class="n">now_</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">harvested_resource_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">worker</span><span class="o">.</span><span class="n">should_copy_resource</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="p">):</span>
+                <span class="n">copied_path</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">copy_resource</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="p">,</span> <span class="n">harvested_resource_info</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">copied_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">harvested_resource_info</span><span class="o">.</span><span class="n">copied_resources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copied_path</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">worker</span><span class="o">.</span><span class="n">update_geonode_resource</span><span class="p">(</span>
+                    <span class="n">harvested_resource_info</span><span class="p">,</span>
+                    <span class="n">harvestable_resource</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="n">ValidationError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Unable to update geonode resource&quot;</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">details</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+            <span class="n">harvesting_message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">harvestable_resource_id</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="s1">&#39;Success&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="n">details</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="n">update_asynchronous_session</span><span class="p">(</span>
+                <span class="n">harvesting_session_id</span><span class="p">,</span>
+                <span class="n">additional_processed_records</span><span class="o">=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="n">additional_details</span><span class="o">=</span><span class="n">harvesting_message</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">last_harvesting_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">now_</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">harvesting_message</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">last_harvesting_succeeded</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">last_harvesting_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">now_</span><span class="si">}</span><span class="s2">Harvesting failed&quot;</span>
+            <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">last_harvesting_succeeded</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">last_harvested</span> <span class="o">=</span> <span class="n">now_</span>
+        <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Skipping harvesting of resource </span><span class="si">{</span><span class="n">harvestable_resource_id</span><span class="si">}</span><span class="s2"> since the &quot;</span> <span class="sa">f</span><span class="s2">&quot;session has been aborted&quot;</span>
+        <span class="n">update_asynchronous_session</span><span class="p">(</span><span class="n">harvesting_session_id</span><span class="p">,</span> <span class="n">additional_details</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="_finish_harvesting">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks._finish_harvesting">[docs]</a>
+<span class="k">def</span> <span class="nf">_finish_harvesting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvesting_session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">harvesting_session_id</span><span class="p">)</span>
+    <span class="n">harvester</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">harvester</span>
+    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ABORTING</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Harvesting session aborted by user&quot;</span>
+        <span class="n">final_status</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ABORTED</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Harvesting completed successfully!&quot;</span>
+        <span class="n">final_status</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_FINISHED_ALL_OK</span>
+    <span class="n">finish_asynchronous_session</span><span class="p">(</span><span class="n">harvesting_session_id</span><span class="p">,</span> <span class="n">final_status</span><span class="o">=</span><span class="n">final_status</span><span class="p">,</span> <span class="n">final_details</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(harvester: </span><span class="si">{</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">!r}</span><span class="s2"> - session: </span><span class="si">{</span><span class="n">harvesting_session_id</span><span class="si">!r}</span><span class="s2">) &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="_handle_harvesting_error">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks._handle_harvesting_error">[docs]</a>
+<span class="k">def</span> <span class="nf">_handle_harvesting_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure harvester status is set back to `ready` in case of an error.&quot;&quot;&quot;</span>
+    <span class="c1"># FIXME NOTE: Unfortunately, we don&#39;t seem to have a nice way of knowing what</span>
+    <span class="c1"># caused the error of a harvesting session. Maybe I just don&#39;t understand how</span>
+    <span class="c1"># this is supposed to work (quite possible) but apparently this is a bug with</span>
+    <span class="c1"># celery (or maybe just a case of unclear documentation):</span>
+    <span class="c1">#</span>
+    <span class="c1"># https://github.com/celery/celery/issues/3709#issuecomment-695809092</span>
+    <span class="c1">#</span>
+    <span class="c1"># The celery docs do not match the code:</span>
+    <span class="c1">#</span>
+    <span class="c1"># https://docs.celeryproject.org/en/stable/userguide/canvas.html#error-handling</span>
+    <span class="c1">#</span>
+    <span class="c1"># Celery docs claim that the error handler receives `request, exc, traceback` as its</span>
+    <span class="c1"># parameters. However, what we are indeed receiving is `self, task_id, args, kwargs`.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Moreover, there does not seem to be a way to get the actual traceback of the failed task.</span>
+    <span class="c1"># Below we are instantiating the result object, which is gotten from the input `task_id`,</span>
+    <span class="c1"># However, when checking the result&#39;s `traceback` attribute, it shows up empty.</span>
+    <span class="c1">#</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;Inside handle_harvesting_error task ---------------------------------------------------------------------------------------------&quot;</span>
+    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;locals before getting the result: </span><span class="si">{</span><span class="nb">locals</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">AsyncResult</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">task_id</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;locals after getting the result: </span><span class="si">{</span><span class="nb">locals</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;state: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;result: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traceback: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">traceback</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;harvesting task with kwargs: </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2"> has failed&quot;</span><span class="p">)</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harvesting_session_id&quot;</span><span class="p">])</span>
+    <span class="n">details</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;state: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="se">\n</span><span class="s2">result: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">result</span><span class="si">}</span><span class="se">\n</span><span class="s2">traceback: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">traceback</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">finish_asynchronous_session</span><span class="p">(</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harvesting_session_id&quot;</span><span class="p">],</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_FINISHED_SOME_FAILED</span><span class="p">,</span> <span class="n">final_details</span><span class="o">=</span><span class="n">details</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># name=&#39;geonode.harvesting.tasks.check_harvester_available&#39;,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="check_harvester_available">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks.check_harvester_available">[docs]</a>
+<span class="k">def</span> <span class="nf">check_harvester_available</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvester_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">harvester_id</span><span class="p">)</span>
+    <span class="n">available</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">update_availability</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harvester </span><span class="si">{</span><span class="n">harvester</span><span class="si">!r}</span><span class="s2">: remote server is &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">available</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;not &#39;</span><span class="si">}</span><span class="s2">available&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="update_harvestable_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks.update_harvestable_resources">[docs]</a>
+<span class="k">def</span> <span class="nf">update_harvestable_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refresh_session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="c1"># NOTE: we are able to implement batch discovery of existing harvestable resources</span>
+    <span class="c1"># because we want to know about all of them. We are not able to batch harvesting</span>
+    <span class="c1"># of resources because these have potentially been individually selected by the</span>
+    <span class="c1"># user, which means we are not interested in all of them</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">refresh_session_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ABORTED</span><span class="p">:</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ON_GOING</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">harvester</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">harvester</span>
+        <span class="k">if</span> <span class="n">harvester</span><span class="o">.</span><span class="n">update_availability</span><span class="p">():</span>
+            <span class="n">harvester</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCES</span>
+            <span class="n">harvester</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">worker</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">get_harvester_worker</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">num_resources</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">get_num_available_resources</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">,</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestingException</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">_handle_harvestable_resources_update_error</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">refresh_session_id</span><span class="o">=</span><span class="n">refresh_session_id</span><span class="p">,</span> <span class="n">raised_exception</span><span class="o">=</span><span class="n">exc</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">harvester</span><span class="o">.</span><span class="n">num_harvestable_resources</span> <span class="o">=</span> <span class="n">num_resources</span>
+                <span class="n">harvester</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">total_records_to_process</span> <span class="o">=</span> <span class="n">num_resources</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="n">page_size</span> <span class="o">=</span> <span class="mi">10</span>
+                <span class="n">total_pages</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">num_resources</span> <span class="o">/</span> <span class="n">page_size</span><span class="p">)</span>
+                <span class="n">batches</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_pages</span><span class="p">):</span>
+                    <span class="n">batches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">_update_harvestable_resources_batch</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span>
+                            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">refresh_session_id</span><span class="p">,</span> <span class="n">page</span><span class="p">,</span> <span class="n">page_size</span><span class="p">),</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="n">update_finalizer</span> <span class="o">=</span> <span class="n">_finish_harvestable_resources_update</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span>
+                    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">refresh_session_id</span><span class="p">,),</span> <span class="n">immutable</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">on_error</span><span class="p">(</span>
+                    <span class="n">_handle_harvestable_resources_update_error</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span>
+                        <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;refresh_session_id&quot;</span><span class="p">:</span> <span class="n">refresh_session_id</span><span class="p">}</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">update_workflow</span> <span class="o">=</span> <span class="n">chord</span><span class="p">(</span><span class="n">batches</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">update_finalizer</span><span class="p">)</span>
+                <span class="n">update_workflow</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">expiration</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">finish_asynchronous_session</span><span class="p">(</span>
+                <span class="n">refresh_session_id</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_FINISHED_ALL_FAILED</span><span class="p">,</span> <span class="n">final_details</span><span class="o">=</span><span class="s2">&quot;Harvester is not available&quot;</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Session has been aborted, skipping...&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="_update_harvestable_resources_batch">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks._update_harvestable_resources_batch">[docs]</a>
+<span class="k">def</span> <span class="nf">_update_harvestable_resources_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refresh_session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">refresh_session_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ON_GOING</span><span class="p">:</span>
+        <span class="n">harvester</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">harvester</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">get_harvester_worker</span><span class="p">()</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">page</span> <span class="o">*</span> <span class="n">page_size</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">found_resources</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">list_resources</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestingException</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Could not retrieve list of remote resources.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">processed</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">remote_resource</span> <span class="ow">in</span> <span class="n">found_resources</span><span class="p">:</span>
+                <span class="n">resource</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span>
+                    <span class="n">harvester</span><span class="o">=</span><span class="n">harvester</span><span class="p">,</span>
+                    <span class="n">unique_identifier</span><span class="o">=</span><span class="n">remote_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span>
+                    <span class="n">title</span><span class="o">=</span><span class="n">remote_resource</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
+                    <span class="n">defaults</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;should_be_harvested&quot;</span><span class="p">:</span> <span class="n">harvester</span><span class="o">.</span><span class="n">harvest_new_resources_by_default</span><span class="p">,</span>
+                        <span class="s2">&quot;remote_resource_type&quot;</span><span class="p">:</span> <span class="n">remote_resource</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span>
+                        <span class="s2">&quot;last_refreshed&quot;</span><span class="p">:</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+                    <span class="p">},</span>
+                <span class="p">)</span>
+                <span class="n">processed</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="c1"># NOTE: make sure to save the resource because we need to have its</span>
+                <span class="c1"># `last_updated` property be refreshed - this is done in order to be able</span>
+                <span class="c1"># to compare when a resource has been found</span>
+                <span class="n">resource</span><span class="o">.</span><span class="n">last_refreshed</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+                <span class="n">resource</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">update_asynchronous_session</span><span class="p">(</span><span class="n">refresh_session_id</span><span class="p">,</span> <span class="n">additional_processed_records</span><span class="o">=</span><span class="n">processed</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The refresh session has been asked to abort, so skipping...&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="_finish_harvestable_resources_update">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks._finish_harvestable_resources_update">[docs]</a>
+<span class="k">def</span> <span class="nf">_finish_harvestable_resources_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refresh_session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">refresh_session_id</span><span class="p">)</span>
+    <span class="n">harvester</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">harvester</span>
+    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ABORTING</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Refresh session aborted by user&quot;</span>
+        <span class="n">finish_asynchronous_session</span><span class="p">(</span><span class="n">refresh_session_id</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_ABORTED</span><span class="p">,</span> <span class="n">final_details</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Harvestable resources successfully refreshed&quot;</span>
+        <span class="n">finish_asynchronous_session</span><span class="p">(</span><span class="n">refresh_session_id</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">STATUS_FINISHED_ALL_OK</span><span class="p">,</span> <span class="n">final_details</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">harvester</span><span class="o">.</span><span class="n">last_checked_harvestable_resources</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_delete_stale_harvestable_resources</span><span class="p">(</span><span class="n">harvester</span><span class="p">)</span>
+    <span class="n">now_</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">harvester</span><span class="o">.</span><span class="n">refresh_from_db</span><span class="p">()</span>
+    <span class="n">harvester</span><span class="o">.</span><span class="n">last_checked_harvestable_resources</span> <span class="o">=</span> <span class="n">now_</span>
+    <span class="n">harvester</span><span class="o">.</span><span class="n">last_check_harvestable_resources_message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">now_</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">harvester</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ignore_result</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="_handle_harvestable_resources_update_error">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks._handle_harvestable_resources_update_error">[docs]</a>
+<span class="k">def</span> <span class="nf">_handle_harvestable_resources_update_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Inside _handle_harvestable_resources_update_error -----------------------------------------&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">AsyncResult</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">task_id</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;locals: </span><span class="si">{</span><span class="nb">locals</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;state: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;result: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traceback: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">traceback</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">AsyncResult</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">task_id</span><span class="p">))</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;refresh_session_id&quot;</span><span class="p">])</span>
+    <span class="n">harvester</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">harvester</span>
+    <span class="n">now_</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">harvester</span><span class="o">.</span><span class="n">last_checked_harvestable_resources</span> <span class="o">=</span> <span class="n">now_</span>
+    <span class="n">harvester</span><span class="o">.</span><span class="n">last_check_harvestable_resources_message</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">now_</span><span class="si">}</span><span class="s2"> - There was an error retrieving information on available &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;resources: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">traceback</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Please check the logs&quot;</span>
+    <span class="p">)</span>
+    <span class="n">harvester</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="n">details</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;state: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="si">}</span><span class="se">\n</span><span class="s2">result: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">result</span><span class="si">}</span><span class="se">\n</span><span class="s2">traceback: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">traceback</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">finish_asynchronous_session</span><span class="p">(</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;refresh_session_id&quot;</span><span class="p">],</span>
+        <span class="n">final_status</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">STATUS_FINISHED_SOME_FAILED</span><span class="p">,</span>
+        <span class="n">final_details</span><span class="o">=</span><span class="n">details</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_delete_stale_harvestable_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks._delete_stale_harvestable_resources">[docs]</a>
+<span class="k">def</span> <span class="nf">_delete_stale_harvestable_resources</span><span class="p">(</span><span class="n">harvester</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete harvestable resources that haven&#39;t been found on the current refresh.</span>
+
+<span class="sd">    If a harvestable resource was not refreshed since the last check, it this means</span>
+<span class="sd">    it has not been found this time around - maybe it is not available anymore, or</span>
+<span class="sd">    maybe the user just changed the harvester parameters. Either way, the harvestable</span>
+<span class="sd">    resource is no longer relevant, and therefore can be deleted.</span>
+
+<span class="sd">    When a harvestable resource is deleted, it may leave a corresponding GeoNode</span>
+<span class="sd">    resource orphan. The corresponding GeoNode resource is the one that had been</span>
+<span class="sd">    created locally as a result of harvesting information of the HarvestableResource</span>
+<span class="sd">    on the remote server by the harvester worker. Depending on the value of the</span>
+<span class="sd">    corresponding `models.Harvester.delete_orphan_resources_automatically`, the GeoNode</span>
+<span class="sd">    resource may also be deleted as a result of running this method.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">previously_checked_at</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">last_checked_harvestable_resources</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;last checked at: </span><span class="si">{</span><span class="n">previously_checked_at</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;now: </span><span class="si">{</span><span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">to_remove</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">harvester</span><span class="o">=</span><span class="n">harvester</span><span class="p">,</span> <span class="n">last_refreshed__lte</span><span class="o">=</span><span class="n">previously_checked_at</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">harvestable_resource</span> <span class="ow">in</span> <span class="n">to_remove</span><span class="p">:</span>
+        <span class="c1"># NOTE: Iterating on each resource and calling its `delete()` method instead of</span>
+        <span class="c1"># just calling `delete()` on the queryset because this way we can be sure that</span>
+        <span class="c1"># the instance&#39;s `delete()` method is called (django may not call</span>
+        <span class="c1"># `instance.delete()` when using the queryset directly, for performance</span>
+        <span class="c1"># reasons). This is because `HarvestableResource.delete()` has the custom logic</span>
+        <span class="c1"># to check whether the related GeoNode resource should also be deleted or not</span>
+        <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="finish_asynchronous_session">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks.finish_asynchronous_session">[docs]</a>
+<span class="k">def</span> <span class="nf">finish_asynchronous_session</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">final_status</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">final_details</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">additional_processed_records</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Finish the asynchronous session and also reset the harvester status.&quot;&quot;&quot;</span>
+    <span class="n">update_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;ended&quot;</span><span class="p">:</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">final_status</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">additional_processed_records</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">update_kwargs</span><span class="p">[</span><span class="s2">&quot;records_done&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="p">(</span><span class="s2">&quot;records_done&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">additional_processed_records</span>
+    <span class="k">if</span> <span class="n">final_details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">update_kwargs</span><span class="p">[</span><span class="s2">&quot;details&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Concat</span><span class="p">(</span><span class="s2">&quot;details&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">final_details</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+    <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">update_kwargs</span><span class="p">)</span>
+    <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">sessions__pk</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="update_asynchronous_session">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/tasks/index.html#geonode.harvesting.tasks.update_asynchronous_session">[docs]</a>
+<span class="k">def</span> <span class="nf">update_asynchronous_session</span><span class="p">(</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">total_records_to_process</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">additional_processed_records</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">additional_details</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">update_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">total_records_to_process</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">update_kwargs</span><span class="p">[</span><span class="s2">&quot;total_records_to_process&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_records_to_process</span>
+    <span class="k">if</span> <span class="n">additional_processed_records</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">update_kwargs</span><span class="p">[</span><span class="s2">&quot;records_done&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="p">(</span><span class="s2">&quot;records_done&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">additional_processed_records</span>
+    <span class="k">if</span> <span class="n">additional_details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">update_kwargs</span><span class="p">[</span><span class="s2">&quot;details&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Concat</span><span class="p">(</span><span class="s2">&quot;details&quot;</span><span class="p">,</span> <span class="n">Value</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">additional_details</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+    <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">session_id</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">update_kwargs</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

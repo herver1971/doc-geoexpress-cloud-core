@@ -1,0 +1,44 @@
+geonode.harvesting.api.routers
+==============================
+
+.. py:module:: geonode.harvesting.api.routers
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.harvesting.api.routers.ListPatchRouter
+
+
+Module Contents
+---------------
+
+.. py:class:: ListPatchRouter
+
+   Bases: :py:obj:`rest_framework_extensions.routers.ExtendedSimpleRouter`
+
+
+   A router that allows performing PATCH requests against the `list` endpoint
+
+   This router is used in order to provide API endpoints that respond to PATCH
+   requsts against a viewset's `list` endpoint. It is useful for situations where it
+   is necessary to perform a batch update of multiple resources. For a use case,
+   consider the selection of which remote resources should be harvestable by the local
+   GeoNode:
+
+   - User is shown a (paginated) list of resources that are available on the remote
+   service
+   - User must now choose which of these harvestable resources should be harvested
+   - Instead of forcing the user to make multiple PATCH requests to each harvestable
+   resource's detail page in order to set the resource's `should_be_harvested`
+   property, user can perform a PATCH request to
+   `harvesters/{harvester-id}/harvestable-resources` and set multiple resources'
+   `should_be_harvested` at the same time
+
+
+
+   .. py:attribute:: routes
+
+

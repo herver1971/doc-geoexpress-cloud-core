@@ -1,0 +1,895 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tasks &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tasks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tasks</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">docker</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">ipaddress</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">urlunparse</span>
+<span class="kn">from</span> <span class="nn">invoke</span> <span class="kn">import</span> <span class="n">task</span>
+
+<div class="viewcode-block" id="BOOTSTRAP_IMAGE_CHEIP">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.BOOTSTRAP_IMAGE_CHEIP">[docs]</a>
+<span class="n">BOOTSTRAP_IMAGE_CHEIP</span> <span class="o">=</span> <span class="s2">&quot;codenvy/che-ip:nightly&quot;</span></div>
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="waitfordbs">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.waitfordbs">[docs]</a>
+<span class="k">def</span> <span class="nf">waitfordbs</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************databases*******************************&quot;</span><span class="p">)</span>
+    <span class="n">db_host</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATABASE_HOST&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/usr/bin/wait-for-databases </span><span class="si">{</span><span class="n">db_host</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="update">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.update">[docs]</a>
+<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;***************************setting env*********************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;env&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pub_host</span> <span class="o">=</span> <span class="n">_geonode_public_host</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Public Hostname is </span><span class="si">{</span><span class="n">pub_host</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">pub_port</span> <span class="o">=</span> <span class="n">_geonode_public_port</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Public PORT is </span><span class="si">{</span><span class="n">pub_port</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">pub_protocol</span> <span class="o">=</span> <span class="s2">&quot;https&quot;</span> <span class="k">if</span> <span class="n">pub_port</span> <span class="o">==</span> <span class="s2">&quot;443&quot;</span> <span class="k">else</span> <span class="s2">&quot;http&quot;</span>
+    <span class="k">if</span> <span class="n">pub_protocol</span> <span class="o">==</span> <span class="s2">&quot;https&quot;</span> <span class="ow">or</span> <span class="n">pub_port</span> <span class="o">==</span> <span class="s2">&quot;80&quot;</span><span class="p">:</span>
+        <span class="n">pub_port</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">db_url</span> <span class="o">=</span> <span class="n">_update_db_connstring</span><span class="p">()</span>
+    <span class="n">geodb_url</span> <span class="o">=</span> <span class="n">_update_geodb_connstring</span><span class="p">()</span>
+    <span class="n">geonode_docker_host</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">_cnt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">29</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">geonode_docker_host</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="s2">&quot;geonode&quot;</span><span class="p">))</span>
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;...waiting for NGINX to pop-up...</span><span class="si">{</span><span class="n">_cnt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">override_env</span> <span class="o">=</span> <span class="s2">&quot;$HOME/.override_env&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">override_env</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">override_env</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can not delete the </span><span class="si">{</span><span class="n">override_env</span><span class="si">}</span><span class="s2"> file as it doesn&#39;t exists&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pub_port</span><span class="p">:</span>
+        <span class="n">siteurl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pub_protocol</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="n">pub_host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pub_port</span><span class="si">}</span><span class="s2">/&quot;</span>
+        <span class="n">gs_pub_loc</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">pub_host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pub_port</span><span class="si">}</span><span class="s2">/geoserver/&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">siteurl</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pub_protocol</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="n">pub_host</span><span class="si">}</span><span class="s2">/&quot;</span>
+        <span class="n">gs_pub_loc</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">pub_host</span><span class="si">}</span><span class="s2">/geoserver/&quot;</span>
+    <span class="n">envs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;local_settings&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">_localsettings</span><span class="p">()),</span>
+        <span class="s2">&quot;siteurl&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SITEURL&quot;</span><span class="p">,</span> <span class="n">siteurl</span><span class="p">),</span>
+        <span class="s2">&quot;geonode_docker_host&quot;</span><span class="p">:</span> <span class="n">geonode_docker_host</span><span class="p">,</span>
+        <span class="s2">&quot;public_protocol&quot;</span><span class="p">:</span> <span class="n">pub_protocol</span><span class="p">,</span>
+        <span class="s2">&quot;public_fqdn&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">pub_host</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">pub_port</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">pub_port</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;public_host&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">pub_host</span><span class="p">),</span>
+        <span class="s2">&quot;dburl&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATABASE_URL&quot;</span><span class="p">,</span> <span class="n">db_url</span><span class="p">),</span>
+        <span class="s2">&quot;geodburl&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEODATABASE_URL&quot;</span><span class="p">,</span> <span class="n">geodb_url</span><span class="p">),</span>
+        <span class="s2">&quot;static_root&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;STATIC_ROOT&quot;</span><span class="p">,</span> <span class="s2">&quot;/mnt/volumes/statics/static/&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;media_root&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MEDIA_ROOT&quot;</span><span class="p">,</span> <span class="s2">&quot;/mnt/volumes/statics/uploaded/&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;geoip_path&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEOIP_PATH&quot;</span><span class="p">,</span> <span class="s2">&quot;/mnt/volumes/statics/geoip.db&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;monitoring&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONITORING_ENABLED&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="s2">&quot;monitoring_host_name&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONITORING_HOST_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;monitoring_service_name&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONITORING_SERVICE_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;local-geonode&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;monitoring_data_ttl&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONITORING_DATA_TTL&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+        <span class="s2">&quot;geonode_geodb_passwd&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEONODE_GEODATABASE_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode_data&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;default_backend_datastore&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DEFAULT_BACKEND_DATASTORE&quot;</span><span class="p">,</span> <span class="s2">&quot;datastore&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;geonode_db_passwd&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEONODE_DATABASE_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;geonode_geodb&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEONODE_GEODATABASE&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode_data&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;db_url&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATABASE_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;postgis://geonode:geonode@db:5432/geonode&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;geodb_url&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEODATABASE_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;postgis://geonode:geonode@db:5432/geonode_data&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;geonode_db&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEONODE_DATABASE&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;gs_loc&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEOSERVER_LOCATION&quot;</span><span class="p">,</span> <span class="s2">&quot;http://geoserver:8080/geoserver/&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;gs_web_ui_loc&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEOSERVER_WEB_UI_LOCATION&quot;</span><span class="p">,</span> <span class="n">gs_pub_loc</span><span class="p">),</span>
+        <span class="s2">&quot;gs_pub_loc&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEOSERVER_PUBLIC_LOCATION&quot;</span><span class="p">,</span> <span class="n">gs_pub_loc</span><span class="p">),</span>
+        <span class="s2">&quot;gs_admin_pwd&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GEOSERVER_ADMIN_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;geoserver&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;override_fn&quot;</span><span class="p">:</span> <span class="n">override_env</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">current_allowed</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ALLOWED_HOSTS&quot;</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="s2">&quot;[&#39;</span><span class="si">{public_fqdn}</span><span class="s2">&#39;, &#39;</span><span class="si">{public_host}</span><span class="s2">&#39;, &#39;localhost&#39;, &#39;django&#39;, &#39;geonode&#39;,]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">envs</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">current_allowed</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">current_allowed</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">pub_host</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pub_host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pub_port</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+    <span class="n">allowed_hosts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">current_allowed</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;&quot;geonode&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&quot;django&quot;&#39;</span><span class="p">]</span>
+
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export DJANGO_SETTINGS_MODULE=</span><span class="se">\</span>
+<span class="si">{local_settings}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export MONITORING_ENABLED=</span><span class="se">\</span>
+<span class="si">{monitoring}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export MONITORING_HOST_NAME=</span><span class="se">\</span>
+<span class="si">{monitoring_host_name}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export MONITORING_SERVICE_NAME=</span><span class="se">\</span>
+<span class="si">{monitoring_service_name}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export MONITORING_DATA_TTL=</span><span class="se">\</span>
+<span class="si">{monitoring_data_ttl}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEOIP_PATH=</span><span class="se">\</span>
+<span class="si">{geoip_path}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEONODE_GEODATABASE_PASSWORD=</span><span class="se">\</span>
+<span class="si">{geonode_geodb_passwd}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export DEFAULT_BACKEND_DATASTORE=</span><span class="se">\</span>
+<span class="si">{default_backend_datastore}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEONODE_DATABASE_PASSWORD=</span><span class="se">\</span>
+<span class="si">{geonode_db_passwd}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEONODE_GEODATABASE=</span><span class="se">\</span>
+<span class="si">{geonode_geodb}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export DATABASE_URL=</span><span class="se">\</span>
+<span class="si">{db_url}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEODATABASE_URL=</span><span class="se">\</span>
+<span class="si">{geodb_url}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEONODE_DATABASE=</span><span class="se">\</span>
+<span class="si">{geonode_db}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEOSERVER_LOCATION=</span><span class="se">\</span>
+<span class="si">{gs_loc}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEOSERVER_WEB_UI_LOCATION=</span><span class="se">\</span>
+<span class="si">{gs_web_ui_loc}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEOSERVER_PUBLIC_LOCATION=</span><span class="se">\</span>
+<span class="si">{gs_pub_loc}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEOSERVER_ADMIN_PASSWORD=</span><span class="se">\</span>
+<span class="si">{gs_admin_pwd}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export SITEURL=</span><span class="se">\</span>
+<span class="si">{siteurl}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s1">&#39;echo export ALLOWED_HOSTS=</span><span class="se">\</span>
+<span class="s1">&quot;</span><span class="se">\\</span><span class="s1">&quot;</span><span class="si">{}</span><span class="se">\\</span><span class="s1">&quot;&quot; &gt;&gt; </span><span class="si">{override_fn}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">allowed_hosts</span><span class="p">,</span> <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export DATABASE_URL=</span><span class="se">\</span>
+<span class="si">{dburl}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEODATABASE_URL=</span><span class="se">\</span>
+<span class="si">{geodburl}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export STATIC_ROOT=</span><span class="se">\</span>
+<span class="si">{static_root}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export MEDIA_ROOT=</span><span class="se">\</span>
+<span class="si">{media_root}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export GEOIP_PATH=</span><span class="se">\</span>
+<span class="si">{geoip_path}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export LOGIN_URL=</span><span class="se">\</span>
+<span class="si">{siteurl}</span><span class="s2">account/login/ &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export LOGOUT_URL=</span><span class="se">\</span>
+<span class="si">{siteurl}</span><span class="s2">account/logout/ &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export LOGIN_REDIRECT_URL=</span><span class="se">\</span>
+<span class="si">{siteurl}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="s2">&quot;echo export LOGOUT_REDIRECT_URL=</span><span class="se">\</span>
+<span class="si">{siteurl}</span><span class="s2"> &gt;&gt; </span><span class="si">{override_fn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="o">**</span><span class="n">envs</span>
+        <span class="p">),</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;source </span><span class="si">{</span><span class="n">override_env</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;****************************finalize env**********************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;env&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="migrations">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.migrations">[docs]</a>
+<span class="k">def</span> <span class="nf">migrations</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************migrations*******************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;python manage.py migrate --noinput --settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;python manage.py migrate --noinput --settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2"> --database=datastore&quot;</span><span class="p">,</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;python manage.py rebuild_index --noinput --settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="statics">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.statics">[docs]</a>
+<span class="k">def</span> <span class="nf">statics</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************statics*******************************&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;mkdir -p /mnt/volumes/statics/{static,uploads}&quot;</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;python manage.py collectstatic --noinput --settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="prepare">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.prepare">[docs]</a>
+<span class="k">def</span> <span class="nf">prepare</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**********************prepare fixture***************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;rm -rf /tmp/default_oauth_apps_docker.json&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_prepare_oauth_fixture</span><span class="p">()</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;rm -rf /tmp/default_site.json&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_prepare_site_fixture</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="fixtures">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.fixtures">[docs]</a>
+<span class="k">def</span> <span class="nf">fixtures</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************fixtures********************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;python manage.py loaddata sample_admin </span><span class="se">\</span>
+<span class="s2">--settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;python manage.py loaddata /tmp/default_oauth_apps_docker.json </span><span class="se">\</span>
+<span class="s2">--settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;python manage.py loaddata geonode/base/fixtures/initial_data.json </span><span class="se">\</span>
+<span class="s2">--settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="collectstatic">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.collectstatic">[docs]</a>
+<span class="k">def</span> <span class="nf">collectstatic</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;************************static artifacts******************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;django-admin collectstatic --noinput </span><span class="se">\</span>
+<span class="s2">--settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="monitoringfixture">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.monitoringfixture">[docs]</a>
+<span class="k">def</span> <span class="nf">monitoringfixture</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MONITORING_ENABLED&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*******************monitoring fixture********************************&quot;</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;rm -rf /tmp/default_monitoring_apps_docker.json&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">_prepare_monitoring_fixture</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;django-admin loaddata geonode/monitoring/fixtures/metric_data.json </span><span class="se">\</span>
+<span class="s2">    --settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;django-admin loaddata geonode/monitoring/fixtures/notifications.json </span><span class="se">\</span>
+<span class="s2">    --settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;django-admin loaddata /tmp/default_monitoring_apps_docker.json </span><span class="se">\</span>
+<span class="s2">    --settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERROR installing monitoring fixture: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="updateadmin">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.updateadmin">[docs]</a>
+<span class="k">def</span> <span class="nf">updateadmin</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;***********************update admin details**************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;rm -rf /tmp/django_admin_docker.json&quot;</span><span class="p">,</span> <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_prepare_admin_fixture</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ADMIN_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;admin&quot;</span><span class="p">),</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ADMIN_EMAIL&quot;</span><span class="p">,</span> <span class="s2">&quot;admin@example.org&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;django-admin loaddata /tmp/django_admin_docker.json </span><span class="se">\</span>
+<span class="s2">--settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="collectmetrics">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.collectmetrics">[docs]</a>
+<span class="k">def</span> <span class="nf">collectmetrics</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;************************collect metrics******************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;python -W ignore manage.py collect_metrics  </span><span class="se">\</span>
+<span class="s2">--settings=</span><span class="si">{</span><span class="n">_localsettings</span><span class="p">()</span><span class="si">}</span><span class="s2"> -n -t xml&quot;</span><span class="p">,</span>
+        <span class="n">pty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="initialized">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks.initialized">[docs]</a>
+<span class="k">def</span> <span class="nf">initialized</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************init file********************************&quot;</span><span class="p">)</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;date &gt; /mnt/volumes/statics/geonode_init.lock&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_docker_host_ip">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._docker_host_ip">[docs]</a>
+<span class="k">def</span> <span class="nf">_docker_host_ip</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">docker</span><span class="o">.</span><span class="n">from_env</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.24&quot;</span><span class="p">)</span>
+        <span class="n">ip_list</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">BOOTSTRAP_IMAGE_CHEIP</span><span class="p">,</span> <span class="n">network_mode</span><span class="o">=</span><span class="s2">&quot;host&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+        <span class="n">ip_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ip_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Docker daemon is running on more than one </span><span class="se">\</span>
+<span class="s2">address </span><span class="si">{</span><span class="n">ip_list</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Only the first address:</span><span class="si">{</span><span class="n">ip_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> will be returned!&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Docker daemon is running at the following </span><span class="se">\</span>
+<span class="s2">address </span><span class="si">{</span><span class="n">ip_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ip_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="_is_valid_ip">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._is_valid_ip">[docs]</a>
+<span class="k">def</span> <span class="nf">_is_valid_ip</span><span class="p">(</span><span class="n">ip</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ipaddress</span><span class="o">.</span><span class="n">IPv4Address</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="_container_exposed_port">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._container_exposed_port">[docs]</a>
+<span class="k">def</span> <span class="nf">_container_exposed_port</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">instname</span><span class="p">):</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="s2">&quot;80&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">docker</span><span class="o">.</span><span class="n">from_env</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.24&quot;</span><span class="p">)</span>
+        <span class="n">ports_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">c</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;Config&quot;</span><span class="p">][</span><span class="s2">&quot;ExposedPorts&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+                    <span class="n">filters</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;org.geonode.component=</span><span class="si">{</span><span class="n">component</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;running&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">instname</span><span class="p">)</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span>
+            <span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">ports_dict</span><span class="p">):</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/tcp&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">traceback</span>
+
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">port</span></div>
+
+
+
+<div class="viewcode-block" id="_update_db_connstring">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._update_db_connstring">[docs]</a>
+<span class="k">def</span> <span class="nf">_update_db_connstring</span><span class="p">():</span>
+    <span class="n">connstr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATABASE_URL&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">connstr</span><span class="p">:</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_DATABASE_USER&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode&quot;</span><span class="p">)</span>
+        <span class="n">pwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_DATABASE_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode&quot;</span><span class="p">)</span>
+        <span class="n">dbname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_DATABASE&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode&quot;</span><span class="p">)</span>
+        <span class="n">dbhost</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATABASE_HOST&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">)</span>
+        <span class="n">dbport</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATABASE_PORT&quot;</span><span class="p">,</span> <span class="mi">5432</span><span class="p">)</span>
+        <span class="n">connstr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;postgis://</span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">pwd</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">dbhost</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">dbport</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">dbname</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">connstr</span></div>
+
+
+
+<div class="viewcode-block" id="_update_geodb_connstring">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._update_geodb_connstring">[docs]</a>
+<span class="k">def</span> <span class="nf">_update_geodb_connstring</span><span class="p">():</span>
+    <span class="n">geoconnstr</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEODATABASE_URL&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">geoconnstr</span><span class="p">:</span>
+        <span class="n">geouser</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_GEODATABASE_USER&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode_data&quot;</span><span class="p">)</span>
+        <span class="n">geopwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_GEODATABASE_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode_data&quot;</span><span class="p">)</span>
+        <span class="n">geodbname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_GEODATABASE&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode_data&quot;</span><span class="p">)</span>
+        <span class="n">dbhost</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATABASE_HOST&quot;</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">)</span>
+        <span class="n">dbport</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATABASE_PORT&quot;</span><span class="p">,</span> <span class="mi">5432</span><span class="p">)</span>
+        <span class="n">geoconnstr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;postgis://</span><span class="si">{</span><span class="n">geouser</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">geopwd</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">dbhost</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">dbport</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">geodbname</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">geoconnstr</span></div>
+
+
+
+<div class="viewcode-block" id="_localsettings">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._localsettings">[docs]</a>
+<span class="k">def</span> <span class="nf">_localsettings</span><span class="p">():</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode.settings&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">settings</span></div>
+
+
+
+<div class="viewcode-block" id="_geonode_public_host">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._geonode_public_host">[docs]</a>
+<span class="k">def</span> <span class="nf">_geonode_public_host</span><span class="p">():</span>
+    <span class="n">gn_pub_hostip</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_LB_HOST_IP&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">gn_pub_hostip</span><span class="p">:</span>
+        <span class="n">gn_pub_hostip</span> <span class="o">=</span> <span class="n">_docker_host_ip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">gn_pub_hostip</span></div>
+
+
+
+<div class="viewcode-block" id="_geonode_public_host_ip">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._geonode_public_host_ip">[docs]</a>
+<span class="k">def</span> <span class="nf">_geonode_public_host_ip</span><span class="p">():</span>
+    <span class="n">gn_pub_hostip</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_LB_HOST_IP&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">gn_pub_hostip</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_is_valid_ip</span><span class="p">(</span><span class="n">gn_pub_hostip</span><span class="p">):</span>
+        <span class="n">gn_pub_hostip</span> <span class="o">=</span> <span class="n">_docker_host_ip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">gn_pub_hostip</span></div>
+
+
+
+<div class="viewcode-block" id="_geonode_public_port">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._geonode_public_port">[docs]</a>
+<span class="k">def</span> <span class="nf">_geonode_public_port</span><span class="p">():</span>
+    <span class="n">gn_pub_port</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_LB_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">gn_pub_port</span><span class="p">:</span>
+        <span class="n">gn_pub_port</span> <span class="o">=</span> <span class="n">_container_exposed_port</span><span class="p">(</span><span class="s2">&quot;nginx&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GEONODE_INSTANCE_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode&quot;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">gn_pub_port</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;80&quot;</span><span class="p">,</span> <span class="s2">&quot;443&quot;</span><span class="p">):</span>
+        <span class="n">gn_pub_port</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">gn_pub_port</span></div>
+
+
+
+<div class="viewcode-block" id="_prepare_oauth_fixture">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._prepare_oauth_fixture">[docs]</a>
+<span class="k">def</span> <span class="nf">_prepare_oauth_fixture</span><span class="p">():</span>
+    <span class="n">upurl</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SITEURL&quot;</span><span class="p">])</span>
+    <span class="n">default_fixture</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;oauth2_provider.application&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">1001</span><span class="p">,</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;skip_authorization&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;created&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-05-31T10:00:31.661Z&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;updated&quot;</span><span class="p">:</span> <span class="s2">&quot;2018-05-31T11:30:31.245Z&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;algorithm&quot;</span><span class="p">:</span> <span class="s2">&quot;RS256&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;redirect_uris&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">urlunparse</span><span class="p">(</span><span class="n">upurl</span><span class="p">)</span><span class="si">}</span><span class="s2">geoserver/index.html&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;GeoServer&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;authorization_grant_type&quot;</span><span class="p">:</span> <span class="s2">&quot;authorization-code&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;client_type&quot;</span><span class="p">:</span> <span class="s2">&quot;confidential&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;OAUTH2_CLIENT_ID&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;client_secret&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;OAUTH2_CLIENT_SECRET&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;admin&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/tmp/default_oauth_apps_docker.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fixturefile</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">default_fixture</span><span class="p">,</span> <span class="n">fixturefile</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_prepare_site_fixture">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._prepare_site_fixture">[docs]</a>
+<span class="k">def</span> <span class="nf">_prepare_site_fixture</span><span class="p">():</span>
+    <span class="n">upurl</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SITEURL&quot;</span><span class="p">])</span>
+    <span class="n">default_fixture</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;sites.site&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">upurl</span><span class="o">.</span><span class="n">hostname</span><span class="p">),</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">upurl</span><span class="o">.</span><span class="n">hostname</span><span class="p">)},</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/tmp/default_site.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fixturefile</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">default_fixture</span><span class="p">,</span> <span class="n">fixturefile</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_prepare_monitoring_fixture">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._prepare_monitoring_fixture">[docs]</a>
+<span class="k">def</span> <span class="nf">_prepare_monitoring_fixture</span><span class="p">():</span>
+    <span class="c1"># upurl = urlparse(os.environ[&#39;SITEURL&#39;])</span>
+    <span class="c1"># net_scheme = upurl.scheme</span>
+    <span class="c1"># net_loc = upurl.netloc</span>
+    <span class="n">pub_ip</span> <span class="o">=</span> <span class="n">_geonode_public_host_ip</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Public Hostname or IP is </span><span class="si">{</span><span class="n">pub_ip</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">pub_port</span> <span class="o">=</span> <span class="n">_geonode_public_port</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Public PORT is </span><span class="si">{</span><span class="n">pub_port</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">geonode_ip</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="s2">&quot;geonode&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">geonode_ip</span> <span class="o">=</span> <span class="n">pub_ip</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">geoserver_ip</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">geoserver_ip</span> <span class="o">=</span> <span class="n">pub_ip</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="s2">&quot;1970-01-01 00:00:00&quot;</span>
+    <span class="n">default_fixture</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">geonode_ip</span><span class="p">),</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MONITORING_HOST_NAME&quot;</span><span class="p">]),</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoring.host&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;ip&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">geoserver_ip</span><span class="p">),</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geoserver&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoring.host&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;MONITORING_SERVICE_NAME&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SITEURL&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;last_check&quot;</span><span class="p">:</span> <span class="n">d</span><span class="p">,</span>
+                <span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;check_interval&quot;</span><span class="p">:</span> <span class="s2">&quot;00:01:00&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;service_type&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoring.service&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geoserver-hostgeonode&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SITEURL&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;last_check&quot;</span><span class="p">:</span> <span class="n">d</span><span class="p">,</span>
+                <span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;check_interval&quot;</span><span class="p">:</span> <span class="s2">&quot;00:01:00&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;service_type&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoring.service&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geoserver-hostgeoserver&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;GEOSERVER_PUBLIC_LOCATION&quot;</span><span class="p">]),</span>
+                <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;last_check&quot;</span><span class="p">:</span> <span class="n">d</span><span class="p">,</span>
+                <span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="s2">&quot;check_interval&quot;</span><span class="p">:</span> <span class="s2">&quot;00:01:00&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;service_type&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoring.service&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;default-geoserver&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://geoserver:8080/geoserver/&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;last_check&quot;</span><span class="p">:</span> <span class="n">d</span><span class="p">,</span>
+                <span class="s2">&quot;active&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="s2">&quot;check_interval&quot;</span><span class="p">:</span> <span class="s2">&quot;00:01:00&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;service_type&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;monitoring.service&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/tmp/default_monitoring_apps_docker.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fixturefile</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">default_fixture</span><span class="p">,</span> <span class="n">fixturefile</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_prepare_admin_fixture">
+<a class="viewcode-back" href="../autoapi/tasks/index.html#tasks._prepare_admin_fixture">[docs]</a>
+<span class="k">def</span> <span class="nf">_prepare_admin_fixture</span><span class="p">(</span><span class="n">admin_password</span><span class="p">,</span> <span class="n">admin_email</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">django.contrib.auth.hashers</span> <span class="kn">import</span> <span class="n">make_password</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">mdext_date</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()[:</span><span class="mi">23</span><span class="p">]</span><span class="si">}</span><span class="s2">Z&quot;</span>
+    <span class="n">default_fixture</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;date_joined&quot;</span><span class="p">:</span> <span class="n">mdext_date</span><span class="p">,</span>
+                <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="n">admin_email</span><span class="p">,</span>
+                <span class="s2">&quot;first_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;is_active&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;is_staff&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;is_superuser&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;last_login&quot;</span><span class="p">:</span> <span class="n">mdext_date</span><span class="p">,</span>
+                <span class="s2">&quot;last_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="n">make_password</span><span class="p">(</span><span class="n">admin_password</span><span class="p">),</span>
+                <span class="s2">&quot;user_permissions&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;people.Profile&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/tmp/django_admin_docker.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fixturefile</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">default_fixture</span><span class="p">,</span> <span class="n">fixturefile</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

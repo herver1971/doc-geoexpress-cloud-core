@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ec2 &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ec2</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ec2</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="c1"># pip install boto3</span>
+<span class="c1"># You will also need:</span>
+<span class="c1"># - A .pem keyfile generated using the Amazon web interface to launch</span>
+<span class="c1"># new instances</span>
+<span class="c1"># - The secret and access keys created from the</span>
+<span class="c1"># The only pre-reqs are having created a keypair (.pem file)</span>
+<span class="c1"># via the amazon web interface and knowing the AWS key and secret</span>
+<span class="c1">#</span>
+<span class="c1"># Usage:</span>
+<span class="c1">#     export AWS_ACCESS_KEY_ID=&#39;blahblah&#39;</span>
+<span class="c1">#     export AWS_SECRET_ACCESS_KEY=&#39;blebleble&#39;</span>
+<span class="c1">#     ec2.py launch</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">botocore</span>
+
+<span class="kn">import</span> <span class="nn">boto3</span>
+
+
+<div class="viewcode-block" id="CONFIG_FILE">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.CONFIG_FILE">[docs]</a>
+<span class="n">CONFIG_FILE</span> <span class="o">=</span> <span class="s2">&quot;.gnec2.cfg&quot;</span></div>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Ubuntu</span>
+<span class="c1"># https://help.ubuntu.com/community/EC2StartersGuide</span>
+<span class="c1"># All us-east-1 EBS Backed</span>
+<div class="viewcode-block" id="LUCID_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.LUCID_32">[docs]</a>
+<span class="n">LUCID_32</span> <span class="o">=</span> <span class="s2">&quot;ami-3e9b4957&quot;</span></div>
+
+<div class="viewcode-block" id="LUCID_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.LUCID_64">[docs]</a>
+<span class="n">LUCID_64</span> <span class="o">=</span> <span class="s2">&quot;ami-349b495d&quot;</span></div>
+
+<div class="viewcode-block" id="MAVERIK_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.MAVERIK_32">[docs]</a>
+<span class="n">MAVERIK_32</span> <span class="o">=</span> <span class="s2">&quot;ami-c012cea9&quot;</span></div>
+
+<div class="viewcode-block" id="MAVERIK_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.MAVERIK_64">[docs]</a>
+<span class="n">MAVERIK_64</span> <span class="o">=</span> <span class="s2">&quot;ami-c412cead&quot;</span></div>
+
+<div class="viewcode-block" id="NATTY_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.NATTY_32">[docs]</a>
+<span class="n">NATTY_32</span> <span class="o">=</span> <span class="s2">&quot;ami-1616ca7f&quot;</span></div>
+
+<div class="viewcode-block" id="NATTY_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.NATTY_64">[docs]</a>
+<span class="n">NATTY_64</span> <span class="o">=</span> <span class="s2">&quot;ami-e016ca89&quot;</span></div>
+
+<div class="viewcode-block" id="ONEIRIC_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.ONEIRIC_32">[docs]</a>
+<span class="n">ONEIRIC_32</span> <span class="o">=</span> <span class="s2">&quot;ami-e1aa7388&quot;</span></div>
+
+<div class="viewcode-block" id="ONEIRIC_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.ONEIRIC_64">[docs]</a>
+<span class="n">ONEIRIC_64</span> <span class="o">=</span> <span class="s2">&quot;ami-8baa73e2&quot;</span></div>
+
+<div class="viewcode-block" id="PRECISE_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.PRECISE_32">[docs]</a>
+<span class="n">PRECISE_32</span> <span class="o">=</span> <span class="s2">&quot;ami-b89842d1&quot;</span></div>
+
+<div class="viewcode-block" id="PRECISE_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.PRECISE_64">[docs]</a>
+<span class="n">PRECISE_64</span> <span class="o">=</span> <span class="s2">&quot;ami-3c994355&quot;</span></div>
+
+<div class="viewcode-block" id="TRUSTY_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.TRUSTY_32">[docs]</a>
+<span class="n">TRUSTY_32</span> <span class="o">=</span> <span class="s2">&quot;ami-134b0923&quot;</span></div>
+
+<div class="viewcode-block" id="TRUSTY_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.TRUSTY_64">[docs]</a>
+<span class="n">TRUSTY_64</span> <span class="o">=</span> <span class="s2">&quot;ami-d0ba0cb8&quot;</span></div>
+
+
+<span class="c1"># CentOS</span>
+<span class="c1"># All us-east-1</span>
+<div class="viewcode-block" id="CENTOS_52_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.CENTOS_52_32">[docs]</a>
+<span class="n">CENTOS_52_32</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="CENTOS_52_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.CENTOS_52_64">[docs]</a>
+<span class="n">CENTOS_52_64</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="CENTOS_54_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.CENTOS_54_32">[docs]</a>
+<span class="n">CENTOS_54_32</span> <span class="o">=</span> <span class="s2">&quot;ami-f8b35e91&quot;</span></div>
+
+<div class="viewcode-block" id="CENTOS_54_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.CENTOS_54_64">[docs]</a>
+<span class="n">CENTOS_54_64</span> <span class="o">=</span> <span class="s2">&quot;ami-ccb35ea5&quot;</span></div>
+
+<div class="viewcode-block" id="CENTOS_62_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.CENTOS_62_32">[docs]</a>
+<span class="n">CENTOS_62_32</span> <span class="o">=</span> <span class="s2">&quot;ami-5c4e9235&quot;</span></div>
+
+<div class="viewcode-block" id="CENTOS_62_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.CENTOS_62_64">[docs]</a>
+<span class="n">CENTOS_62_64</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DEFAULT_BASE">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.DEFAULT_BASE">[docs]</a>
+<span class="n">DEFAULT_BASE</span> <span class="o">=</span> <span class="n">TRUSTY_64</span></div>
+
+<div class="viewcode-block" id="DEFAULT_INSTANCE_TYPE">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.DEFAULT_INSTANCE_TYPE">[docs]</a>
+<span class="n">DEFAULT_INSTANCE_TYPE</span> <span class="o">=</span> <span class="s1">&#39;t2.small&#39;</span></div>
+
+
+<div class="viewcode-block" id="GEONODE_LUCID_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_LUCID_32">[docs]</a>
+<span class="n">GEONODE_LUCID_32</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_LUCID_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_LUCID_64">[docs]</a>
+<span class="n">GEONODE_LUCID_64</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_MAVERIK_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_MAVERIK_32">[docs]</a>
+<span class="n">GEONODE_MAVERIK_32</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_MAVERIK_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_MAVERIK_64">[docs]</a>
+<span class="n">GEONODE_MAVERIK_64</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_NATTY_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_NATTY_32">[docs]</a>
+<span class="n">GEONODE_NATTY_32</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_NATTY_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_NATTY_64">[docs]</a>
+<span class="n">GEONODE_NATTY_64</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_ONEIRIC_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_ONEIRIC_32">[docs]</a>
+<span class="n">GEONODE_ONEIRIC_32</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_ONEIRIC_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_ONEIRIC_64">[docs]</a>
+<span class="n">GEONODE_ONEIRIC_64</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_PRECISE_32">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_PRECISE_32">[docs]</a>
+<span class="n">GEONODE_PRECISE_32</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_PRECISE_64">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.GEONODE_PRECISE_64">[docs]</a>
+<span class="n">GEONODE_PRECISE_64</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="DEFAULT_BASE_GEONODE">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.DEFAULT_BASE_GEONODE">[docs]</a>
+<span class="n">DEFAULT_BASE_GEONODE</span> <span class="o">=</span> <span class="n">GEONODE_PRECISE_32</span></div>
+
+
+<div class="viewcode-block" id="ALPHA_ELASTIC_IP">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.ALPHA_ELASTIC_IP">[docs]</a>
+<span class="n">ALPHA_ELASTIC_IP</span> <span class="o">=</span> <span class="s2">&quot;54.235.204.189&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="wait_for_state">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.wait_for_state">[docs]</a>
+<span class="k">def</span> <span class="nf">wait_for_state</span><span class="p">(</span><span class="n">ec2</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">state</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;pending&#39;</span><span class="p">,</span> <span class="s1">&#39;running&#39;</span><span class="p">,</span> <span class="s1">&#39;shutting-down&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;terminated&#39;</span><span class="p">,</span> <span class="s1">&#39;stopped&#39;</span><span class="p">)</span>
+    <span class="c1"># Poll for 10 minutes for instance to transition to the specified state</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">120</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">reservation</span> <span class="ow">in</span> <span class="n">ec2</span><span class="o">.</span><span class="n">describe_instances</span><span class="p">(</span>
+                <span class="n">InstanceIds</span><span class="o">=</span><span class="p">[</span><span class="n">instance_id</span><span class="p">])[</span><span class="s1">&#39;Reservations&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">reservation</span><span class="p">[</span><span class="s1">&#39;Instances&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">instance</span><span class="p">[</span><span class="s1">&#39;InstanceId&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">instance_id</span> <span class="ow">and</span> \
+                   <span class="n">instance</span><span class="p">[</span><span class="s1">&#39;State&#39;</span><span class="p">][</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">instance</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="writeconfig">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.writeconfig">[docs]</a>
+<span class="k">def</span> <span class="nf">writeconfig</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="c1"># Writing our configuration file to CONFIG_FILE</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">CONFIG_FILE</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">configfile</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">configfile</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="readconfig">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.readconfig">[docs]</a>
+<span class="k">def</span> <span class="nf">readconfig</span><span class="p">(</span><span class="n">default_ami</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">RawConfigParser</span><span class="p">()</span>
+
+    <span class="c1"># If there is no config file, let&#39;s write one.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">CONFIG_FILE</span><span class="p">):</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">default_ami</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;AMI&#39;</span><span class="p">,</span> <span class="n">DEFAULT_BASE</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;AMI&#39;</span><span class="p">,</span> <span class="n">default_ami</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;INSTANCE&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;INSTANCE_TYPE&#39;</span><span class="p">,</span> <span class="n">DEFAULT_INSTANCE_TYPE</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;SECURITY_GROUP&#39;</span><span class="p">,</span> <span class="s1">&#39;geonode&#39;</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;KEY_PATH&#39;</span><span class="p">,</span> <span class="s1">&#39;~/.ssh/geonode-dev.pem&#39;</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;USER&#39;</span><span class="p">,</span> <span class="s1">&#39;ec2-user&#39;</span><span class="p">)</span>
+        <span class="n">writeconfig</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">CONFIG_FILE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">config</span></div>
+
+
+
+<div class="viewcode-block" id="launch_geonode">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.launch_geonode">[docs]</a>
+<span class="k">def</span> <span class="nf">launch_geonode</span><span class="p">():</span>
+    <span class="n">readconfig</span><span class="p">(</span><span class="n">default_ami</span><span class="o">=</span><span class="n">DEFAULT_BASE_GEONODE</span><span class="p">)</span>
+    <span class="n">launch</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="launch_base">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.launch_base">[docs]</a>
+<span class="k">def</span> <span class="nf">launch_base</span><span class="p">():</span>
+    <span class="n">readconfig</span><span class="p">(</span><span class="n">default_ami</span><span class="o">=</span><span class="n">DEFAULT_BASE</span><span class="p">)</span>
+    <span class="n">launch</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="set_alpha_ip">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.set_alpha_ip">[docs]</a>
+<span class="k">def</span> <span class="nf">set_alpha_ip</span><span class="p">():</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">readconfig</span><span class="p">()</span>
+    <span class="n">instance_id</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;INSTANCE&#39;</span><span class="p">)</span>
+    <span class="n">ec2</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">allocation</span> <span class="o">=</span> <span class="n">ec2</span><span class="o">.</span><span class="n">allocate_address</span><span class="p">(</span><span class="n">Domain</span><span class="o">=</span><span class="s1">&#39;vpc&#39;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">ec2</span><span class="o">.</span><span class="n">associate_address</span><span class="p">(</span>
+            <span class="n">AllocationId</span><span class="o">=</span><span class="n">allocation</span><span class="p">[</span><span class="s1">&#39;AllocationId&#39;</span><span class="p">],</span>
+            <span class="n">InstanceId</span><span class="o">=</span><span class="n">instance_id</span><span class="p">,</span>
+            <span class="n">PublicIp</span><span class="o">=</span><span class="n">ALPHA_ELASTIC_IP</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+    <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="launch">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.launch">[docs]</a>
+<span class="k">def</span> <span class="nf">launch</span><span class="p">():</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">readconfig</span><span class="p">()</span>
+    <span class="n">ami</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;AMI&#39;</span><span class="p">)</span>
+    <span class="n">group_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;SECURITY_GROUP&#39;</span><span class="p">)</span>
+    <span class="n">key_name</span> <span class="o">=</span> <span class="s1">&#39;geonode&#39;</span>
+    <span class="n">key_path</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;KEY_PATH&#39;</span><span class="p">)</span>
+    <span class="n">instance_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;INSTANCE_TYPE&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;HOST&#39;</span><span class="p">):</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;HOST&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There is already an instance launched&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+    <span class="n">ec2</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">)</span>
+    <span class="n">vpc_id</span> <span class="o">=</span> <span class="n">ec2</span><span class="o">.</span><span class="n">describe_vpcs</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Vpcs&#39;</span><span class="p">,</span> <span class="p">[{}])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;VpcId&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">geonode_group</span> <span class="o">=</span> <span class="n">ec2</span><span class="o">.</span><span class="n">describe_security_groups</span><span class="p">(</span>
+            <span class="n">GroupNames</span><span class="o">=</span><span class="p">[</span><span class="n">group_name</span><span class="p">])[</span><span class="s1">&#39;SecurityGroups&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span><span class="p">:</span>
+        <span class="c1"># Create the security group</span>
+        <span class="n">geonode_group</span> <span class="o">=</span> <span class="n">ec2</span><span class="o">.</span><span class="n">create_security_group</span><span class="p">(</span>
+            <span class="n">GroupName</span><span class="o">=</span><span class="n">group_name</span><span class="p">,</span> <span class="n">Description</span><span class="o">=</span><span class="s1">&#39;GeoNode rules.&#39;</span><span class="p">,</span> <span class="n">VpcId</span><span class="o">=</span><span class="n">vpc_id</span><span class="p">)</span>
+        <span class="n">port_ranges</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="mi">21</span><span class="p">,</span> <span class="mi">21</span><span class="p">),</span>  <span class="c1"># Batch upload FTP</span>
+            <span class="p">(</span><span class="mi">22</span><span class="p">,</span> <span class="mi">22</span><span class="p">),</span>  <span class="c1"># SSH</span>
+            <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">80</span><span class="p">),</span>  <span class="c1"># Apache</span>
+            <span class="p">(</span><span class="mi">2300</span><span class="p">,</span> <span class="mi">2400</span><span class="p">),</span>  <span class="c1"># Passive FTP</span>
+            <span class="p">(</span><span class="mi">8000</span><span class="p">,</span> <span class="mi">8001</span><span class="p">),</span>  <span class="c1"># Dev Django and Jetty</span>
+            <span class="p">(</span><span class="mi">8021</span><span class="p">,</span> <span class="mi">8021</span><span class="p">),</span>  <span class="c1"># Batch upload FTP</span>
+            <span class="p">(</span><span class="mi">8080</span><span class="p">,</span> <span class="mi">8080</span><span class="p">),</span>  <span class="c1"># Tomcat</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">from_port</span><span class="p">,</span> <span class="n">to_port</span> <span class="ow">in</span> <span class="n">port_ranges</span><span class="p">:</span>
+            <span class="n">ec2</span><span class="o">.</span><span class="n">authorize_security_group_ingress</span><span class="p">(</span>
+                <span class="n">GroupId</span><span class="o">=</span><span class="n">geonode_group</span><span class="p">[</span><span class="s1">&#39;GroupId&#39;</span><span class="p">],</span>
+                <span class="n">IpProtocol</span><span class="o">=</span><span class="s1">&#39;tcp&#39;</span><span class="p">,</span>
+                <span class="n">FromPort</span><span class="o">=</span><span class="n">from_port</span><span class="p">,</span>
+                <span class="n">ToPort</span><span class="o">=</span><span class="n">to_port</span><span class="p">,</span>
+                <span class="n">CidrIp</span><span class="o">=</span><span class="s1">&#39;0.0.0.0/0&#39;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">key_pairs</span> <span class="o">=</span> <span class="n">ec2</span><span class="o">.</span><span class="n">describe_key_pairs</span><span class="p">(</span><span class="n">KeyNames</span><span class="o">=</span><span class="p">[</span><span class="n">key_name</span><span class="p">])[</span><span class="s1">&#39;KeyPairs&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="n">botocore</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ClientError</span><span class="p">:</span>
+        <span class="c1"># Key is not likely not defined</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;GeoNode file not found in server.&quot;</span><span class="p">)</span>
+        <span class="n">key_pairs</span> <span class="o">=</span> <span class="n">ec2</span><span class="o">.</span><span class="n">describe_key_pairs</span><span class="p">()[</span><span class="s1">&#39;KeyPairs&#39;</span><span class="p">]</span>
+
+    <span class="n">key</span> <span class="o">=</span> <span class="n">key_pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span>
+        <span class="n">key_pairs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">ec2</span><span class="o">.</span><span class="n">create_key_pair</span><span class="p">(</span><span class="n">KeyName</span><span class="o">=</span><span class="n">key_name</span><span class="p">)</span>
+    <span class="n">reservation</span> <span class="o">=</span> <span class="n">ec2</span><span class="o">.</span><span class="n">run_instances</span><span class="p">(</span>
+        <span class="n">ImageId</span><span class="o">=</span><span class="n">ami</span><span class="p">,</span>
+        <span class="n">InstanceType</span><span class="o">=</span><span class="n">instance_type</span><span class="p">,</span>
+        <span class="n">KeyName</span><span class="o">=</span><span class="n">key</span><span class="p">[</span><span class="s1">&#39;KeyName&#39;</span><span class="p">],</span>
+        <span class="n">MaxCount</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">MinCount</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">SecurityGroupIds</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">geonode_group</span><span class="p">[</span><span class="s1">&#39;GroupId&#39;</span><span class="p">]])</span>
+    <span class="n">instance_id</span> <span class="o">=</span> <span class="p">[</span><span class="n">instance</span><span class="p">[</span><span class="s1">&#39;InstanceId&#39;</span><span class="p">]</span>
+                   <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="n">reservation</span><span class="p">[</span><span class="s1">&#39;Instances&#39;</span><span class="p">]</span>
+                   <span class="k">if</span> <span class="n">instance</span><span class="p">[</span><span class="s1">&#39;ImageId&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ami</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Firing up instance...&quot;</span><span class="p">)</span>
+    <span class="n">instance</span> <span class="o">=</span> <span class="n">wait_for_state</span><span class="p">(</span><span class="n">ec2</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="s1">&#39;running&#39;</span><span class="p">)</span>
+    <span class="n">dns</span> <span class="o">=</span> <span class="n">instance</span><span class="p">[</span><span class="s1">&#39;PublicDnsName&#39;</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Instance running at </span><span class="si">{</span><span class="n">dns</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;HOST&#39;</span><span class="p">,</span> <span class="n">dns</span><span class="p">)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;INSTANCE&#39;</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">)</span>
+    <span class="n">writeconfig</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ssh -i </span><span class="si">{</span><span class="n">key_path</span><span class="si">}</span><span class="s2"> ubuntu@</span><span class="si">{</span><span class="n">dns</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Terminate the instance via the web interface.&quot;</span><span class="p">)</span>
+
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="terminate">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.terminate">[docs]</a>
+<span class="k">def</span> <span class="nf">terminate</span><span class="p">():</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">readconfig</span><span class="p">()</span>
+    <span class="n">instance_id</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;INSTANCE&#39;</span><span class="p">)</span>
+
+    <span class="n">ec2</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">)</span>
+    <span class="n">ec2</span><span class="o">.</span><span class="n">terminate_instances</span><span class="p">(</span><span class="n">InstanceIds</span><span class="o">=</span><span class="p">[</span><span class="n">instance_id</span><span class="p">])</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Terminating instance...&quot;</span><span class="p">)</span>
+    <span class="n">wait_for_state</span><span class="p">(</span><span class="n">ec2</span><span class="p">,</span> <span class="n">instance_id</span><span class="p">,</span> <span class="s1">&#39;terminated&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Instance terminated.&quot;</span><span class="p">)</span>
+
+    <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;HOST&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;INSTANCE&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">CONFIG_FILE</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">configfile</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">configfile</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;launch_geonode&quot;</span><span class="p">:</span>
+        <span class="n">launch_geonode</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;launch_base&quot;</span><span class="p">:</span>
+        <span class="n">launch_base</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;set_alpha_ip&quot;</span><span class="p">:</span>
+        <span class="n">set_alpha_ip</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;terminate&quot;</span><span class="p">:</span>
+        <span class="n">terminate</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;host&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="config">
+<a class="viewcode-back" href="../autoapi/ec2/index.html#ec2.config">[docs]</a>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">readconfig</span><span class="p">()</span></div>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;HOST&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">readconfig</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ec2&#39;</span><span class="p">,</span> <span class="s1">&#39;KEY_PATH&#39;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Usage:</span><span class="se">\n</span><span class="s2">    python </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> launch_base</span><span class="se">\n</span><span class="s2">     python </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> launch_geonode</span><span class="se">\n</span><span class="s2">    python </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> terminate&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

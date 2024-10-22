@@ -1,0 +1,425 @@
+geonode.layers.models
+=====================
+
+.. py:module:: geonode.layers.models
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.layers.models.logger
+   geonode.layers.models.shp_exts
+   geonode.layers.models.csv_exts
+   geonode.layers.models.kml_exts
+   geonode.layers.models.vec_exts
+   geonode.layers.models.cov_exts
+   geonode.layers.models.TIME_REGEX
+   geonode.layers.models.TIME_REGEX_FORMAT
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.layers.models.Style
+   geonode.layers.models.DatasetManager
+   geonode.layers.models.Dataset
+   geonode.layers.models.AttributeManager
+   geonode.layers.models.Attribute
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: shp_exts
+   :value: ['.shp']
+
+
+.. py:data:: csv_exts
+   :value: ['.csv']
+
+
+.. py:data:: kml_exts
+   :value: ['.kml']
+
+
+.. py:data:: vec_exts
+
+.. py:data:: cov_exts
+   :value: ['.tif', '.tiff', '.geotiff', '.geotif', '.asc']
+
+
+.. py:data:: TIME_REGEX
+
+.. py:data:: TIME_REGEX_FORMAT
+
+.. py:class:: Style
+
+   Bases: :py:obj:`django.db.models.Model`, :py:obj:`geonode.security.models.PermissionLevelMixin`
+
+
+   Model for storing styles.
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: sld_title
+
+
+   .. py:attribute:: sld_body
+
+
+   .. py:attribute:: sld_version
+
+
+   .. py:attribute:: sld_url
+
+
+   .. py:attribute:: workspace
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: absolute_url()
+
+
+   .. py:method:: get_self_resource()
+
+      Get associated resource base.
+
+
+
+.. py:class:: DatasetManager
+
+   Bases: :py:obj:`geonode.base.models.ResourceBaseManager`
+
+
+.. py:class:: Dataset(*args, **kwargs)
+
+   Bases: :py:obj:`geonode.base.models.ResourceBase`
+
+
+   Dataset (inherits ResourceBase fields)
+
+
+   .. py:attribute:: PERMISSIONS
+
+
+   .. py:attribute:: objects
+
+
+   .. py:attribute:: workspace
+
+
+   .. py:attribute:: store
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: typename
+
+
+   .. py:attribute:: ows_url
+
+
+   .. py:attribute:: is_mosaic
+
+
+   .. py:attribute:: has_time
+
+
+   .. py:attribute:: has_elevation
+
+
+   .. py:attribute:: time_regex
+
+
+   .. py:attribute:: elevation_regex
+
+
+   .. py:attribute:: ptype
+
+
+   .. py:attribute:: default_style
+
+
+   .. py:attribute:: styles
+
+
+   .. py:attribute:: remote_service
+
+
+   .. py:attribute:: charset
+
+
+   .. py:attribute:: use_featureinfo_custom_template
+
+
+   .. py:attribute:: featureinfo_custom_template
+
+
+   .. py:method:: is_vector()
+
+
+   .. py:property:: is_raster
+
+
+   .. py:property:: display_type
+
+
+   .. py:property:: data_model
+
+
+   .. py:property:: data_objects
+
+
+   .. py:property:: attributes
+
+
+   .. py:property:: service_typename
+
+
+   .. py:property:: gtype
+
+
+   .. py:method:: get_base_file()
+
+      Get the shp or geotiff file for this layer.
+
+
+
+   .. py:method:: get_absolute_url()
+
+
+   .. py:property:: capabilities_url
+
+
+   .. py:property:: dataset_ows_url
+
+
+   .. py:property:: embed_url
+
+
+   .. py:method:: attribute_config()
+
+
+   .. py:method:: __str__()
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`geonode.base.models.ResourceBase.Meta`
+
+
+      .. py:attribute:: permissions
+         :value: (('change_dataset_data', 'Can edit layer data'), ('change_dataset_style', 'Can change layer style'))
+
+
+
+      .. py:attribute:: unique_together
+         :value: ('store', 'workspace', 'name')
+
+
+
+
+   .. py:attribute:: LEVEL_READ
+      :value: 'dataset_readonly'
+
+
+
+   .. py:attribute:: LEVEL_WRITE
+      :value: 'dataset_readwrite'
+
+
+
+   .. py:attribute:: LEVEL_ADMIN
+      :value: 'dataset_admin'
+
+
+
+   .. py:property:: maps
+
+
+   .. py:method:: get_linked_resources(as_target: bool = False)
+
+      Get all the linked resources to this ResourceBase instance.
+      This is implemented as a method so that derived classes can override it (for instance, Maps may add
+      related datasets)
+
+
+
+   .. py:property:: download_url
+
+
+   .. py:property:: maplayers
+
+
+   .. py:method:: allowed_permissions()
+
+
+   .. py:property:: class_name
+
+
+   .. py:method:: view_count_up(user, do_local=False)
+
+      increase view counter, if user is not owner and not super
+
+      @param user which views layer
+      @type User model
+
+      @param do_local - do local counter update even if pubsub is enabled
+      @type bool
+
+
+
+.. py:class:: AttributeManager
+
+   Bases: :py:obj:`django.db.models.Manager`
+
+
+   Helper class to access filtered attributes
+
+
+   .. py:method:: visible()
+
+
+.. py:class:: Attribute
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+    Auxiliary model for storing layer attributes.
+
+   This helps reduce the need for runtime lookups
+   to other servers, and lets users customize attribute titles,
+   sort order, and visibility.
+
+
+   .. py:attribute:: dataset
+
+
+   .. py:attribute:: attribute
+
+
+   .. py:attribute:: description
+
+
+   .. py:attribute:: attribute_label
+
+
+   .. py:attribute:: attribute_type
+
+
+   .. py:attribute:: visible
+
+
+   .. py:attribute:: display_order
+
+      Attribute FeatureInfo-Type list
+
+
+   .. py:attribute:: TYPE_PROPERTY
+      :value: 'type_property'
+
+
+
+   .. py:attribute:: TYPE_HREF
+      :value: 'type_href'
+
+
+
+   .. py:attribute:: TYPE_IMAGE
+      :value: 'type_image'
+
+
+
+   .. py:attribute:: TYPE_VIDEO_MP4
+      :value: 'type_video_mp4'
+
+
+
+   .. py:attribute:: TYPE_VIDEO_OGG
+      :value: 'type_video_ogg'
+
+
+
+   .. py:attribute:: TYPE_VIDEO_WEBM
+      :value: 'type_video_webm'
+
+
+
+   .. py:attribute:: TYPE_VIDEO_3GP
+      :value: 'type_video_3gp'
+
+
+
+   .. py:attribute:: TYPE_VIDEO_FLV
+      :value: 'type_video_flv'
+
+
+
+   .. py:attribute:: TYPE_VIDEO_YOUTUBE
+      :value: 'type_video_youtube'
+
+
+
+   .. py:attribute:: TYPE_AUDIO
+      :value: 'type_audio'
+
+
+
+   .. py:attribute:: TYPE_IFRAME
+      :value: 'type_iframe'
+
+
+
+   .. py:attribute:: TYPES
+
+
+   .. py:attribute:: featureinfo_type
+
+
+   .. py:attribute:: count
+
+
+   .. py:attribute:: min
+
+
+   .. py:attribute:: max
+
+
+   .. py:attribute:: average
+
+
+   .. py:attribute:: median
+
+
+   .. py:attribute:: stddev
+
+
+   .. py:attribute:: sum
+
+
+   .. py:attribute:: unique_values
+
+
+   .. py:attribute:: last_stats_updated
+
+
+   .. py:attribute:: objects
+
+
+   .. py:method:: __str__()
+
+
+   .. py:method:: unique_values_as_list()
+
+

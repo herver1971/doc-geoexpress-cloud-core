@@ -1,0 +1,593 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.groups.models &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../groups.html">geonode.groups</a></li>
+      <li class="breadcrumb-item active">geonode.groups.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.groups.models</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">copyfile</span>
+<span class="kn">from</span> <span class="nn">taggit.managers</span> <span class="kn">import</span> <span class="n">TaggableManager</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">signals</span>
+<span class="kn">from</span> <span class="nn">django.utils.text</span> <span class="kn">import</span> <span class="n">slugify</span>
+<span class="kn">from</span> <span class="nn">django.utils.timezone</span> <span class="kn">import</span> <span class="n">now</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span> <span class="nn">django.templatetags.static</span> <span class="kn">import</span> <span class="n">static</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">build_absolute_uri</span>
+<span class="kn">from</span> <span class="nn">geonode.thumbs.utils</span> <span class="kn">import</span> <span class="n">MISSING_THUMB</span>
+
+<span class="kn">from</span> <span class="nn">guardian.shortcuts</span> <span class="kn">import</span> <span class="n">get_objects_for_group</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GroupCategory">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupCategory">[docs]</a>
+<span class="k">class</span> <span class="nc">GroupCategory</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupCategory.slug">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupCategory.slug">[docs]</a>
+    <span class="n">slug</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SlugField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupCategory.name">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupCategory.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupCategory.description">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupCategory.description">[docs]</a>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">),</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupCategory.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupCategory.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="GroupCategory.Meta.verbose_name_plural">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupCategory.Meta.verbose_name_plural">[docs]</a>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Group Categories&quot;</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="GroupCategory.__str__">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupCategory.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupCategory.get_absolute_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupCategory.get_absolute_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;group_category_detail&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">,))</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="group_category_pre_save">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.group_category_pre_save">[docs]</a>
+<span class="k">def</span> <span class="nf">group_category_pre_save</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">instance</span><span class="o">.</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+
+<span class="n">signals</span><span class="o">.</span><span class="n">pre_save</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">group_category_pre_save</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">GroupCategory</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GroupProfile">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile">[docs]</a>
+<span class="k">class</span> <span class="nc">GroupProfile</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupProfile.GROUP_CHOICES">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.GROUP_CHOICES">[docs]</a>
+    <span class="n">GROUP_CHOICES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;public&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Public&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;public-invite&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Public (invite-only)&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="s2">&quot;private&quot;</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Private&quot;</span><span class="p">)),</span>
+    <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.access_help_text">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.access_help_text">[docs]</a>
+    <span class="n">access_help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+        <span class="s2">&quot;Public: Any registered user can view and join a public group.&lt;br&gt;&quot;</span>
+        <span class="s2">&quot;Public (invite-only):Any registered user can view the group.  &quot;</span>
+        <span class="s2">&quot;Only invited users can join.&lt;br&gt;&quot;</span>
+        <span class="s2">&quot;Private: Registered users cannot see any details about the group, including membership.  &quot;</span>
+        <span class="s2">&quot;Only invited users can join.&quot;</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.email_help_text">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.email_help_text">[docs]</a>
+    <span class="n">email_help_text</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span>
+        <span class="s2">&quot;Email used to contact one or all group members, &quot;</span> <span class="s2">&quot;such as a mailing list, shared email, or exchange group.&quot;</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.group">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.group">[docs]</a>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">OneToOneField</span><span class="p">(</span><span class="n">Group</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.title">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.title">[docs]</a>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Title&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.slug">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.slug">[docs]</a>
+    <span class="n">slug</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SlugField</span><span class="p">(</span><span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.logo">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.logo">[docs]</a>
+    <span class="n">logo</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ImageField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Logo&quot;</span><span class="p">),</span> <span class="n">upload_to</span><span class="o">=</span><span class="s2">&quot;people_group&quot;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.description">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.description">[docs]</a>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Description&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="GroupProfile.email">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.email">[docs]</a>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">EmailField</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Email&quot;</span><span class="p">),</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">email_help_text</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.keywords">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.keywords">[docs]</a>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">TaggableManager</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Keywords&quot;</span><span class="p">),</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;A space or comma-separated list of keywords&quot;</span><span class="p">),</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.access">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.access">[docs]</a>
+    <span class="n">access</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Access&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;public&#39;&quot;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">GROUP_CHOICES</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">access_help_text</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.categories">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.categories">[docs]</a>
+    <span class="n">categories</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">GroupCategory</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Categories&quot;</span><span class="p">),</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s2">&quot;groups&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.created">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.created">[docs]</a>
+    <span class="n">created</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupProfile.last_modified">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.last_modified">[docs]</a>
+    <span class="n">last_modified</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.save">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.save">[docs]</a>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">group</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.delete">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.delete">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">))</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="GroupProfile.groups_for_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.groups_for_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">groups_for_user</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the groups that user is a member of.  If the user is a superuser, all groups are returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">groupmember__user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.__str__">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.keyword_list">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.keyword_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">keyword_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of the Group&#39;s keywords.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">kw</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a generator of objects that this group has permissions on.</span>
+
+<span class="sd">        :param resource_type: Filter&#39;s the queryset to objects with the same type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">get_objects_for_group</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;base.change_resourcebase&quot;</span><span class="p">],</span> <span class="n">any_perm</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="n">_queryset</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">resource_type</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">):</span>
+                        <span class="n">_queryset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">_queryset</span> <span class="k">if</span> <span class="n">_queryset</span> <span class="k">else</span> <span class="n">queryset</span>
+        <span class="k">yield from</span> <span class="n">queryset</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.member_queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.member_queryset">[docs]</a>
+    <span class="k">def</span> <span class="nf">member_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">groupmember_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.get_members">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.get_members">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_members</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a queryset of the group&#39;s members.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">Q</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">member_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">GroupMember</span><span class="o">.</span><span class="n">MEMBER</span><span class="p">)</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.get_managers">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.get_managers">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_managers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a queryset of the group&#39;s managers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">Q</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">member_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">GroupMember</span><span class="o">.</span><span class="n">MANAGER</span><span class="p">)</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.user_is_member">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.user_is_member">[docs]</a>
+    <span class="k">def</span> <span class="nf">user_is_member</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">member_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.user_is_role">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.user_is_role">[docs]</a>
+    <span class="k">def</span> <span class="nf">user_is_role</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">member_queryset</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.can_view">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.can_view">[docs]</a>
+    <span class="k">def</span> <span class="nf">can_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span> <span class="ow">and</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">access</span> <span class="o">==</span> <span class="s2">&quot;private&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_is_member</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.validate_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.validate_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span> <span class="ow">or</span> <span class="n">user</span><span class="o">.</span><span class="n">is_anonymous</span> <span class="ow">or</span> <span class="n">user</span> <span class="o">==</span> <span class="n">user</span><span class="o">.</span><span class="n">get_anonymous</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The invited user cannot be anonymous&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.join">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.join">[docs]</a>
+    <span class="k">def</span> <span class="nf">join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">GroupMember</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The invited user &quot;</span><span class="si">{</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s1">&quot; is already a member&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="n">GroupMember</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.leave">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.leave">[docs]</a>
+    <span class="k">def</span> <span class="nf">leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">_members</span> <span class="o">=</span> <span class="n">GroupMember</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_members</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">_members</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The invited user &quot;</span><span class="si">{</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s1">&quot; is not a member&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.promote">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.promote">[docs]</a>
+    <span class="k">def</span> <span class="nf">promote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_member</span> <span class="o">=</span> <span class="n">GroupMember</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+            <span class="n">_member</span><span class="o">.</span><span class="n">promote</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The invited user &quot;</span><span class="si">{</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s1">&quot; is not a member&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.demote">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.demote">[docs]</a>
+    <span class="k">def</span> <span class="nf">demote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_member</span> <span class="o">=</span> <span class="n">GroupMember</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+            <span class="n">_member</span><span class="o">.</span><span class="n">demote</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The invited user &quot;</span><span class="si">{</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="si">}</span><span class="s1">&quot; is not a member&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupProfile.get_absolute_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.get_absolute_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span>
+            <span class="s2">&quot;group_detail&quot;</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span>
+            <span class="p">],</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GroupProfile.class_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.class_name">[docs]</a>
+    <span class="k">def</span> <span class="nf">class_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span></div>
+
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GroupProfile.logo_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupProfile.logo_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">logo_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_missing_thumbnail_url</span> <span class="o">=</span> <span class="n">static</span><span class="p">(</span><span class="n">MISSING_THUMB</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_base_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logo</span><span class="o">.</span><span class="n">path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">_upload_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logo</span><span class="o">.</span><span class="n">url</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">_upload_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_base_path</span><span class="p">,</span> <span class="n">_upload_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">_upload_path</span><span class="p">):</span>
+                <span class="n">copyfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logo</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">_upload_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="n">_url</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logo</span><span class="o">.</span><span class="n">url</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">build_absolute_uri</span><span class="p">(</span><span class="n">_missing_thumbnail_url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">build_absolute_uri</span><span class="p">(</span><span class="n">_url</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GroupMember">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember">[docs]</a>
+<span class="k">class</span> <span class="nc">GroupMember</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="GroupMember.MANAGER">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.MANAGER">[docs]</a>
+    <span class="n">MANAGER</span> <span class="o">=</span> <span class="s2">&quot;manager&quot;</span></div>
+
+<div class="viewcode-block" id="GroupMember.MEMBER">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.MEMBER">[docs]</a>
+    <span class="n">MEMBER</span> <span class="o">=</span> <span class="s2">&quot;member&quot;</span></div>
+
+
+<div class="viewcode-block" id="GroupMember.group">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.group">[docs]</a>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">GroupProfile</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupMember.user">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.user">[docs]</a>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">AUTH_USER_MODEL</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupMember.role">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.role">[docs]</a>
+    <span class="n">role</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">MANAGER</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Manager&quot;</span><span class="p">)),</span>
+            <span class="p">(</span><span class="n">MEMBER</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Member&quot;</span><span class="p">)),</span>
+        <span class="p">],</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GroupMember.joined">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.joined">[docs]</a>
+    <span class="n">joined</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">now</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupMember.save">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.save">[docs]</a>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># add django.contrib.auth.group to user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">group</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_perms</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupMember.delete">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.delete">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">group</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_perms</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GroupMember.promote">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.promote">[docs]</a>
+    <span class="k">def</span> <span class="nf">promote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="s2">&quot;manager&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_perms</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupMember.demote">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember.demote">[docs]</a>
+    <span class="k">def</span> <span class="nf">demote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="s2">&quot;member&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_perms</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GroupMember._handle_perms">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.GroupMember._handle_perms">[docs]</a>
+    <span class="k">def</span> <span class="nf">_handle_perms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">geonode.security.utils</span> <span class="kn">import</span> <span class="n">AdvancedSecurityWorkflowManager</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_auto_publishing_workflow</span><span class="p">():</span>
+            <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">set_group_member_permissions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="group_pre_delete">
+<a class="viewcode-back" href="../../../autoapi/geonode/groups/models/index.html#geonode.groups.models.group_pre_delete">[docs]</a>
+<span class="k">def</span> <span class="nf">group_pre_delete</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make sure that the anonymous group is not deleted&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="s2">&quot;Deletion of the anonymous group is</span><span class="se">\</span>
+<span class="s2">         not permitted as will break the geonode permissions system&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="n">signals</span><span class="o">.</span><span class="n">pre_delete</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">group_pre_delete</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">Group</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
