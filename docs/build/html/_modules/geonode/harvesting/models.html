@@ -1,0 +1,839 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.harvesting.models &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../harvesting.html">geonode.harvesting</a></li>
+      <li class="breadcrumb-item active">geonode.harvesting.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.harvesting.models</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span> <span class="k">as</span> <span class="nn">dt</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">import</span> <span class="nn">jsonschema</span>
+<span class="kn">import</span> <span class="nn">jsonschema.exceptions</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">from</span> <span class="nn">django.utils.module_loading</span> <span class="kn">import</span> <span class="n">import_string</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">celery_app</span>
+
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">get_setting</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Harvester">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester">[docs]</a>
+<span class="k">class</span> <span class="nc">Harvester</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="Harvester.STATUS_READY">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.STATUS_READY">[docs]</a>
+    <span class="n">STATUS_READY</span> <span class="o">=</span> <span class="s2">&quot;ready&quot;</span></div>
+
+<div class="viewcode-block" id="Harvester.STATUS_UPDATING_HARVESTABLE_RESOURCES">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.STATUS_UPDATING_HARVESTABLE_RESOURCES">[docs]</a>
+    <span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCES</span> <span class="o">=</span> <span class="s2">&quot;updating-harvestable-resources&quot;</span></div>
+
+<div class="viewcode-block" id="Harvester.STATUS_ABORTING_UPDATE_HARVESTABLE_RESOURCES">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.STATUS_ABORTING_UPDATE_HARVESTABLE_RESOURCES">[docs]</a>
+    <span class="n">STATUS_ABORTING_UPDATE_HARVESTABLE_RESOURCES</span> <span class="o">=</span> <span class="s2">&quot;aborting-update-harvestable-resources&quot;</span></div>
+
+<div class="viewcode-block" id="Harvester.STATUS_PERFORMING_HARVESTING">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.STATUS_PERFORMING_HARVESTING">[docs]</a>
+    <span class="n">STATUS_PERFORMING_HARVESTING</span> <span class="o">=</span> <span class="s2">&quot;harvesting-resources&quot;</span></div>
+
+<div class="viewcode-block" id="Harvester.STATUS_ABORTING_PERFORMING_HARVESTING">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.STATUS_ABORTING_PERFORMING_HARVESTING">[docs]</a>
+    <span class="n">STATUS_ABORTING_PERFORMING_HARVESTING</span> <span class="o">=</span> <span class="s2">&quot;aborting-harvesting-resources&quot;</span></div>
+
+<div class="viewcode-block" id="Harvester.STATUS_CHECKING_AVAILABILITY">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.STATUS_CHECKING_AVAILABILITY">[docs]</a>
+    <span class="n">STATUS_CHECKING_AVAILABILITY</span> <span class="o">=</span> <span class="s2">&quot;checking-availability&quot;</span></div>
+
+<div class="viewcode-block" id="Harvester.STATUS_CHOICES">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.STATUS_CHOICES">[docs]</a>
+    <span class="n">STATUS_CHOICES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">STATUS_READY</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;ready&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCES</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;updating-harvestable-resources&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_ABORTING_UPDATE_HARVESTABLE_RESOURCES</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;aborting-update-harvestable-resources&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_PERFORMING_HARVESTING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;harvesting-resources&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_ABORTING_PERFORMING_HARVESTING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;aborting-harvesting-resources&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_CHECKING_AVAILABILITY</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;checking-availability&quot;</span><span class="p">)),</span>
+    <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Harvester.name">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Harvester name&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Harvester.status">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.status">[docs]</a>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">STATUS_READY</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.remote_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.remote_url">[docs]</a>
+    <span class="n">remote_url</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">URLField</span><span class="p">(</span><span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Base URL of the remote service that is to be harvested&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Harvester.scheduling_enabled">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.scheduling_enabled">[docs]</a>
+    <span class="n">scheduling_enabled</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Whether to periodically schedule this harvester to look for resources on &quot;</span> <span class="s2">&quot;the remote service&quot;</span><span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.harvesting_session_update_frequency">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.harvesting_session_update_frequency">[docs]</a>
+    <span class="n">harvesting_session_update_frequency</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PositiveIntegerField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;How often (in minutes) should new harvesting sessions be automatically scheduled?&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">60</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.refresh_harvestable_resources_update_frequency">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.refresh_harvestable_resources_update_frequency">[docs]</a>
+    <span class="n">refresh_harvestable_resources_update_frequency</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PositiveIntegerField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;How often (in minutes) should new refresh sessions be automatically scheduled?&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">30</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.remote_available">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.remote_available">[docs]</a>
+    <span class="n">remote_available</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Whether the remote service is known to be available or not&quot;</span><span class="p">),</span> <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.check_availability_frequency">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.check_availability_frequency">[docs]</a>
+    <span class="n">check_availability_frequency</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PositiveIntegerField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;How often (in minutes) should the remote service be checked for &quot;</span> <span class="s2">&quot;availability?&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">10</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.last_checked_availability">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.last_checked_availability">[docs]</a>
+    <span class="n">last_checked_availability</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Last time the remote server was checked for availability&quot;</span><span class="p">),</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.last_checked_harvestable_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.last_checked_harvestable_resources">[docs]</a>
+    <span class="n">last_checked_harvestable_resources</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Last time the remote server was checked for harvestable resources&quot;</span><span class="p">),</span>
+        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.last_check_harvestable_resources_message">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.last_check_harvestable_resources_message">[docs]</a>
+    <span class="n">last_check_harvestable_resources_message</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.default_owner">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.default_owner">[docs]</a>
+    <span class="n">default_owner</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">AUTH_USER_MODEL</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Default owner of harvested resources&quot;</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.harvest_new_resources_by_default">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.harvest_new_resources_by_default">[docs]</a>
+    <span class="n">harvest_new_resources_by_default</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Should new resources be harvested automatically without &quot;</span> <span class="s2">&quot;explicit selection?&quot;</span><span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.delete_orphan_resources_automatically">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.delete_orphan_resources_automatically">[docs]</a>
+    <span class="n">delete_orphan_resources_automatically</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span>
+            <span class="s2">&quot;Orphan resources are those that have previously been created by means of &quot;</span>
+            <span class="s2">&quot;a harvesting operation but that GeoNode can no longer find on the remote &quot;</span>
+            <span class="s2">&quot;service being harvested. Should these resources be deleted from GeoNode &quot;</span>
+            <span class="s2">&quot;automatically? This also applies to when a harvester configuration is &quot;</span>
+            <span class="s2">&quot;deleted, in which case all of the resources that originated from that &quot;</span>
+            <span class="s2">&quot;harvester are now considered to be orphan.&quot;</span>
+        <span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.last_updated">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.last_updated">[docs]</a>
+    <span class="n">last_updated</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Date of last update to the harvester configuration.&quot;</span><span class="p">),</span> <span class="n">auto_now</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.harvester_type">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.harvester_type">[docs]</a>
+    <span class="n">harvester_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span>
+            <span class="s2">&quot;Harvester class used to perform harvesting sessions. New harvester types &quot;</span>
+            <span class="s2">&quot;can be added by an admin by changing the main GeoNode `settings.py` file&quot;</span>
+        <span class="p">),</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">(((</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;HARVESTER_CLASSES&quot;</span><span class="p">))),</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">get_setting</span><span class="p">(</span><span class="s2">&quot;HARVESTER_CLASSES&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.harvester_type_specific_configuration">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.harvester_type_specific_configuration">[docs]</a>
+    <span class="n">harvester_type_specific_configuration</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">JSONField</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
+        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span>
+            <span class="s2">&quot;Configuration specific to each harvester type. Please consult GeoNode &quot;</span>
+            <span class="s2">&quot;documentation on harvesting for more info. This field is mandatory, so at &quot;</span>
+            <span class="s2">&quot;the very least an empty object (i.e. </span><span class="si">{}</span><span class="s2">) must be supplied.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Harvester.num_harvestable_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.num_harvestable_resources">[docs]</a>
+    <span class="n">num_harvestable_resources</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Harvester.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="c1"># Note: name must be unique because we use it to create a periodic task for the harvester</span>
+<div class="viewcode-block" id="Harvester.Meta.constraints">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.Meta.constraints">[docs]</a>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">models</span><span class="o">.</span><span class="n">UniqueConstraint</span><span class="p">(</span><span class="n">fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;unique name&quot;</span><span class="p">)]</span></div>
+</div>
+
+
+<div class="viewcode-block" id="Harvester.__str__">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Harvester.latest_refresh_session">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.latest_refresh_session">[docs]</a>
+    <span class="k">def</span> <span class="nf">latest_refresh_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">session_type</span><span class="o">=</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_DISCOVER_HARVESTABLE_RESOURCES</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;started&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Harvester.latest_harvesting_session">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.latest_harvesting_session">[docs]</a>
+    <span class="k">def</span> <span class="nf">latest_harvesting_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sessions</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">session_type</span><span class="o">=</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_HARVESTING</span><span class="p">)</span><span class="o">.</span><span class="n">latest</span><span class="p">(</span><span class="s2">&quot;started&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="Harvester.get_next_check_availability_dispatch_time">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.get_next_check_availability_dispatch_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_next_check_availability_dispatch_time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">latest_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_checked_availability</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">next_schedule</span> <span class="o">=</span> <span class="n">latest_check</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">check_availability_frequency</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">now</span> <span class="k">if</span> <span class="n">next_schedule</span> <span class="o">&lt;</span> <span class="n">now</span> <span class="k">else</span> <span class="n">next_schedule</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="Harvester.get_next_refresh_session_dispatch_time">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.get_next_refresh_session_dispatch_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_next_refresh_session_dispatch_time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_next_dispatch_time</span><span class="p">(</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_DISCOVER_HARVESTABLE_RESOURCES</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Harvester.get_next_harvesting_session_dispatch_time">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.get_next_harvesting_session_dispatch_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_next_harvesting_session_dispatch_time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_next_dispatch_time</span><span class="p">(</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_HARVESTING</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Harvester._get_next_dispatch_time">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester._get_next_dispatch_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_next_dispatch_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">]:</span>
+        <span class="n">related_session_object_name</span><span class="p">,</span> <span class="n">frequency_attribute</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_DISCOVER_HARVESTABLE_RESOURCES</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;latest_refresh_session&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;refresh_harvestable_resources_update_frequency&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_HARVESTING</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;latest_harvesting_session&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;harvesting_session_update_frequency&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">}[</span><span class="n">session_type</span><span class="p">]</span>
+        <span class="n">latest_session</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">AsynchronousHarvestingSession</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">related_session_object_name</span><span class="p">)</span>
+        <span class="n">frequency</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frequency_attribute</span><span class="p">)</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduling_enabled</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">latest_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">next_schedule</span> <span class="o">=</span> <span class="n">latest_session</span><span class="o">.</span><span class="n">started</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">frequency</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">next_schedule</span> <span class="o">&lt;</span> <span class="n">now</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">now</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">next_schedule</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="Harvester.is_availability_check_due">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.is_availability_check_due">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_availability_check_due</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">next_check_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_check_availability_dispatch_time</span><span class="p">()</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">next_check_time</span> <span class="o">&lt;</span> <span class="n">now</span></div>
+
+
+<div class="viewcode-block" id="Harvester.is_harvestable_resources_refresh_due">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.is_harvestable_resources_refresh_due">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_harvestable_resources_refresh_due</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">next_session_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_refresh_session_dispatch_time</span><span class="p">()</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">next_session_time</span> <span class="o">&lt;</span> <span class="n">now</span></div>
+
+
+<div class="viewcode-block" id="Harvester.is_harvesting_due">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.is_harvesting_due">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_harvesting_due</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">next_session_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_harvesting_session_dispatch_time</span><span class="p">()</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">next_session_time</span> <span class="o">&lt;</span> <span class="n">now</span></div>
+
+
+<div class="viewcode-block" id="Harvester.clean">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.clean">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform model validation by inspecting fields that depend on each other.</span>
+
+<span class="sd">        We validate the harvester type specific configuration by determining if it meets</span>
+<span class="sd">        the configured jsonschema (if any).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">validate_worker_configuration</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester_type_specific_configuration</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">jsonschema</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ValidationError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Harvester.update_availability">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.update_availability">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_availability</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout_seconds</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the harvesting worker to check if the remote service is available&quot;&quot;&quot;</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_harvester_worker</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_checked_availability</span> <span class="o">=</span> <span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">available</span> <span class="o">=</span> <span class="n">worker</span><span class="o">.</span><span class="n">check_availability</span><span class="p">(</span><span class="n">timeout_seconds</span><span class="o">=</span><span class="n">timeout_seconds</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_available</span> <span class="o">=</span> <span class="n">available</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">available</span></div>
+
+
+<div class="viewcode-block" id="Harvester.initiate_update_harvestable_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.initiate_update_harvestable_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">initiate_update_harvestable_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">should_continue</span><span class="p">,</span> <span class="n">error_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker_can_perform_action</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">should_continue</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCES</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">refresh_session</span> <span class="o">=</span> <span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                <span class="n">harvester</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_type</span><span class="o">=</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_DISCOVER_HARVESTABLE_RESOURCES</span>
+            <span class="p">)</span>
+            <span class="n">refresh_session</span><span class="o">.</span><span class="n">initiate</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Harvester.initiate_perform_harvesting">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.initiate_perform_harvesting">[docs]</a>
+    <span class="k">def</span> <span class="nf">initiate_perform_harvesting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvestable_resource_ids</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">should_continue</span><span class="p">,</span> <span class="n">error_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker_can_perform_action</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">should_continue</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_PERFORMING_HARVESTING</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">harvesting_session</span> <span class="o">=</span> <span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                <span class="n">harvester</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">session_type</span><span class="o">=</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_HARVESTING</span>
+            <span class="p">)</span>
+            <span class="n">harvesting_session</span><span class="o">.</span><span class="n">initiate</span><span class="p">(</span><span class="n">harvestable_resource_ids</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Harvester.initiate_abort_update_harvestable_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.initiate_abort_update_harvestable_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">initiate_abort_update_harvestable_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">should_continue</span><span class="p">,</span> <span class="n">error_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker_can_perform_action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCES</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">should_continue</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_ABORTING_UPDATE_HARVESTABLE_RESOURCES</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">latest_refresh_session</span><span class="o">.</span><span class="n">abort</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Harvester.initiate_abort_perform_harvesting">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.initiate_abort_perform_harvesting">[docs]</a>
+    <span class="k">def</span> <span class="nf">initiate_abort_perform_harvesting</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">should_continue</span><span class="p">,</span> <span class="n">error_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker_can_perform_action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">STATUS_PERFORMING_HARVESTING</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">should_continue</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_ABORTING_PERFORMING_HARVESTING</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">latest_harvesting_session</span><span class="o">.</span><span class="n">abort</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Harvester.get_harvester_worker">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.get_harvester_worker">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_harvester_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BaseHarvesterWorker&quot;</span><span class="p">:</span>  <span class="c1"># noqa</span>
+        <span class="n">worker_class</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester_type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">worker_class</span><span class="o">.</span><span class="n">from_django_record</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Harvester.worker_can_perform_action">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.Harvester.worker_can_perform_action">[docs]</a>
+    <span class="k">def</span> <span class="nf">worker_can_perform_action</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_status</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">STATUS_READY</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">target_status</span><span class="p">:</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Harvester </span><span class="si">{</span><span class="bp">self</span><span class="si">!r}</span><span class="s2"> cannot currently perform the desired action. Please wait until its status &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;is reported as </span><span class="si">{</span><span class="n">target_status</span><span class="si">!r}</span><span class="s2"> before retrying.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">error_message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">error_message</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession">[docs]</a>
+<span class="k">class</span> <span class="nc">AsynchronousHarvestingSession</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="AsynchronousHarvestingSession.STATUS_PENDING">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.STATUS_PENDING">[docs]</a>
+    <span class="n">STATUS_PENDING</span> <span class="o">=</span> <span class="s2">&quot;pending&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.STATUS_ON_GOING">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.STATUS_ON_GOING">[docs]</a>
+    <span class="n">STATUS_ON_GOING</span> <span class="o">=</span> <span class="s2">&quot;on-going&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.STATUS_FINISHED_ALL_OK">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.STATUS_FINISHED_ALL_OK">[docs]</a>
+    <span class="n">STATUS_FINISHED_ALL_OK</span> <span class="o">=</span> <span class="s2">&quot;finished-all-ok&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.STATUS_FINISHED_ALL_FAILED">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.STATUS_FINISHED_ALL_FAILED">[docs]</a>
+    <span class="n">STATUS_FINISHED_ALL_FAILED</span> <span class="o">=</span> <span class="s2">&quot;finished-all-failed&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.STATUS_FINISHED_SOME_FAILED">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.STATUS_FINISHED_SOME_FAILED">[docs]</a>
+    <span class="n">STATUS_FINISHED_SOME_FAILED</span> <span class="o">=</span> <span class="s2">&quot;finished-some-failed&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.STATUS_ABORTING">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.STATUS_ABORTING">[docs]</a>
+    <span class="n">STATUS_ABORTING</span> <span class="o">=</span> <span class="s2">&quot;aborting&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.STATUS_ABORTED">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.STATUS_ABORTED">[docs]</a>
+    <span class="n">STATUS_ABORTED</span> <span class="o">=</span> <span class="s2">&quot;aborted&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.STATUS_CHOICES">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.STATUS_CHOICES">[docs]</a>
+    <span class="n">STATUS_CHOICES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">STATUS_PENDING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;pending&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_ON_GOING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;on-going&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_FINISHED_ALL_OK</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;finished-all-ok&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_FINISHED_ALL_FAILED</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;finished-all-failed&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_FINISHED_SOME_FAILED</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;finished-some-failed&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_ABORTING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;aborting&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_ABORTED</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;aborted&quot;</span><span class="p">)),</span>
+    <span class="p">]</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.TYPE_HARVESTING">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.TYPE_HARVESTING">[docs]</a>
+    <span class="n">TYPE_HARVESTING</span> <span class="o">=</span> <span class="s2">&quot;harvesting&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.TYPE_DISCOVER_HARVESTABLE_RESOURCES">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.TYPE_DISCOVER_HARVESTABLE_RESOURCES">[docs]</a>
+    <span class="n">TYPE_DISCOVER_HARVESTABLE_RESOURCES</span> <span class="o">=</span> <span class="s2">&quot;discover-harvestable-resources&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.TYPE_CHOICES">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.TYPE_CHOICES">[docs]</a>
+    <span class="n">TYPE_CHOICES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">TYPE_HARVESTING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;harvesting&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">TYPE_DISCOVER_HARVESTABLE_RESOURCES</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;discover-harvestable-resources&quot;</span><span class="p">)),</span>
+    <span class="p">]</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.session_type">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.session_type">[docs]</a>
+    <span class="n">session_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">TYPE_CHOICES</span><span class="p">,</span> <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.started">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.started">[docs]</a>
+    <span class="n">started</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.updated">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.updated">[docs]</a>
+    <span class="n">updated</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.ended">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.ended">[docs]</a>
+    <span class="n">ended</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.harvester">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.harvester">[docs]</a>
+    <span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Harvester</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s2">&quot;sessions&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.status">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.status">[docs]</a>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">STATUS_PENDING</span><span class="p">,</span>
+        <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.details">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.details">[docs]</a>
+    <span class="n">details</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span>
+        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.total_records_to_process">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.total_records_to_process">[docs]</a>
+    <span class="n">total_records_to_process</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of records being processed in this session&quot;</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.records_done">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.records_done">[docs]</a>
+    <span class="n">records_done</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Number of records that have already been processed&quot;</span><span class="p">))</span></div>
+
+
+    <span class="nd">@admin</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Progress (%)&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="AsynchronousHarvestingSession.get_progress_percentage">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.get_progress_percentage">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_progress_percentage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">records_done</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_records_to_process</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.initiate">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.initiate">[docs]</a>
+    <span class="k">def</span> <span class="nf">initiate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvestable_resource_ids</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initiate the asynchronous process that performs the work related to this session.&quot;&quot;&quot;</span>
+        <span class="c1"># NOTE: below we are calling celery tasks using the method of creating a</span>
+        <span class="c1"># signature from the main celery app object in order to avoid having</span>
+        <span class="c1"># to import the `tasks` module, which would create circular</span>
+        <span class="c1"># dependency issues - this is a common celery pattern, described here:</span>
+        <span class="c1">#</span>
+        <span class="c1"># https://docs.celeryproject.org/en/stable/faq.html#can-i-call-a-task-by-name</span>
+        <span class="c1">#</span>
+        <span class="c1"># Also note that using `app.send_task()` does not seem to work in this case (which</span>
+        <span class="c1"># is mysterious, since the celery docs say it should work)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">TYPE_DISCOVER_HARVESTABLE_RESOURCES</span><span class="p">:</span>
+            <span class="n">task_signature</span> <span class="o">=</span> <span class="n">celery_app</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span>
+                <span class="s2">&quot;geonode.harvesting.tasks.update_harvestable_resources&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">,)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">TYPE_HARVESTING</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">harvestable_resource_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">task_signature</span> <span class="o">=</span> <span class="n">celery_app</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span>
+                    <span class="s2">&quot;geonode.harvesting.tasks.harvesting_dispatcher&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">,)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">task_signature</span> <span class="o">=</span> <span class="n">celery_app</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span>
+                    <span class="s2">&quot;geonode.harvesting.tasks.harvest_resources&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">harvestable_resource_ids</span> <span class="ow">or</span> <span class="p">[],</span> <span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Invalid selection&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_PENDING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">task_signature</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">expiration</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsynchronousHarvestingSession.abort">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.AsynchronousHarvestingSession.abort">[docs]</a>
+    <span class="k">def</span> <span class="nf">abort</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Abort a pending or on-going session.&quot;&quot;&quot;</span>
+
+        <span class="c1"># NOTE: We do not use celery&#39;s task revoke feature when aborting a session. This</span>
+        <span class="c1"># is an explicit design choice. The main reason being that we keep track of a session&#39;s</span>
+        <span class="c1"># state and want to know when it has finished. This is done by leveraging celery&#39;s `chord`</span>
+        <span class="c1"># feature, whereby the async tasks are executed in parallel and there is a final</span>
+        <span class="c1"># synchronization step when they are done that updates the session&#39;s state in the DB.</span>
+        <span class="c1"># Maintaining this synchronization step working OK together with revoking tasks would be</span>
+        <span class="c1"># harder to address.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_PENDING</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_ABORTED</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_details</span> <span class="o">=</span> <span class="s2">&quot;Aborted&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_ON_GOING</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STATUS_ABORTING</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Session is not currently in an state that can be aborted, skipping...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HarvestableResource">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource">[docs]</a>
+<span class="k">class</span> <span class="nc">HarvestableResource</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="HarvestableResource.STATUS_READY">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.STATUS_READY">[docs]</a>
+    <span class="n">STATUS_READY</span> <span class="o">=</span> <span class="s2">&quot;ready&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.STATUS_UPDATING_HARVESTABLE_RESOURCE">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.STATUS_UPDATING_HARVESTABLE_RESOURCE">[docs]</a>
+    <span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCE</span> <span class="o">=</span> <span class="s2">&quot;updating-harvestable-resource&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.STATUS_PERFORMING_HARVESTING">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.STATUS_PERFORMING_HARVESTING">[docs]</a>
+    <span class="n">STATUS_PERFORMING_HARVESTING</span> <span class="o">=</span> <span class="s2">&quot;harvesting-resource&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.STATUS_CHOICES">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.STATUS_CHOICES">[docs]</a>
+    <span class="n">STATUS_CHOICES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">STATUS_READY</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;ready&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCE</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;updating-harvestable-resource&quot;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">STATUS_PERFORMING_HARVESTING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;harvesting-resource&quot;</span><span class="p">)),</span>
+    <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="HarvestableResource.unique_identifier">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.unique_identifier">[docs]</a>
+    <span class="n">unique_identifier</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span>
+            <span class="s2">&quot;Identifier that allows referencing the resource on its remote service in &quot;</span>
+            <span class="s2">&quot;a unique fashion. This is usually automatically filled by the harvester &quot;</span>
+            <span class="s2">&quot;worker. The harvester worker needs to know how to either read &quot;</span>
+            <span class="s2">&quot;or generate this from each remote resource in order to be able to compare &quot;</span>
+            <span class="s2">&quot;the availability of resources between consecutive harvesting sessions.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.status">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.status">[docs]</a>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">STATUS_CHOICES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">STATUS_READY</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.title">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.title">[docs]</a>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.abstract">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.abstract">[docs]</a>
+    <span class="n">abstract</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.harvester">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.harvester">[docs]</a>
+    <span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Harvester</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s2">&quot;harvestable_resources&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.geonode_resource">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.geonode_resource">[docs]</a>
+    <span class="n">geonode_resource</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;base.ResourceBase&quot;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">SET_NULL</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.should_be_harvested">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.should_be_harvested">[docs]</a>
+    <span class="n">should_be_harvested</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.last_updated">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.last_updated">[docs]</a>
+    <span class="n">last_updated</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.last_refreshed">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.last_refreshed">[docs]</a>
+    <span class="n">last_refreshed</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.last_harvested">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.last_harvested">[docs]</a>
+    <span class="n">last_harvested</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.last_harvesting_message">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.last_harvesting_message">[docs]</a>
+    <span class="n">last_harvesting_message</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.last_harvesting_succeeded">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.last_harvesting_succeeded">[docs]</a>
+    <span class="n">last_harvesting_succeeded</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResource.remote_resource_type">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.remote_resource_type">[docs]</a>
+    <span class="n">remote_resource_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span>
+            <span class="s2">&quot;Type of the resource in the remote service. Each harvester worker knows &quot;</span>
+            <span class="s2">&quot;how to fill this field, in accordance with the resources for which &quot;</span>
+            <span class="s2">&quot;harvesting is supported&quot;</span>
+        <span class="p">),</span>
+        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HarvestableResource.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="HarvestableResource.Meta.constraints">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.Meta.constraints">[docs]</a>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">models</span><span class="o">.</span><span class="n">UniqueConstraint</span><span class="p">(</span><span class="n">fields</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;harvester&quot;</span><span class="p">,</span> <span class="s2">&quot;unique_identifier&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;unique_id_for_harvester&quot;</span><span class="p">),</span>
+        <span class="p">]</span></div>
+</div>
+
+
+<div class="viewcode-block" id="HarvestableResource.delete">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.HarvestableResource.delete">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">using</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keep_parents</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">delete_orphan_resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">delete_orphan_resources_automatically</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">get_harvester_worker</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geonode_resource</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">delete_orphan_resource</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">geonode_resource</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">delete_orphan_resource</span><span class="p">:</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">finalize_harvestable_resource_deletion</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">using</span><span class="p">,</span> <span class="n">keep_parents</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="validate_worker_configuration">
+<a class="viewcode-back" href="../../../autoapi/geonode/harvesting/models/index.html#geonode.harvesting.models.validate_worker_configuration">[docs]</a>
+<span class="k">def</span> <span class="nf">validate_worker_configuration</span><span class="p">(</span><span class="n">worker_type</span><span class="p">:</span> <span class="s2">&quot;BaseHarvesterWorker&quot;</span><span class="p">,</span> <span class="n">worker_config</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>  <span class="c1"># noqa</span>
+    <span class="n">worker_class</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">worker_type</span><span class="p">)</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">worker_class</span><span class="o">.</span><span class="n">get_extra_config_schema</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">jsonschema</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">worker_config</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">jsonschema</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">SchemaError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid schema: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

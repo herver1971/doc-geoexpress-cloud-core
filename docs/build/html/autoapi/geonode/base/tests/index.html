@@ -1,0 +1,830 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.tests &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="geonode.base.translation" href="../translation/index.html" />
+    <link rel="prev" title="geonode.base.populate_test_data" href="../populate_test_data/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">geonode</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../api/index.html">geonode.api</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">geonode.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../br/index.html">geonode.br</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogue/index.html">geonode.catalogue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../client/index.html">geonode.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../documents/index.html">geonode.documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../facets/index.html">geonode.facets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../favorite/index.html">geonode.favorite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoapps/index.html">geonode.geoapps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoserver/index.html">geonode.geoserver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../groups/index.html">geonode.groups</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../harvesting/index.html">geonode.harvesting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../invitations/index.html">geonode.invitations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../layers/index.html">geonode.layers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../management_commands_http/index.html">geonode.management_commands_http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../maps/index.html">geonode.maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../messaging/index.html">geonode.messaging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../monitoring/index.html">geonode.monitoring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../people/index.html">geonode.people</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../proxy/index.html">geonode.proxy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resource/index.html">geonode.resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../security/index.html">geonode.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../services/index.html">geonode.services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../social/index.html">geonode.social</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../storage/index.html">geonode.storage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tasks/index.html">geonode.tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tests/index.html">geonode.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../themes/index.html">geonode.themes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../thumbs/index.html">geonode.thumbs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../upload/index.html">geonode.upload</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">geonode.base</a></li>
+      <li class="breadcrumb-item active">geonode.base.tests</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/geonode/base/tests/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-geonode.base.tests">
+<span id="geonode-base-tests"></span><h1>geonode.base.tests<a class="headerlink" href="#module-geonode.base.tests" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.test_image" title="geonode.base.tests.test_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_image</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.ThumbnailTests" title="geonode.base.tests.ThumbnailTests"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThumbnailTests</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.TestThumbnailUrl" title="geonode.base.tests.TestThumbnailUrl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestThumbnailUrl</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.TestCreationOfMissingMetadataAuthorsOrPOC" title="geonode.base.tests.TestCreationOfMissingMetadataAuthorsOrPOC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestCreationOfMissingMetadataAuthorsOrPOC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes" title="geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestCreationOfContactRolesByDifferentInputTypes</span></code></a></p></td>
+<td><p>Test that contact roles can be set as people profile</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.RenderMenuTagTest" title="geonode.base.tests.RenderMenuTagTest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RenderMenuTagTest</span></code></a></p></td>
+<td><p>Test class for render_menu and render_top_menu custom tags of base_tags</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.DeleteResourcesCommandTests" title="geonode.base.tests.DeleteResourcesCommandTests"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DeleteResourcesCommandTests</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.ConfigurationTest" title="geonode.base.tests.ConfigurationTest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigurationTest</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.TestOwnerRightsRequestUtils" title="geonode.base.tests.TestOwnerRightsRequestUtils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestOwnerRightsRequestUtils</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.SanitizedHtmlTest" title="geonode.base.tests.SanitizedHtmlTest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SanitizedHtmlTest</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.TestGetVisibleResource" title="geonode.base.tests.TestGetVisibleResource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestGetVisibleResource</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.TestHtmlTagRemoval" title="geonode.base.tests.TestHtmlTagRemoval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestHtmlTagRemoval</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.TestTagThesaurus" title="geonode.base.tests.TestTagThesaurus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestTagThesaurus</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.TestThesaurusAvailableForm" title="geonode.base.tests.TestThesaurusAvailableForm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestThesaurusAvailableForm</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.TestFacets" title="geonode.base.tests.TestFacets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestFacets</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.TestGenerateThesaurusReference" title="geonode.base.tests.TestGenerateThesaurusReference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestGenerateThesaurusReference</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.TestHandleMetadataKeyword" title="geonode.base.tests.TestHandleMetadataKeyword"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestHandleMetadataKeyword</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.Test_HierarchicalTagManager" title="geonode.base.tests.Test_HierarchicalTagManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Test_HierarchicalTagManager</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.tests.TestRegions" title="geonode.base.tests.TestRegions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TestRegions</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.tests.LinkedResourcesTest" title="geonode.base.tests.LinkedResourcesTest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinkedResourcesTest</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.base.tests.test_image">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">test_image</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#test_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.test_image" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.ThumbnailTests">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">ThumbnailTests</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ThumbnailTests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ThumbnailTests" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../tests/base/index.html#geonode.tests.base.GeoNodeBaseTestSupport" title="geonode.tests.base.GeoNodeBaseTestSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.tests.base.GeoNodeBaseTestSupport</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ThumbnailTests.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ThumbnailTests.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ThumbnailTests.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ThumbnailTests.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ThumbnailTests.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ThumbnailTests.tearDown" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ThumbnailTests.test_initial_behavior">
+<span class="sig-name descname"><span class="pre">test_initial_behavior</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ThumbnailTests.test_initial_behavior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ThumbnailTests.test_initial_behavior" title="Link to this definition"></a></dt>
+<dd><p>Tests that an empty resource has a missing image as null.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ThumbnailTests.test_empty_image">
+<span class="sig-name descname"><span class="pre">test_empty_image</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ThumbnailTests.test_empty_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ThumbnailTests.test_empty_image" title="Link to this definition"></a></dt>
+<dd><p>Tests that an empty image does not change the current resource thumbnail.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ThumbnailTests.test_monochromatic_image">
+<span class="sig-name descname"><span class="pre">test_monochromatic_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ThumbnailTests.test_monochromatic_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ThumbnailTests.test_monochromatic_image" title="Link to this definition"></a></dt>
+<dd><p>Tests that an monochromatic image does not change the current resource thumbnail.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ThumbnailTests.test_thumb_utils_methods">
+<span class="sig-name descname"><span class="pre">test_thumb_utils_methods</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ThumbnailTests.test_thumb_utils_methods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ThumbnailTests.test_thumb_utils_methods" title="Link to this definition"></a></dt>
+<dd><p>Bunch of tests on thumb_utils helpers.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThumbnailUrl">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestThumbnailUrl</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThumbnailUrl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThumbnailUrl" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../tests/base/index.html#geonode.tests.base.GeoNodeBaseTestSupport" title="geonode.tests.base.GeoNodeBaseTestSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.tests.base.GeoNodeBaseTestSupport</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThumbnailUrl.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThumbnailUrl.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThumbnailUrl.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestCreationOfMissingMetadataAuthorsOrPOC">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestCreationOfMissingMetadataAuthorsOrPOC</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestCreationOfMissingMetadataAuthorsOrPOC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestCreationOfMissingMetadataAuthorsOrPOC" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.tests.ThumbnailTests" title="geonode.base.tests.ThumbnailTests"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThumbnailTests</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestCreationOfMissingMetadataAuthorsOrPOC.test_add_missing_metadata_author_or_poc">
+<span class="sig-name descname"><span class="pre">test_add_missing_metadata_author_or_poc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestCreationOfMissingMetadataAuthorsOrPOC.test_add_missing_metadata_author_or_poc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestCreationOfMissingMetadataAuthorsOrPOC.test_add_missing_metadata_author_or_poc" title="Link to this definition"></a></dt>
+<dd><p>Test that calling add_missing_metadata_author_or_poc resource method sets
+a missing metadata_author and/or point of contact (poc) to resource owner</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestCreationOfContactRolesByDifferentInputTypes</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestCreationOfContactRolesByDifferentInputTypes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.tests.ThumbnailTests" title="geonode.base.tests.ThumbnailTests"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThumbnailTests</span></code></a></p>
+<p>Test that contact roles can be set as people profile</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_people_profile">
+<span class="sig-name descname"><span class="pre">test_set_contact_role_as_people_profile</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_people_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_people_profile" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_list_of_people">
+<span class="sig-name descname"><span class="pre">test_set_contact_role_as_list_of_people</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_list_of_people"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_list_of_people" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_queryset">
+<span class="sig-name descname"><span class="pre">test_set_contact_role_as_queryset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes.test_set_contact_role_as_queryset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.RenderMenuTagTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">RenderMenuTagTest</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#RenderMenuTagTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.RenderMenuTagTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../tests/base/index.html#geonode.tests.base.GeoNodeBaseTestSupport" title="geonode.tests.base.GeoNodeBaseTestSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.tests.base.GeoNodeBaseTestSupport</span></code></a></p>
+<p>Test class for render_menu and render_top_menu custom tags of base_tags</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.RenderMenuTagTest.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#RenderMenuTagTest.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.RenderMenuTagTest.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.RenderMenuTagTest.test_get_menu_placeholder_0">
+<span class="sig-name descname"><span class="pre">test_get_menu_placeholder_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#RenderMenuTagTest.test_get_menu_placeholder_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.RenderMenuTagTest.test_get_menu_placeholder_0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.RenderMenuTagTest.test_get_menu_placeholder_1">
+<span class="sig-name descname"><span class="pre">test_get_menu_placeholder_1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#RenderMenuTagTest.test_get_menu_placeholder_1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.RenderMenuTagTest.test_get_menu_placeholder_1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.RenderMenuTagTest.test_render_nav_menu_placeholder_0">
+<span class="sig-name descname"><span class="pre">test_render_nav_menu_placeholder_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#RenderMenuTagTest.test_render_nav_menu_placeholder_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.RenderMenuTagTest.test_render_nav_menu_placeholder_0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.RenderMenuTagTest.test_render_nav_menu_placeholder_1">
+<span class="sig-name descname"><span class="pre">test_render_nav_menu_placeholder_1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#RenderMenuTagTest.test_render_nav_menu_placeholder_1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.RenderMenuTagTest.test_render_nav_menu_placeholder_1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.DeleteResourcesCommandTests">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">DeleteResourcesCommandTests</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#DeleteResourcesCommandTests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.DeleteResourcesCommandTests" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../tests/base/index.html#geonode.tests.base.GeoNodeBaseTestSupport" title="geonode.tests.base.GeoNodeBaseTestSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.tests.base.GeoNodeBaseTestSupport</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.DeleteResourcesCommandTests.test_delete_resources_no_arguments">
+<span class="sig-name descname"><span class="pre">test_delete_resources_no_arguments</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#DeleteResourcesCommandTests.test_delete_resources_no_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.DeleteResourcesCommandTests.test_delete_resources_no_arguments" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.DeleteResourcesCommandTests.test_delete_resources_too_many_arguments">
+<span class="sig-name descname"><span class="pre">test_delete_resources_too_many_arguments</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#DeleteResourcesCommandTests.test_delete_resources_too_many_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.DeleteResourcesCommandTests.test_delete_resources_too_many_arguments" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.DeleteResourcesCommandTests.test_delete_resource_config_file_not_existing">
+<span class="sig-name descname"><span class="pre">test_delete_resource_config_file_not_existing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#DeleteResourcesCommandTests.test_delete_resource_config_file_not_existing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.DeleteResourcesCommandTests.test_delete_resource_config_file_not_existing" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.DeleteResourcesCommandTests.test_delete_resource_config_file_empty">
+<span class="sig-name descname"><span class="pre">test_delete_resource_config_file_empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#DeleteResourcesCommandTests.test_delete_resource_config_file_empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.DeleteResourcesCommandTests.test_delete_resource_config_file_empty" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.ConfigurationTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">ConfigurationTest</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ConfigurationTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ConfigurationTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../tests/base/index.html#geonode.tests.base.GeoNodeBaseTestSupport" title="geonode.tests.base.GeoNodeBaseTestSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.tests.base.GeoNodeBaseTestSupport</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ConfigurationTest.test_read_only_whitelist">
+<span class="sig-name descname"><span class="pre">test_read_only_whitelist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ConfigurationTest.test_read_only_whitelist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ConfigurationTest.test_read_only_whitelist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ConfigurationTest.test_read_only_casual_user_privileges">
+<span class="sig-name descname"><span class="pre">test_read_only_casual_user_privileges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ConfigurationTest.test_read_only_casual_user_privileges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ConfigurationTest.test_read_only_casual_user_privileges" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ConfigurationTest.test_maintenance_whitelist">
+<span class="sig-name descname"><span class="pre">test_maintenance_whitelist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ConfigurationTest.test_maintenance_whitelist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ConfigurationTest.test_maintenance_whitelist" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ConfigurationTest.test_maintenance_false">
+<span class="sig-name descname"><span class="pre">test_maintenance_false</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ConfigurationTest.test_maintenance_false"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ConfigurationTest.test_maintenance_false" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ConfigurationTest.test_maintenance_true">
+<span class="sig-name descname"><span class="pre">test_maintenance_true</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ConfigurationTest.test_maintenance_true"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ConfigurationTest.test_maintenance_true" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ConfigurationTest.test_readonly_overwrite_by_env">
+<span class="sig-name descname"><span class="pre">test_readonly_overwrite_by_env</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ConfigurationTest.test_readonly_overwrite_by_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ConfigurationTest.test_readonly_overwrite_by_env" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.ConfigurationTest.test_readonly_is_not_overwrite_by_env">
+<span class="sig-name descname"><span class="pre">test_readonly_is_not_overwrite_by_env</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#ConfigurationTest.test_readonly_is_not_overwrite_by_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.ConfigurationTest.test_readonly_is_not_overwrite_by_env" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestOwnerRightsRequestUtils">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestOwnerRightsRequestUtils</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestOwnerRightsRequestUtils"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestOwnerRightsRequestUtils" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestOwnerRightsRequestUtils.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestOwnerRightsRequestUtils.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestOwnerRightsRequestUtils.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestOwnerRightsRequestUtils.test_get_concrete_resource">
+<span class="sig-name descname"><span class="pre">test_get_concrete_resource</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestOwnerRightsRequestUtils.test_get_concrete_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestOwnerRightsRequestUtils.test_get_concrete_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestOwnerRightsRequestUtils.test_msg_recipients_admin_mode">
+<span class="sig-name descname"><span class="pre">test_msg_recipients_admin_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestOwnerRightsRequestUtils.test_msg_recipients_admin_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestOwnerRightsRequestUtils.test_msg_recipients_admin_mode" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestOwnerRightsRequestUtils.test_msg_recipients_workflow_off">
+<span class="sig-name descname"><span class="pre">test_msg_recipients_workflow_off</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestOwnerRightsRequestUtils.test_msg_recipients_workflow_off"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestOwnerRightsRequestUtils.test_msg_recipients_workflow_off" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestOwnerRightsRequestUtils.test_display_change_perms_button_tag_moderated">
+<span class="sig-name descname"><span class="pre">test_display_change_perms_button_tag_moderated</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestOwnerRightsRequestUtils.test_display_change_perms_button_tag_moderated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestOwnerRightsRequestUtils.test_display_change_perms_button_tag_moderated" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestOwnerRightsRequestUtils.test_display_change_perms_button_tag_standard">
+<span class="sig-name descname"><span class="pre">test_display_change_perms_button_tag_standard</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestOwnerRightsRequestUtils.test_display_change_perms_button_tag_standard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestOwnerRightsRequestUtils.test_display_change_perms_button_tag_standard" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.SanitizedHtmlTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">SanitizedHtmlTest</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#SanitizedHtmlTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.SanitizedHtmlTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.SanitizedHtmlTest.test_sanitized_html">
+<span class="sig-name descname"><span class="pre">test_sanitized_html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#SanitizedHtmlTest.test_sanitized_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.SanitizedHtmlTest.test_sanitized_html" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGetVisibleResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestGetVisibleResource</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGetVisibleResource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGetVisibleResource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGetVisibleResource.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGetVisibleResource.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGetVisibleResource.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGetVisibleResource.test_category_data_not_shown_for_missing_resourcebase_permissions">
+<span class="sig-name descname"><span class="pre">test_category_data_not_shown_for_missing_resourcebase_permissions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGetVisibleResource.test_category_data_not_shown_for_missing_resourcebase_permissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGetVisibleResource.test_category_data_not_shown_for_missing_resourcebase_permissions" title="Link to this definition"></a></dt>
+<dd><p>Test that a user without view permissions of a resource base does not see
+ISO category format data of the ISO category</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGetVisibleResource.test_category_data_shown_for_with_resourcebase_permissions">
+<span class="sig-name descname"><span class="pre">test_category_data_shown_for_with_resourcebase_permissions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGetVisibleResource.test_category_data_shown_for_with_resourcebase_permissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGetVisibleResource.test_category_data_shown_for_with_resourcebase_permissions" title="Link to this definition"></a></dt>
+<dd><p>Test that a user with view permissions of a resource base can see
+ISO format data of the ISO category</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGetVisibleResource.test_visible_notifications">
+<span class="sig-name descname"><span class="pre">test_visible_notifications</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGetVisibleResource.test_visible_notifications"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGetVisibleResource.test_visible_notifications" title="Link to this definition"></a></dt>
+<dd><p>Test that a standard user won’t be able to show ADMINS_ONLY_NOTICE_TYPES</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGetVisibleResource.test_extent_filter_crossing_dateline">
+<span class="sig-name descname"><span class="pre">test_extent_filter_crossing_dateline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGetVisibleResource.test_extent_filter_crossing_dateline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGetVisibleResource.test_extent_filter_crossing_dateline" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHtmlTagRemoval">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestHtmlTagRemoval</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHtmlTagRemoval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHtmlTagRemoval" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.SimpleTestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHtmlTagRemoval.test_not_tags_in_attribute">
+<span class="sig-name descname"><span class="pre">test_not_tags_in_attribute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHtmlTagRemoval.test_not_tags_in_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHtmlTagRemoval.test_not_tags_in_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHtmlTagRemoval.test_simple_tags_in_attribute">
+<span class="sig-name descname"><span class="pre">test_simple_tags_in_attribute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHtmlTagRemoval.test_simple_tags_in_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHtmlTagRemoval.test_simple_tags_in_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHtmlTagRemoval.test_complex_tags_in_attribute">
+<span class="sig-name descname"><span class="pre">test_complex_tags_in_attribute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHtmlTagRemoval.test_complex_tags_in_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHtmlTagRemoval.test_complex_tags_in_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHtmlTagRemoval.test_converted_html_in_tags_with_char_references">
+<span class="sig-name descname"><span class="pre">test_converted_html_in_tags_with_char_references</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHtmlTagRemoval.test_converted_html_in_tags_with_char_references"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHtmlTagRemoval.test_converted_html_in_tags_with_char_references" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHtmlTagRemoval.test_converted_html_in_tags_with_with_multiple_tags">
+<span class="sig-name descname"><span class="pre">test_converted_html_in_tags_with_with_multiple_tags</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHtmlTagRemoval.test_converted_html_in_tags_with_with_multiple_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHtmlTagRemoval.test_converted_html_in_tags_with_with_multiple_tags" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestTagThesaurus</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.TestCase</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.fixtures">
+<span class="sig-name descname"><span class="pre">fixtures</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['test_thesaurus.json']</span></em><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.fixtures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.fixtures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.test_get_unique_thesaurus_list">
+<span class="sig-name descname"><span class="pre">test_get_unique_thesaurus_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.test_get_unique_thesaurus_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.test_get_unique_thesaurus_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.test_get_thesaurus_title">
+<span class="sig-name descname"><span class="pre">test_get_thesaurus_title</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.test_get_thesaurus_title"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.test_get_thesaurus_title" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.test_get_thesaurus_date">
+<span class="sig-name descname"><span class="pre">test_get_thesaurus_date</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.test_get_thesaurus_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.test_get_thesaurus_date" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.test_get_name_translation_raise_exception_if_identifier_does_not_exists">
+<span class="sig-name descname"><span class="pre">test_get_name_translation_raise_exception_if_identifier_does_not_exists</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.test_get_name_translation_raise_exception_if_identifier_does_not_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.test_get_name_translation_raise_exception_if_identifier_does_not_exists" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.test_get_name_translation_return_thesauro_title_if_label_for_selected_language_does_not_exists">
+<span class="sig-name descname"><span class="pre">test_get_name_translation_return_thesauro_title_if_label_for_selected_language_does_not_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.test_get_name_translation_return_thesauro_title_if_label_for_selected_language_does_not_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.test_get_name_translation_return_thesauro_title_if_label_for_selected_language_does_not_exists" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.test_get_thesaurus_translation_by_id">
+<span class="sig-name descname"><span class="pre">test_get_thesaurus_translation_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.test_get_thesaurus_translation_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.test_get_thesaurus_translation_by_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.test_get_thesaurus_localized_label">
+<span class="sig-name descname"><span class="pre">test_get_thesaurus_localized_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.test_get_thesaurus_localized_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.test_get_thesaurus_localized_label" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.test_get_name_translation_return_label_title_if_label_for_selected_language_exists">
+<span class="sig-name descname"><span class="pre">test_get_name_translation_return_label_title_if_label_for_selected_language_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.test_get_name_translation_return_label_title_if_label_for_selected_language_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.test_get_name_translation_return_label_title_if_label_for_selected_language_exists" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestTagThesaurus.__get_last_thesaurus">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__get_last_thesaurus</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestTagThesaurus.__get_last_thesaurus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestTagThesaurus.__get_last_thesaurus" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestThesaurusAvailableForm</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.TestCase</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.fixtures">
+<span class="sig-name descname"><span class="pre">fixtures</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['test_thesaurus.json']</span></em><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.fixtures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.fixtures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_form_is_valid_if_all_fields_are_missing">
+<span class="sig-name descname"><span class="pre">test_form_is_valid_if_all_fields_are_missing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_form_is_valid_if_all_fields_are_missing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_form_is_valid_if_all_fields_are_missing" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_form_is_invalid_if_fileds_send_unexpected_values">
+<span class="sig-name descname"><span class="pre">test_form_is_invalid_if_fileds_send_unexpected_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_form_is_invalid_if_fileds_send_unexpected_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_form_is_invalid_if_fileds_send_unexpected_values" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_form_is_valid_if_fileds_send_expected_values">
+<span class="sig-name descname"><span class="pre">test_form_is_valid_if_fileds_send_expected_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_form_is_valid_if_fileds_send_expected_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_form_is_valid_if_fileds_send_expected_values" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_field_class_treq_is_correctly_set_when_field_is_required">
+<span class="sig-name descname"><span class="pre">test_field_class_treq_is_correctly_set_when_field_is_required</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_field_class_treq_is_correctly_set_when_field_is_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_field_class_treq_is_correctly_set_when_field_is_required" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_field_class_treq_is_not_set_when_field_is_optional">
+<span class="sig-name descname"><span class="pre">test_field_class_treq_is_not_set_when_field_is_optional</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_field_class_treq_is_not_set_when_field_is_optional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_field_class_treq_is_not_set_when_field_is_optional" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_will_return_thesaurus_with_the_expected_defined_order">
+<span class="sig-name descname"><span class="pre">test_will_return_thesaurus_with_the_expected_defined_order</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_will_return_thesaurus_with_the_expected_defined_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_will_return_thesaurus_with_the_expected_defined_order" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_will_return_thesaurus_with_the_defaul_order_as_0">
+<span class="sig-name descname"><span class="pre">test_will_return_thesaurus_with_the_defaul_order_as_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_will_return_thesaurus_with_the_defaul_order_as_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_will_return_thesaurus_with_the_defaul_order_as_0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_get_thesuro_key_label_with_cmd_language_code">
+<span class="sig-name descname"><span class="pre">test_get_thesuro_key_label_with_cmd_language_code</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_get_thesuro_key_label_with_cmd_language_code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_get_thesuro_key_label_with_cmd_language_code" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestThesaurusAvailableForm.test_get_thesuro_key_label_with_browser_language_code">
+<span class="sig-name descname"><span class="pre">test_get_thesuro_key_label_with_browser_language_code</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestThesaurusAvailableForm.test_get_thesuro_key_label_with_browser_language_code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestThesaurusAvailableForm.test_get_thesuro_key_label_with_browser_language_code" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestFacets">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestFacets</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestFacets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestFacets" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestFacets.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestFacets.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestFacets.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestFacets.test_facets_filter_datasets_returns_correctly">
+<span class="sig-name descname"><span class="pre">test_facets_filter_datasets_returns_correctly</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestFacets.test_facets_filter_datasets_returns_correctly"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestFacets.test_facets_filter_datasets_returns_correctly" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGenerateThesaurusReference">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestGenerateThesaurusReference</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGenerateThesaurusReference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGenerateThesaurusReference" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.TestCase</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGenerateThesaurusReference.fixtures">
+<span class="sig-name descname"><span class="pre">fixtures</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['test_thesaurus.json']</span></em><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGenerateThesaurusReference.fixtures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGenerateThesaurusReference.fixtures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGenerateThesaurusReference.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGenerateThesaurusReference.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGenerateThesaurusReference.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGenerateThesaurusReference.test_should_return_keyword_url">
+<span class="sig-name descname"><span class="pre">test_should_return_keyword_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGenerateThesaurusReference.test_should_return_keyword_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGenerateThesaurusReference.test_should_return_keyword_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGenerateThesaurusReference.test_should_return_as_url_thesaurus_about_and_keyword_alt_label">
+<span class="sig-name descname"><span class="pre">test_should_return_as_url_thesaurus_about_and_keyword_alt_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGenerateThesaurusReference.test_should_return_as_url_thesaurus_about_and_keyword_alt_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGenerateThesaurusReference.test_should_return_as_url_thesaurus_about_and_keyword_alt_label" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGenerateThesaurusReference.test_should_return_as_url_thesaurus_about_and_keyword_id">
+<span class="sig-name descname"><span class="pre">test_should_return_as_url_thesaurus_about_and_keyword_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGenerateThesaurusReference.test_should_return_as_url_thesaurus_about_and_keyword_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGenerateThesaurusReference.test_should_return_as_url_thesaurus_about_and_keyword_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGenerateThesaurusReference.test_should_return_as_url_site_url_and_keyword_label">
+<span class="sig-name descname"><span class="pre">test_should_return_as_url_site_url_and_keyword_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGenerateThesaurusReference.test_should_return_as_url_site_url_and_keyword_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGenerateThesaurusReference.test_should_return_as_url_site_url_and_keyword_label" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestGenerateThesaurusReference.test_should_return_as_url_site_url_and_keyword_id">
+<span class="sig-name descname"><span class="pre">test_should_return_as_url_site_url_and_keyword_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestGenerateThesaurusReference.test_should_return_as_url_site_url_and_keyword_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestGenerateThesaurusReference.test_should_return_as_url_site_url_and_keyword_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHandleMetadataKeyword">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestHandleMetadataKeyword</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHandleMetadataKeyword"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHandleMetadataKeyword" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.test.TestCase</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHandleMetadataKeyword.fixtures">
+<span class="sig-name descname"><span class="pre">fixtures</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['test_thesaurus.json']</span></em><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHandleMetadataKeyword.fixtures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHandleMetadataKeyword.fixtures" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHandleMetadataKeyword.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHandleMetadataKeyword.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHandleMetadataKeyword.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHandleMetadataKeyword.test_return_empty_if_keywords_is_an_empty_list">
+<span class="sig-name descname"><span class="pre">test_return_empty_if_keywords_is_an_empty_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHandleMetadataKeyword.test_return_empty_if_keywords_is_an_empty_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHandleMetadataKeyword.test_return_empty_if_keywords_is_an_empty_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHandleMetadataKeyword.test_should_return_the_expected_keyword_extracted_from_raw_and_the_thesaurus_keyword">
+<span class="sig-name descname"><span class="pre">test_should_return_the_expected_keyword_extracted_from_raw_and_the_thesaurus_keyword</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHandleMetadataKeyword.test_should_return_the_expected_keyword_extracted_from_raw_and_the_thesaurus_keyword"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHandleMetadataKeyword.test_should_return_the_expected_keyword_extracted_from_raw_and_the_thesaurus_keyword" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHandleMetadataKeyword.test_should_assign_correclty_the_keyword_to_the_dataset_object">
+<span class="sig-name descname"><span class="pre">test_should_assign_correclty_the_keyword_to_the_dataset_object</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHandleMetadataKeyword.test_should_assign_correclty_the_keyword_to_the_dataset_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHandleMetadataKeyword.test_should_assign_correclty_the_keyword_to_the_dataset_object" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHandleMetadataKeyword.test_is_thesaurus_available_should_return_queryset_with_existing_thesaurus">
+<span class="sig-name descname"><span class="pre">test_is_thesaurus_available_should_return_queryset_with_existing_thesaurus</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHandleMetadataKeyword.test_is_thesaurus_available_should_return_queryset_with_existing_thesaurus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHandleMetadataKeyword.test_is_thesaurus_available_should_return_queryset_with_existing_thesaurus" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestHandleMetadataKeyword.test_is_thesaurus_available_should_return_empty_queryset_for_non_existing_thesaurus">
+<span class="sig-name descname"><span class="pre">test_is_thesaurus_available_should_return_empty_queryset_for_non_existing_thesaurus</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestHandleMetadataKeyword.test_is_thesaurus_available_should_return_empty_queryset_for_non_existing_thesaurus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestHandleMetadataKeyword.test_is_thesaurus_available_should_return_empty_queryset_for_non_existing_thesaurus" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.Test_HierarchicalTagManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">Test_HierarchicalTagManager</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#Test_HierarchicalTagManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.Test_HierarchicalTagManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../tests/base/index.html#geonode.tests.base.GeoNodeBaseTestSupport" title="geonode.tests.base.GeoNodeBaseTestSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.tests.base.GeoNodeBaseTestSupport</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.Test_HierarchicalTagManager.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#Test_HierarchicalTagManager.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.Test_HierarchicalTagManager.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.Test_HierarchicalTagManager.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#Test_HierarchicalTagManager.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.Test_HierarchicalTagManager.tearDown" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.Test_HierarchicalTagManager.test_keyword_are_correctly_saved">
+<span class="sig-name descname"><span class="pre">test_keyword_are_correctly_saved</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#Test_HierarchicalTagManager.test_keyword_are_correctly_saved"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.Test_HierarchicalTagManager.test_keyword_are_correctly_saved" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.Test_HierarchicalTagManager.test_keyword_raise_integrity_error">
+<span class="sig-name descname"><span class="pre">test_keyword_raise_integrity_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keyword_fetch_method</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#Test_HierarchicalTagManager.test_keyword_raise_integrity_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.Test_HierarchicalTagManager.test_keyword_raise_integrity_error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.Test_HierarchicalTagManager.test_keyword_raise_db_error">
+<span class="sig-name descname"><span class="pre">test_keyword_raise_db_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">add_root_mocked</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#Test_HierarchicalTagManager.test_keyword_raise_db_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.Test_HierarchicalTagManager.test_keyword_raise_db_error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.TestRegions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">TestRegions</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestRegions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestRegions" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../tests/base/index.html#geonode.tests.base.GeoNodeBaseTestSupport" title="geonode.tests.base.GeoNodeBaseTestSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.tests.base.GeoNodeBaseTestSupport</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestRegions.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestRegions.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestRegions.setUp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestRegions.test_region_assignment_for_extent">
+<span class="sig-name descname"><span class="pre">test_region_assignment_for_extent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestRegions.test_region_assignment_for_extent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestRegions.test_region_assignment_for_extent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.TestRegions.test_regions_are_assigned_if_handler_is_used">
+<span class="sig-name descname"><span class="pre">test_regions_are_assigned_if_handler_is_used</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#TestRegions.test_regions_are_assigned_if_handler_is_used"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.TestRegions.test_regions_are_assigned_if_handler_is_used" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.tests.LinkedResourcesTest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.tests.</span></span><span class="sig-name descname"><span class="pre">LinkedResourcesTest</span></span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#LinkedResourcesTest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.LinkedResourcesTest" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../tests/base/index.html#geonode.tests.base.GeoNodeBaseTestSupport" title="geonode.tests.base.GeoNodeBaseTestSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.tests.base.GeoNodeBaseTestSupport</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.tests.LinkedResourcesTest.test_autocomplete_linked_resource">
+<span class="sig-name descname"><span class="pre">test_autocomplete_linked_resource</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/tests.html#LinkedResourcesTest.test_autocomplete_linked_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.tests.LinkedResourcesTest.test_autocomplete_linked_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../populate_test_data/index.html" class="btn btn-neutral float-left" title="geonode.base.populate_test_data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../translation/index.html" class="btn btn-neutral float-right" title="geonode.base.translation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

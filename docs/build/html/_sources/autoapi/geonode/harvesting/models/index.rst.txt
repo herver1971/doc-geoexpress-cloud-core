@@ -1,0 +1,370 @@
+geonode.harvesting.models
+=========================
+
+.. py:module:: geonode.harvesting.models
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.harvesting.models.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.harvesting.models.Harvester
+   geonode.harvesting.models.AsynchronousHarvestingSession
+   geonode.harvesting.models.HarvestableResource
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.harvesting.models.validate_worker_configuration
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: Harvester
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+   .. py:attribute:: STATUS_READY
+      :value: 'ready'
+
+
+
+   .. py:attribute:: STATUS_UPDATING_HARVESTABLE_RESOURCES
+      :value: 'updating-harvestable-resources'
+
+
+
+   .. py:attribute:: STATUS_ABORTING_UPDATE_HARVESTABLE_RESOURCES
+      :value: 'aborting-update-harvestable-resources'
+
+
+
+   .. py:attribute:: STATUS_PERFORMING_HARVESTING
+      :value: 'harvesting-resources'
+
+
+
+   .. py:attribute:: STATUS_ABORTING_PERFORMING_HARVESTING
+      :value: 'aborting-harvesting-resources'
+
+
+
+   .. py:attribute:: STATUS_CHECKING_AVAILABILITY
+      :value: 'checking-availability'
+
+
+
+   .. py:attribute:: STATUS_CHOICES
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: status
+
+
+   .. py:attribute:: remote_url
+
+
+   .. py:attribute:: scheduling_enabled
+
+
+   .. py:attribute:: harvesting_session_update_frequency
+
+
+   .. py:attribute:: refresh_harvestable_resources_update_frequency
+
+
+   .. py:attribute:: remote_available
+
+
+   .. py:attribute:: check_availability_frequency
+
+
+   .. py:attribute:: last_checked_availability
+
+
+   .. py:attribute:: last_checked_harvestable_resources
+
+
+   .. py:attribute:: last_check_harvestable_resources_message
+
+
+   .. py:attribute:: default_owner
+
+
+   .. py:attribute:: harvest_new_resources_by_default
+
+
+   .. py:attribute:: delete_orphan_resources_automatically
+
+
+   .. py:attribute:: last_updated
+
+
+   .. py:attribute:: harvester_type
+
+
+   .. py:attribute:: harvester_type_specific_configuration
+
+
+   .. py:attribute:: num_harvestable_resources
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: constraints
+
+
+
+   .. py:method:: __str__()
+
+
+   .. py:property:: latest_refresh_session
+
+
+   .. py:property:: latest_harvesting_session
+
+
+   .. py:method:: get_next_check_availability_dispatch_time() -> datetime.datetime
+
+
+   .. py:method:: get_next_refresh_session_dispatch_time() -> Optional[datetime.datetime]
+
+
+   .. py:method:: get_next_harvesting_session_dispatch_time() -> Optional[datetime.datetime]
+
+
+   .. py:method:: _get_next_dispatch_time(session_type: str) -> Optional[datetime.datetime]
+
+
+   .. py:method:: is_availability_check_due()
+
+
+   .. py:method:: is_harvestable_resources_refresh_due()
+
+
+   .. py:method:: is_harvesting_due()
+
+
+   .. py:method:: clean()
+
+      Perform model validation by inspecting fields that depend on each other.
+
+      We validate the harvester type specific configuration by determining if it meets
+      the configured jsonschema (if any).
+
+
+
+
+   .. py:method:: update_availability(timeout_seconds: Optional[int] = 5)
+
+      Use the harvesting worker to check if the remote service is available
+
+
+
+   .. py:method:: initiate_update_harvestable_resources()
+
+
+   .. py:method:: initiate_perform_harvesting(harvestable_resource_ids: Optional[List[int]] = None)
+
+
+   .. py:method:: initiate_abort_update_harvestable_resources()
+
+
+   .. py:method:: initiate_abort_perform_harvesting()
+
+
+   .. py:method:: get_harvester_worker() -> BaseHarvesterWorker
+
+
+   .. py:method:: worker_can_perform_action(target_status: Optional[str] = STATUS_READY) -> Tuple[bool, str]
+
+
+.. py:class:: AsynchronousHarvestingSession
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+   .. py:attribute:: STATUS_PENDING
+      :value: 'pending'
+
+
+
+   .. py:attribute:: STATUS_ON_GOING
+      :value: 'on-going'
+
+
+
+   .. py:attribute:: STATUS_FINISHED_ALL_OK
+      :value: 'finished-all-ok'
+
+
+
+   .. py:attribute:: STATUS_FINISHED_ALL_FAILED
+      :value: 'finished-all-failed'
+
+
+
+   .. py:attribute:: STATUS_FINISHED_SOME_FAILED
+      :value: 'finished-some-failed'
+
+
+
+   .. py:attribute:: STATUS_ABORTING
+      :value: 'aborting'
+
+
+
+   .. py:attribute:: STATUS_ABORTED
+      :value: 'aborted'
+
+
+
+   .. py:attribute:: STATUS_CHOICES
+
+
+   .. py:attribute:: TYPE_HARVESTING
+      :value: 'harvesting'
+
+
+
+   .. py:attribute:: TYPE_DISCOVER_HARVESTABLE_RESOURCES
+      :value: 'discover-harvestable-resources'
+
+
+
+   .. py:attribute:: TYPE_CHOICES
+
+
+   .. py:attribute:: session_type
+
+
+   .. py:attribute:: started
+
+
+   .. py:attribute:: updated
+
+
+   .. py:attribute:: ended
+
+
+   .. py:attribute:: harvester
+
+
+   .. py:attribute:: status
+
+
+   .. py:attribute:: details
+
+
+   .. py:attribute:: total_records_to_process
+
+
+   .. py:attribute:: records_done
+
+
+   .. py:method:: get_progress_percentage() -> int
+
+
+   .. py:method:: initiate(harvestable_resource_ids: Optional[List[int]] = None)
+
+      Initiate the asynchronous process that performs the work related to this session.
+
+
+
+   .. py:method:: abort()
+
+      Abort a pending or on-going session.
+
+
+
+.. py:class:: HarvestableResource
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+   .. py:attribute:: STATUS_READY
+      :value: 'ready'
+
+
+
+   .. py:attribute:: STATUS_UPDATING_HARVESTABLE_RESOURCE
+      :value: 'updating-harvestable-resource'
+
+
+
+   .. py:attribute:: STATUS_PERFORMING_HARVESTING
+      :value: 'harvesting-resource'
+
+
+
+   .. py:attribute:: STATUS_CHOICES
+
+
+   .. py:attribute:: unique_identifier
+
+
+   .. py:attribute:: status
+
+
+   .. py:attribute:: title
+
+
+   .. py:attribute:: abstract
+
+
+   .. py:attribute:: harvester
+
+
+   .. py:attribute:: geonode_resource
+
+
+   .. py:attribute:: should_be_harvested
+
+
+   .. py:attribute:: last_updated
+
+
+   .. py:attribute:: last_refreshed
+
+
+   .. py:attribute:: last_harvested
+
+
+   .. py:attribute:: last_harvesting_message
+
+
+   .. py:attribute:: last_harvesting_succeeded
+
+
+   .. py:attribute:: remote_resource_type
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: constraints
+
+
+
+   .. py:method:: delete(using=None, keep_parents=False)
+
+
+.. py:function:: validate_worker_configuration(worker_type: BaseHarvesterWorker, worker_config: Dict)
+
