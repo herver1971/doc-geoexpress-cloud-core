@@ -1,0 +1,56 @@
+geonode.people.signals
+======================
+
+.. py:module:: geonode.people.signals
+
+.. autoapi-nested-parse::
+
+   Signal handlers pertaining to the people app
+
+   Some of these signals deal with authentication related workflows.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.people.signals.logger
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.people.signals.do_login
+   geonode.people.signals.do_logout
+   geonode.people.signals.update_user_email_addresses
+   geonode.people.signals.notify_admins_new_signup
+   geonode.people.signals.profile_post_save
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: do_login(sender, user, request, **kwargs)
+
+   Take action on user login. Generate a new user access_token to be shared
+   with GeoServer, and store it into the request.session
+
+
+.. py:function:: do_logout(sender, user, request, **kwargs)
+
+.. py:function:: update_user_email_addresses(sender, **kwargs)
+
+.. py:function:: notify_admins_new_signup(sender, **kwargs)
+
+.. py:function:: profile_post_save(instance, sender, **kwargs)
+
+   Make sure the user belongs by default to the anonymous and contributors groups.
+   This will make sure that anonymous and contributors permissions will be granted to the new users.
+
+

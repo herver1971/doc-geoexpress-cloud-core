@@ -1,0 +1,1015 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.upload.tests.integration &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../upload.html">geonode.upload</a></li>
+          <li class="breadcrumb-item"><a href="../tests.html">geonode.upload.tests</a></li>
+      <li class="breadcrumb-item active">geonode.upload.tests.integration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.upload.tests.integration</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">See the README.rst in this directory for details on running these tests.</span>
+<span class="sd">@todo allow using a database other than `development.db` - for some reason, a</span>
+<span class="sd">      test db is not created when running using normal settings</span>
+<span class="sd">@todo when using database settings, a test database is used and this makes it</span>
+<span class="sd">      difficult for cleanup to track the layers created between runs</span>
+<span class="sd">@todo only test_time seems to work correctly with database backend test settings</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">geonode.tests.base</span> <span class="kn">import</span> <span class="n">GeoNodeBaseTestSupport</span>
+
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">connections</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">Link</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.upload.models</span> <span class="kn">import</span> <span class="n">Upload</span><span class="p">,</span> <span class="n">UploadSizeLimit</span>
+<span class="kn">from</span> <span class="nn">geonode.catalogue</span> <span class="kn">import</span> <span class="n">get_catalogue</span>
+<span class="kn">from</span> <span class="nn">geonode.tests.utils</span> <span class="kn">import</span> <span class="n">upload_step</span><span class="p">,</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">geonode.upload.utils</span> <span class="kn">import</span> <span class="n">_ALLOW_TIME_STEP</span>
+<span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">ogc_server_settings</span><span class="p">,</span> <span class="n">cascading_delete</span>
+<span class="kn">from</span> <span class="nn">geonode.geoserver.signals</span> <span class="kn">import</span> <span class="n">gs_catalog</span>
+
+<span class="kn">from</span> <span class="nn">geoserver.catalog</span> <span class="kn">import</span> <span class="n">Catalog</span>
+<span class="kn">from</span> <span class="nn">gisdata</span> <span class="kn">import</span> <span class="n">BAD_DATA</span>
+<span class="kn">from</span> <span class="nn">gisdata</span> <span class="kn">import</span> <span class="n">GOOD_DATA</span>
+<span class="kn">from</span> <span class="nn">owslib.wms</span> <span class="kn">import</span> <span class="n">WebMapService</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span><span class="p">,</span> <span class="n">urlsplit</span>
+<span class="kn">from</span> <span class="nn">urllib.error</span> <span class="kn">import</span> <span class="n">HTTPError</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">dj_database_url</span>
+
+<div class="viewcode-block" id="GEONODE_USER">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.GEONODE_USER">[docs]</a>
+<span class="n">GEONODE_USER</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_PASSWD">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.GEONODE_PASSWD">[docs]</a>
+<span class="n">GEONODE_PASSWD</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_URL">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.GEONODE_URL">[docs]</a>
+<span class="n">GEONODE_URL</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GEOSERVER_URL">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.GEOSERVER_URL">[docs]</a>
+<span class="n">GEOSERVER_URL</span> <span class="o">=</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">LOCATION</span></div>
+
+<span class="n">GEOSERVER_USER</span><span class="p">,</span> <span class="n">GEOSERVER_PASSWD</span> <span class="o">=</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">credentials</span>
+
+<div class="viewcode-block" id="DB_HOST">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.DB_HOST">[docs]</a>
+<span class="n">DB_HOST</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;HOST&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DB_PORT">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.DB_PORT">[docs]</a>
+<span class="n">DB_PORT</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;PORT&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DB_NAME">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.DB_NAME">[docs]</a>
+<span class="n">DB_NAME</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DB_USER">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.DB_USER">[docs]</a>
+<span class="n">DB_USER</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;USER&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DB_PASSWORD">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.DB_PASSWORD">[docs]</a>
+<span class="n">DB_PASSWORD</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;PASSWORD&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DATASTORE_URL">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.DATASTORE_URL">[docs]</a>
+<span class="n">DATASTORE_URL</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;postgis://</span><span class="si">{</span><span class="n">DB_USER</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">DB_PASSWORD</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">DB_HOST</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">DB_PORT</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">DB_NAME</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="postgis_db">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.postgis_db">[docs]</a>
+<span class="n">postgis_db</span> <span class="o">=</span> <span class="n">dj_database_url</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">DATASTORE_URL</span><span class="p">,</span> <span class="n">conn_max_age</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;south&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+<span class="c1"># create test user if needed, delete all layers and set password</span>
+<span class="n">u</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">GEONODE_USER</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">created</span><span class="p">:</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">first_name</span> <span class="o">=</span> <span class="s2">&quot;Jhònà&quot;</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">last_name</span> <span class="o">=</span> <span class="s2">&quot;çénü&quot;</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">set_password</span><span class="p">(</span><span class="n">GEONODE_PASSWD</span><span class="p">)</span>
+    <span class="n">u</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">owner</span><span class="o">=</span><span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="get_wms">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.get_wms">[docs]</a>
+<span class="k">def</span> <span class="nf">get_wms</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.1.1&quot;</span><span class="p">,</span> <span class="n">type_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to return an OWSLib WMS object&quot;&quot;&quot;</span>
+    <span class="c1"># right now owslib does not support auth for get caps</span>
+    <span class="c1"># requests. Either we should roll our own or fix owslib</span>
+    <span class="k">if</span> <span class="n">type_name</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">GEOSERVER_URL</span><span class="si">}{</span><span class="n">type_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">wms?request=getcapabilities&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">GEOSERVER_URL</span><span class="si">}</span><span class="s2">wms?request=getcapabilities&quot;</span>
+    <span class="n">ogc_server_settings</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">username</span> <span class="ow">and</span> <span class="n">password</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">WebMapService</span><span class="p">(</span>
+            <span class="n">url</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TIMEOUT&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">WebMapService</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TIMEOUT&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="UploaderBase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase">[docs]</a>
+<span class="k">class</span> <span class="nc">UploaderBase</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="UploaderBase.type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.type">[docs]</a>
+    <span class="nb">type</span> <span class="o">=</span> <span class="s2">&quot;dataset&quot;</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="UploaderBase.setUpClass">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.setUpClass">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="UploaderBase.tearDownClass">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.tearDownClass">[docs]</a>
+    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;integration_settings.py&quot;</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="s2">&quot;integration_settings.py&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.setUp">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># await startup</span>
+        <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">GEONODE_URL</span><span class="p">,</span> <span class="n">GEONODE_USER</span><span class="p">,</span> <span class="n">GEONODE_PASSWD</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cl</span><span class="o">.</span><span class="n">get_html</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">GEONODE_URL</span><span class="p">,</span> <span class="n">GEONODE_USER</span><span class="p">,</span> <span class="n">GEONODE_PASSWD</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">catalog</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">GEOSERVER_URL</span><span class="si">}</span><span class="s2">rest&quot;</span><span class="p">,</span>
+            <span class="n">GEOSERVER_USER</span><span class="p">,</span>
+            <span class="n">GEOSERVER_PASSWD</span><span class="p">,</span>
+            <span class="n">retries</span><span class="o">=</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">MAX_RETRIES</span><span class="p">,</span>
+            <span class="n">backoff_factor</span><span class="o">=</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">BACKOFF_FACTOR</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DB_NAME</span>
+
+        <span class="n">connections</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;ATOMIC_REQUESTS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">connections</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tempfiles</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase._post_teardown">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase._post_teardown">[docs]</a>
+    <span class="k">def</span> <span class="nf">_post_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.tearDown">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.tearDown">[docs]</a>
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">connections</span><span class="o">.</span><span class="n">databases</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;ATOMIC_REQUESTS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">temp_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tempfiles</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">temp_file</span><span class="p">)</span>
+
+        <span class="c1"># Cleanup</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ACL_SECURITY_ENABLED&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">geonode.geoserver.security</span> <span class="kn">import</span> <span class="n">delete_all_acl_rules</span>
+
+            <span class="n">delete_all_acl_rules</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_dataset_geonode_page">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_dataset_geonode_page">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_dataset_geonode_page</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that the final dataset page render&#39;s correctly after</span>
+<span class="sd">        an dataset is uploaded&quot;&quot;&quot;</span>
+        <span class="c1"># the final url for uploader process. This does a redirect to</span>
+        <span class="c1"># the final dataset page in geonode</span>
+        <span class="n">resp</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_html</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;content-type&quot;</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_dataset_geoserver_caps">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_dataset_geoserver_caps">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_dataset_geoserver_caps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that a dataset shows up in GeoServer&#39;s get</span>
+<span class="sd">        capabilities document&quot;&quot;&quot;</span>
+        <span class="c1"># using owslib</span>
+        <span class="n">wms</span> <span class="o">=</span> <span class="n">get_wms</span><span class="p">(</span><span class="n">type_name</span><span class="o">=</span><span class="n">type_name</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">GEOSERVER_USER</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">GEOSERVER_PASSWD</span><span class="p">)</span>
+        <span class="n">ws</span><span class="p">,</span> <span class="n">dataset_name</span> <span class="o">=</span> <span class="n">type_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">wms</span><span class="o">.</span><span class="n">contents</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2"> is not in </span><span class="si">{</span><span class="n">wms</span><span class="o">.</span><span class="n">contents</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_dataset_geoserver_rest">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_dataset_geoserver_rest">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_dataset_geoserver_rest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check that a dataset shows up in GeoServer rest api after</span>
+<span class="sd">        the uploader is done&quot;&quot;&quot;</span>
+        <span class="c1"># using gsconfig to test the geoserver rest api.</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_and_pass_through_timestep">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_and_pass_through_timestep">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_and_pass_through_timestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redirect_to</span><span class="p">):</span>
+        <span class="n">time_step</span> <span class="o">=</span> <span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="n">srs_step</span> <span class="o">=</span> <span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;srs&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">srs_step</span> <span class="ow">in</span> <span class="n">redirect_to</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">redirect_to</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">time_step</span> <span class="ow">in</span> <span class="n">redirect_to</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">redirect_to</span><span class="p">)</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_csrf_token</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">redirect_to</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;csrfmiddlewaretoken&quot;</span><span class="p">:</span> <span class="n">token</span><span class="p">},</span> <span class="n">ajax</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.complete_raster_upload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.complete_raster_upload">[docs]</a>
+    <span class="k">def</span> <span class="nf">complete_raster_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_upload</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">is_raster</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_save_step">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_save_step">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_save_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify the initial save step&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span>
+        <span class="c1"># make that the upload returns a success True key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;expected success but got </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;redirect_to&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.complete_upload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.complete_upload">[docs]</a>
+    <span class="k">def</span> <span class="nf">complete_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">is_raster</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to check if a dataset was correctly uploaded to the</span>
+<span class="sd">        GeoNode.</span>
+
+<span class="sd">        arguments: file path, the django http response</span>
+
+<span class="sd">           Checks to see if a dataset is configured in Django</span>
+<span class="sd">           Checks to see if a dataset is configured in GeoServer</span>
+<span class="sd">               checks the Rest API</span>
+<span class="sd">               checks the get cap document&quot;&quot;&quot;</span>
+
+        <span class="n">dataset_name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file_path</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_save_step</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+            <span class="n">dataset_page</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">finish_upload</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">],</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">is_raster</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_dataset_complete</span><span class="p">(</span><span class="n">dataset_page</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.finish_upload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.finish_upload">[docs]</a>
+    <span class="k">def</span> <span class="nf">finish_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_step</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">is_raster</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">skip_srs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_raster</span> <span class="ow">and</span> <span class="n">_ALLOW_TIME_STEP</span><span class="p">:</span>
+            <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_and_pass_through_timestep</span><span class="p">(</span><span class="n">current_step</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;expected success but got </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;redirect_to&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span>
+                    <span class="n">current_step</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">]</span>
+                    <span class="c1"># self.wait_for_progress(data.get(&#39;progress&#39;))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_raster</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">skip_srs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;srs&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">current_step</span><span class="p">)</span>
+            <span class="c1"># if all is good, the srs step will redirect to the final page</span>
+            <span class="n">final_step</span> <span class="o">=</span> <span class="n">current_step</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;srs&quot;</span><span class="p">,</span> <span class="s2">&quot;final&quot;</span><span class="p">)</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">final_step</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+                <span class="n">urlsplit</span><span class="p">(</span><span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;final&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">path</span> <span class="ow">in</span> <span class="n">current_step</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;current_step: </span><span class="si">{</span><span class="n">current_step</span><span class="si">}</span><span class="s2"> - upload_step(&#39;final&#39;): </span><span class="si">{</span><span class="n">upload_step</span><span class="p">(</span><span class="s1">&#39;final&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">current_step</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="c1"># and the final page should redirect to the dataset page</span>
+            <span class="c1"># @todo - make the check match completely (endswith at least)</span>
+            <span class="c1"># currently working around potential &#39;orphaned&#39; db tables</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">dataset_name</span> <span class="ow">in</span> <span class="n">url</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2"> in URL, got </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">url</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">current_step</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_upload_model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_upload_model">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_upload_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_name</span><span class="p">):</span>
+        <span class="c1"># we can only test this if we&#39;re using the same DB as the test instance</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;DATASTORE&quot;</span><span class="p">]:</span>
+            <span class="k">return</span>
+        <span class="n">upload</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">upload</span> <span class="o">=</span> <span class="n">Upload</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__icontains</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">original_name</span><span class="p">))</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
+            <span class="c1"># Making sure the Upload object is present on the DB and</span>
+            <span class="c1"># the import session is COMPLETE</span>
+            <span class="k">if</span> <span class="n">upload</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">upload</span><span class="o">.</span><span class="n">complete</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Upload not complete for Dataset </span><span class="si">{</span><span class="n">original_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">Upload</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;expected to find Upload object for </span><span class="si">{</span><span class="n">original_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_dataset_complete">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_dataset_complete">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_dataset_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_page</span><span class="p">,</span> <span class="n">original_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;check everything to verify the dataset is complete&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_dataset_geonode_page</span><span class="p">(</span><span class="n">dataset_page</span><span class="p">)</span>
+        <span class="c1"># @todo use the original_name</span>
+        <span class="c1"># currently working around potential &#39;orphaned&#39; db tables</span>
+        <span class="c1"># this grabs the name from the url (it might contain a 0)</span>
+        <span class="n">type_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dataset_page</span><span class="p">)</span>
+        <span class="n">dataset_name</span> <span class="o">=</span> <span class="n">original_name</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dataset_name</span> <span class="o">=</span> <span class="n">type_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># work around acl caching on geoserver side of things</span>
+        <span class="n">caps_found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_dataset_geoserver_caps</span><span class="p">(</span><span class="n">type_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_dataset_geoserver_rest</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span>
+                <span class="n">caps_found</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">caps_found</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not recognize Dataset </span><span class="si">{</span><span class="n">original_name</span><span class="si">}</span><span class="s2"> on GeoServer WMS Capa&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_upload_model</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_invalid_projection">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_invalid_projection">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_invalid_projection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Makes sure that we got the correct response from an dataset</span>
+<span class="sd">        that can&#39;t be uploaded&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">])</span>
+            <span class="n">srs_step</span> <span class="o">=</span> <span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;srs&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;srs&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">srs_step</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">])</span>
+                <span class="n">resp</span><span class="p">,</span> <span class="n">soup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_html</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">])</span>
+                <span class="c1"># grab an h2 and find the name there as part of a message saying it&#39;s</span>
+                <span class="c1"># bad</span>
+                <span class="n">h2</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">([</span><span class="s2">&quot;h2&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">h2</span><span class="p">)</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_upload_complete">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_upload_complete">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_upload_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Makes sure that we got the correct response from an dataset</span>
+<span class="sd">        that has been uploaded&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">])</span>
+            <span class="n">final_step</span> <span class="o">=</span> <span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;final&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;final&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">final_step</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.check_upload_failed">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.check_upload_failed">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_upload_failed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Makes sure that we got the correct response from an dataset</span>
+<span class="sd">        that can&#39;t be uploaded&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.upload_folder_of_files">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.upload_folder_of_files">[docs]</a>
+    <span class="k">def</span> <span class="nf">upload_folder_of_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder</span><span class="p">,</span> <span class="n">final_check</span><span class="p">,</span> <span class="n">session_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">mains</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;.tif&quot;</span><span class="p">,</span> <span class="s2">&quot;.shp&quot;</span><span class="p">,</span> <span class="s2">&quot;.zip&quot;</span><span class="p">,</span> <span class="s2">&quot;.asc&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">is_main</span><span class="p">(</span><span class="n">_file</span><span class="p">):</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">mains</span>
+
+        <span class="k">for</span> <span class="n">main</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="n">is_main</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)):</span>
+            <span class="c1"># get the abs path to the file</span>
+            <span class="n">_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">main</span><span class="p">)</span>
+            <span class="n">base</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+            <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">session_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">):</span>
+                    <span class="n">session_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.*id=(\d+)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+                        <span class="n">session_ids</span> <span class="o">+=</span> <span class="p">[</span><span class="n">session_id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_progress</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;progress&quot;</span><span class="p">))</span>
+            <span class="n">final_check</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.upload_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.upload_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">upload_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">final_check</span><span class="p">,</span> <span class="n">check_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">check_name</span><span class="p">:</span>
+            <span class="n">check_name</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; debug CircleCI...........upload_file: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">session_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">):</span>
+                    <span class="n">session_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.*id=(\d+)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">session_id</span><span class="p">:</span>
+                        <span class="n">session_ids</span> <span class="o">+=</span> <span class="p">[</span><span class="n">session_id</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; debug CircleCI...........wait_for_progress: </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;progress&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_progress</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;progress&quot;</span><span class="p">))</span>
+        <span class="n">final_check</span><span class="p">(</span><span class="n">check_name</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.wait_for_progress">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.wait_for_progress">[docs]</a>
+    <span class="k">def</span> <span class="nf">wait_for_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">progress_url</span><span class="p">,</span> <span class="n">wait_for_progress_cnt</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">progress_url</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">progress_url</span><span class="p">)</span>
+            <span class="n">json_data</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; [</span><span class="si">{</span><span class="n">wait_for_progress_cnt</span><span class="si">}</span><span class="s2">] debug CircleCI...........json_data: </span><span class="si">{</span><span class="n">json_data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># &quot;COMPLETE&quot; state means done</span>
+            <span class="k">if</span> <span class="n">json_data</span> <span class="ow">and</span> <span class="n">json_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;COMPLETE&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">json_data</span>
+            <span class="k">elif</span> <span class="n">json_data</span> <span class="ow">and</span> <span class="n">json_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;RUNNING&quot;</span> <span class="ow">and</span> <span class="n">wait_for_progress_cnt</span> <span class="o">&lt;</span> <span class="mi">30</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">wait_for_progress_cnt</span><span class="si">}</span><span class="s2">] ... wait_for_progress @ </span><span class="si">{</span><span class="n">progress_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">json_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_for_progress</span><span class="p">(</span><span class="n">progress_url</span><span class="p">,</span> <span class="n">wait_for_progress_cnt</span><span class="o">=</span><span class="n">wait_for_progress_cnt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">json_data</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.temp_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.temp_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">temp_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ext</span><span class="p">):</span>
+        <span class="n">fd</span><span class="p">,</span> <span class="n">abspath</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tempfiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">abspath</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fd</span><span class="p">,</span> <span class="n">abspath</span></div>
+
+
+<div class="viewcode-block" id="UploaderBase.make_csv">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.UploaderBase.make_csv">[docs]</a>
+    <span class="k">def</span> <span class="nf">make_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fieldnames</span><span class="p">,</span> <span class="o">*</span><span class="n">rows</span><span class="p">):</span>
+        <span class="n">fd</span><span class="p">,</span> <span class="n">abspath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_file</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">abspath</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="n">fieldnames</span><span class="p">)</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">abspath</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TestUpload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload">[docs]</a>
+<span class="k">class</span> <span class="nc">TestUpload</span><span class="p">(</span><span class="n">UploaderBase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestUpload.test_shp_upload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_shp_upload">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_shp_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tests if a vector dataset can be uploaded to a running GeoNode/GeoServer&quot;&quot;&quot;</span>
+        <span class="n">dataset_name</span> <span class="o">=</span> <span class="s2">&quot;san_andres_y_providencia_water&quot;</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GOOD_DATA</span><span class="p">,</span> <span class="s2">&quot;vector&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">.shp&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_upload</span><span class="p">,</span> <span class="n">check_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__icontains</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">test_dataset</span><span class="p">:</span>
+            <span class="n">dataset_attributes</span> <span class="o">=</span> <span class="n">test_dataset</span><span class="o">.</span><span class="n">attributes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">dataset_attributes</span><span class="p">)</span>
+
+            <span class="c1"># Links</span>
+            <span class="n">_def_link_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;original&quot;</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
+            <span class="n">_links</span> <span class="o">=</span> <span class="n">Link</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">link_type__in</span><span class="o">=</span><span class="n">_def_link_types</span><span class="p">)</span>
+            <span class="c1"># Check &#39;original&#39; and &#39;metadata&#39; links exist</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">_links</span><span class="p">,</span> <span class="s2">&quot;No &#39;original&#39; and &#39;metadata&#39; links have been found&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">_links</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span> <span class="s2">&quot;No &#39;original&#39; and &#39;metadata&#39; links have been found&quot;</span><span class="p">)</span>
+            <span class="c1"># Check original links in csw_anytext</span>
+            <span class="n">_post_migrate_links_orig</span> <span class="o">=</span> <span class="n">Link</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">resource</span><span class="o">=</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">resourcebase_ptr</span><span class="p">,</span>
+                <span class="n">resource_id</span><span class="o">=</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">resourcebase_ptr</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="n">link_type</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">_link_orig</span> <span class="ow">in</span> <span class="n">_post_migrate_links_orig</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_link_orig</span><span class="o">.</span><span class="n">url</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">test_dataset</span><span class="o">.</span><span class="n">csw_anytext</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The link URL </span><span class="si">{</span><span class="n">_link_orig</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> not found in </span><span class="si">{</span><span class="n">test_dataset</span><span class="si">}</span><span class="s2"> &#39;csw_anytext&#39; attribute&quot;</span><span class="p">)</span>
+                <span class="c1"># TODO: this check is randomly failing on CircleCI... we need to understand how to stabilize it</span>
+                <span class="c1"># self.assertIn(</span>
+                <span class="c1">#     _link_orig.url,</span>
+                <span class="c1">#     test_dataset.csw_anytext,</span>
+                <span class="c1">#     f&quot;The link URL {_link_orig.url} is not present in the &#39;csw_anytext&#39; \</span>
+                <span class="c1"># attribute of the dataset &#39;{test_dataset.alternate}&#39;&quot;</span>
+                <span class="c1"># )</span>
+            <span class="c1"># Check catalogue</span>
+            <span class="n">catalogue</span> <span class="o">=</span> <span class="n">get_catalogue</span><span class="p">()</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="n">catalogue</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+                <span class="nb">hasattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">&quot;links&quot;</span><span class="p">),</span>
+                <span class="sa">f</span><span class="s2">&quot;No records have been found in the catalogue for the resource &#39;</span><span class="si">{</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">alternate</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># Check &#39;metadata&#39; links for each record</span>
+            <span class="k">for</span> <span class="n">mime</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">metadata_url</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">links</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">_post_migrate_link_meta</span> <span class="o">=</span> <span class="n">Link</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                        <span class="n">resource</span><span class="o">=</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">resourcebase_ptr</span><span class="p">,</span>
+                        <span class="n">url</span><span class="o">=</span><span class="n">metadata_url</span><span class="p">,</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;xml&quot;</span><span class="p">,</span>
+                        <span class="n">mime</span><span class="o">=</span><span class="n">mime</span><span class="p">,</span>
+                        <span class="n">link_type</span><span class="o">=</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span>
+                        <span class="n">_post_migrate_link_meta</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s2">&quot;No &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; links have been found in the catalogue for the resource &#39;</span><span class="si">{</span><span class="n">test_dataset</span><span class="o">.</span><span class="n">alternate</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="n">Link</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                    <span class="n">_post_migrate_link_meta</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_raster_upload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_raster_upload">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_raster_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tests if a raster dataset can be upload to a running GeoNode GeoServer&quot;&quot;&quot;</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GOOD_DATA</span><span class="p">,</span> <span class="s2">&quot;raster&quot;</span><span class="p">,</span> <span class="s2">&quot;relief_san_andres.tif&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_raster_upload</span><span class="p">,</span> <span class="n">check_name</span><span class="o">=</span><span class="s2">&quot;relief_san_andres&quot;</span><span class="p">)</span>
+
+        <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_zipped_upload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_zipped_upload">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_zipped_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Test uploading a zipped shapefile&quot;&quot;&quot;</span>
+        <span class="n">fd</span><span class="p">,</span> <span class="n">abspath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_file</span><span class="p">(</span><span class="s2">&quot;.zip&quot;</span><span class="p">)</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fdopen</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+        <span class="n">zf</span> <span class="o">=</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">allowZip64</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">zf</span><span class="p">:</span>
+            <span class="n">fpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GOOD_DATA</span><span class="p">,</span> <span class="s2">&quot;vector&quot;</span><span class="p">,</span> <span class="s2">&quot;san_andres_y_providencia_poi.*&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">fpath</span><span class="p">):</span>
+                <span class="n">zf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">abspath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_upload</span><span class="p">,</span> <span class="n">check_name</span><span class="o">=</span><span class="s2">&quot;san_andres_y_providencia_poi&quot;</span><span class="p">)</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__contains</span><span class="o">=</span><span class="s2">&quot;san_andres_y_providencia_poi&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">default_style</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">gs_catalog</span>
+
+            <span class="n">gs_layer</span> <span class="o">=</span> <span class="n">gs_catalog</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">gs_layer</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">gs_layer</span><span class="o">.</span><span class="n">default_style</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_geonode_same_UUID_error">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_geonode_same_UUID_error">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_geonode_same_UUID_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensure a new dataset with same UUID metadata cannot be uploaded</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">PROJECT_ROOT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+
+        <span class="c1"># Uploading the first one should be OK</span>
+        <span class="n">same_uuid_a</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PROJECT_ROOT</span><span class="p">,</span> <span class="s2">&quot;data/same_uuid_a.zip&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">same_uuid_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_upload</span><span class="p">,</span> <span class="n">check_name</span><span class="o">=</span><span class="s2">&quot;same_uuid_a&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Uploading the second one should give an ERROR</span>
+        <span class="n">same_uuid_b</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PROJECT_ROOT</span><span class="p">,</span> <span class="s2">&quot;data/same_uuid_b.zip&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">same_uuid_b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_upload_failed</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_ascii_grid_upload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_ascii_grid_upload">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_ascii_grid_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tests the layers that ASCII grid files are uploaded along with aux&quot;&quot;&quot;</span>
+        <span class="n">session_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">PROJECT_ROOT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+        <span class="n">thedataset_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PROJECT_ROOT</span><span class="p">,</span> <span class="s2">&quot;data/arc_sample&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_folder_of_files</span><span class="p">(</span><span class="n">thedataset_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_raster_upload</span><span class="p">,</span> <span class="n">session_ids</span><span class="o">=</span><span class="n">session_ids</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_invalid_dataset_upload">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_invalid_dataset_upload">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_invalid_dataset_upload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tests the layers that are invalid and should not be uploaded&quot;&quot;&quot;</span>
+        <span class="c1"># this issue with this test is that the importer supports</span>
+        <span class="c1"># shapefiles without an .prj</span>
+        <span class="n">session_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">invalid_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BAD_DATA</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_folder_of_files</span><span class="p">(</span><span class="n">invalid_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_invalid_projection</span><span class="p">,</span> <span class="n">session_ids</span><span class="o">=</span><span class="n">session_ids</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_coherent_importer_session">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_coherent_importer_session">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_coherent_importer_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tests that the upload computes correctly next session IDs&quot;&quot;&quot;</span>
+        <span class="n">session_ids</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># First of all lets upload a raster</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GOOD_DATA</span><span class="p">,</span> <span class="s2">&quot;raster&quot;</span><span class="p">,</span> <span class="s2">&quot;relief_san_andres.tif&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; debug CircleCI...........fname: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_raster_upload</span><span class="p">,</span> <span class="n">session_ids</span><span class="o">=</span><span class="n">session_ids</span><span class="p">)</span>
+
+        <span class="c1"># Next force an invalid session</span>
+        <span class="n">invalid_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BAD_DATA</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; debug CircleCI...........invalid_path: </span><span class="si">{</span><span class="n">invalid_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_folder_of_files</span><span class="p">(</span><span class="n">invalid_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_invalid_projection</span><span class="p">,</span> <span class="n">session_ids</span><span class="o">=</span><span class="n">session_ids</span><span class="p">)</span>
+
+        <span class="c1"># Finally try to upload a good file and check the session IDs</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GOOD_DATA</span><span class="p">,</span> <span class="s2">&quot;raster&quot;</span><span class="p">,</span> <span class="s2">&quot;relief_san_andres.tif&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; debug CircleCI...........fname: </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_raster_upload</span><span class="p">,</span> <span class="n">session_ids</span><span class="o">=</span><span class="n">session_ids</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">session_ids</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">session_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">session_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">session_ids</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_extension_not_implemented">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_extension_not_implemented">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_extension_not_implemented</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify a error message is return when an unsupported dataset is</span>
+<span class="sd">        uploaded&quot;&quot;&quot;</span>
+
+        <span class="c1"># try to upload ourselves</span>
+        <span class="c1"># a python file is unsupported</span>
+        <span class="n">unsupported_path</span> <span class="o">=</span> <span class="vm">__file__</span>
+        <span class="k">if</span> <span class="n">unsupported_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.pyc&quot;</span><span class="p">):</span>
+            <span class="n">unsupported_path</span> <span class="o">=</span> <span class="n">unsupported_path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">HTTPError</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">unsupported_path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_csv">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_csv">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;make sure a csv upload fails gracefully/normally when not activated&quot;&quot;&quot;</span>
+        <span class="n">csv_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_csv</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;thing&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;thing&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span><span class="p">})</span>
+        <span class="n">dataset_name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">csv_file</span><span class="p">))</span>
+        <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">csv_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;success&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">],</span> <span class="s2">&quot;/upload/csv&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_csv_with_size_limit">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_csv_with_size_limit">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_csv_with_size_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;make sure a upload fails gracefully/normally with big files&quot;&quot;&quot;</span>
+        <span class="n">upload_size_limit_obj</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">UploadSizeLimit</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span>
+            <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;dataset_upload_size&quot;</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The sum of sizes for the files of a dataset upload.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;max_size&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">upload_size_limit_obj</span><span class="o">.</span><span class="n">max_size</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">upload_size_limit_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="n">handler_upload_size_limit_obj</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">UploadSizeLimit</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span>
+            <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;file_upload_handler&quot;</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;Request total size, validated before the upload process. &quot;</span>
+                    <span class="s1">&#39;This should be greater than &quot;dataset_upload_size&quot;.&#39;</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;max_size&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">handler_upload_size_limit_obj</span><span class="o">.</span><span class="n">max_size</span> <span class="o">=</span> <span class="mi">1024</span>  <span class="c1"># Greater than 689 bytes (test csv request size)</span>
+        <span class="n">handler_upload_size_limit_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="n">csv_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_csv</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;thing&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;thing&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span><span class="p">})</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">HTTPError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">csv_file</span><span class="p">)</span>
+        <span class="n">expected_error</span> <span class="o">=</span> <span class="s2">&quot;Total upload size exceeds 1</span><span class="se">\\</span><span class="s2">u00a0byte. &quot;</span> <span class="s2">&quot;Please try again with smaller files.&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">expected_error</span><span class="p">,</span> <span class="n">error</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUpload.test_csv_with_upload_handler_size_limit">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUpload.test_csv_with_upload_handler_size_limit">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_csv_with_upload_handler_size_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;make sure a upload fails gracefully/normally with big files&quot;&quot;&quot;</span>
+        <span class="c1"># Set ``dataset_upload_size`` to 3 and to ``file_upload_handler`` 2</span>
+        <span class="c1"># In production ``dataset_upload_size`` should not be greater than ``file_upload_handler``</span>
+        <span class="c1"># It&#39;s used here to make sure that the uploadhandler is called</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
+        <span class="n">expected_error</span> <span class="o">=</span> <span class="s2">&quot;Total upload size exceeds 1</span><span class="se">\xa0</span><span class="s2">byte. Please try again with smaller files.&quot;</span>
+
+        <span class="n">total_upload_size_limit_obj</span><span class="p">,</span> <span class="n">created</span> <span class="o">=</span> <span class="n">UploadSizeLimit</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span>
+            <span class="n">slug</span><span class="o">=</span><span class="s2">&quot;dataset_upload_size&quot;</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The sum of sizes for the files of a dataset upload.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;max_size&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">total_upload_size_limit_obj</span><span class="o">.</span><span class="n">max_size</span> <span class="o">=</span> <span class="mi">1024</span>  <span class="c1"># Greater than 689 bytes (test csv request size)</span>
+        <span class="n">total_upload_size_limit_obj</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="n">csv_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_csv</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;thing&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;thing&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span><span class="p">})</span>
+
+        <span class="n">max_size_path</span> <span class="o">=</span> <span class="s2">&quot;geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler._get_max_size&quot;</span>
+
+        <span class="k">with</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">max_size_path</span><span class="p">,</span> <span class="n">new_callable</span><span class="o">=</span><span class="n">mock</span><span class="o">.</span><span class="n">PropertyMock</span><span class="p">)</span> <span class="k">as</span> <span class="n">max_size_mock</span><span class="p">:</span>
+            <span class="n">max_size_mock</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">HTTPError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">csv_file</span><span class="p">)</span>
+            <span class="n">expected_error</span> <span class="o">=</span> <span class="s2">&quot;Unexpected exception Expecting value: line 1 column 1 (char 0)&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">expected_error</span><span class="p">,</span> <span class="n">error</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="nd">@unittest</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">datastore_db</span><span class="p">,</span> <span class="s2">&quot;Vector datastore not enabled&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="TestUploadDBDataStore">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUploadDBDataStore">[docs]</a>
+<span class="k">class</span> <span class="nc">TestUploadDBDataStore</span><span class="p">(</span><span class="n">UploaderBase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestUploadDBDataStore.test_csv">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUploadDBDataStore.test_csv">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Override the baseclass test and verify a correct CSV upload&quot;&quot;&quot;</span>
+
+        <span class="n">csv_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_csv</span><span class="p">([</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="s2">&quot;thing&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;lat&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;lon&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">40</span><span class="p">,</span> <span class="s2">&quot;thing&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span><span class="p">})</span>
+        <span class="n">dataset_name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">csv_file</span><span class="p">))</span>
+        <span class="n">resp</span><span class="p">,</span> <span class="n">form_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">csv_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">form_data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_save_step</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">form_data</span><span class="p">)</span>
+            <span class="n">csv_step</span> <span class="o">=</span> <span class="n">form_data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">csv_step</span><span class="p">)</span>
+            <span class="n">form_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">lat</span><span class="o">=</span><span class="s2">&quot;lat&quot;</span><span class="p">,</span> <span class="n">lng</span><span class="o">=</span><span class="s2">&quot;lon&quot;</span><span class="p">,</span> <span class="n">csrfmiddlewaretoken</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_csrf_token</span><span class="p">())</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">csv_step</span><span class="p">,</span> <span class="n">form_data</span><span class="p">)</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">],</span> <span class="s2">&quot;incomplete&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUploadDBDataStore.test_time">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUploadDBDataStore.test_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Verify that uploading time based shapefile works properly&quot;&quot;&quot;</span>
+        <span class="n">cascading_delete</span><span class="p">(</span><span class="n">dataset_name</span><span class="o">=</span><span class="s2">&quot;boxes_with_date&quot;</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">catalog</span><span class="p">)</span>
+
+        <span class="n">timedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GOOD_DATA</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">)</span>
+        <span class="n">dataset_name</span> <span class="o">=</span> <span class="s2">&quot;boxes_with_date&quot;</span>
+        <span class="n">shp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timedir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">.shp&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get to time step</span>
+        <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># self.wait_for_progress(data.get(&#39;progress&#39;))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">],</span> <span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">))</span>
+            <span class="n">redirect_to</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">]</span>
+            <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_html</span><span class="p">(</span><span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">csrfmiddlewaretoken</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_csrf_token</span><span class="p">(),</span>
+                <span class="n">time_attribute</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">,</span>
+                <span class="n">presentation_strategy</span><span class="o">=</span><span class="s2">&quot;LIST&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">redirect_to</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="n">resp_js</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">resp_js</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">resp_js</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">]</span>
+
+                <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+                <span class="n">url</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;expected url to end with </span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">, but got </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+
+                <span class="n">url</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_dataset_complete</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">)</span>
+                <span class="n">wms</span> <span class="o">=</span> <span class="n">get_wms</span><span class="p">(</span><span class="n">type_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;geonode:</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">GEOSERVER_USER</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">GEOSERVER_PASSWD</span><span class="p">)</span>
+                <span class="n">dataset_info</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wms</span><span class="o">.</span><span class="n">items</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset_info</span><span class="o">.</span><span class="n">timepositions</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;error_msg&quot;</span> <span class="ow">in</span> <span class="n">resp_js</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestUploadDBDataStore.test_configure_time">
+<a class="viewcode-back" href="../../../../autoapi/geonode/upload/tests/integration/index.html#geonode.upload.tests.integration.TestUploadDBDataStore.test_configure_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_configure_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataset_name</span> <span class="o">=</span> <span class="s2">&quot;boxes_with_end_date&quot;</span>
+        <span class="c1"># make sure it&#39;s not there (and configured)</span>
+        <span class="n">cascading_delete</span><span class="p">(</span><span class="n">dataset_name</span><span class="o">=</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="n">gs_catalog</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">get_wms_timepositions</span><span class="p">():</span>
+            <span class="n">alternate_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;geonode:</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">alternate_name</span> <span class="ow">in</span> <span class="n">get_wms</span><span class="p">()</span><span class="o">.</span><span class="n">contents</span><span class="p">:</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="n">get_wms</span><span class="p">()</span><span class="o">.</span><span class="n">contents</span><span class="p">[</span><span class="n">alternate_name</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">metadata</span><span class="o">.</span><span class="n">timepositions</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">thefile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">GOOD_DATA</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">.shp&quot;</span><span class="p">)</span>
+        <span class="c1"># Test upload with custom permissions</span>
+        <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">thefile</span><span class="p">,</span> <span class="n">perms</span><span class="o">=</span><span class="s1">&#39;{&quot;users&quot;: {&quot;AnonymousUser&quot;: []}, &quot;groups&quot;:</span><span class="si">{}</span><span class="s1">}&#39;</span><span class="p">)</span>
+        <span class="n">_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">dataset_name</span><span class="p">)</span>
+        <span class="n">_user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">_dataset</span><span class="o">.</span><span class="n">get_user_perms</span><span class="p">(</span><span class="n">_user</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># initial state is no positions or info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">get_wms_timepositions</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+
+        <span class="c1"># enable using interval and single attribute</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># self.wait_for_progress(data.get(&#39;progress&#39;))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">],</span> <span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">))</span>
+            <span class="n">redirect_to</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">]</span>
+            <span class="n">resp</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_html</span><span class="p">(</span><span class="n">upload_step</span><span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">csrfmiddlewaretoken</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get_csrf_token</span><span class="p">(),</span>
+                <span class="n">time_attribute</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">,</span>
+                <span class="n">time_end_attribute</span><span class="o">=</span><span class="s2">&quot;enddate&quot;</span><span class="p">,</span>
+                <span class="n">presentation_strategy</span><span class="o">=</span><span class="s2">&quot;LIST&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">redirect_to</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="n">resp_js</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">resp_js</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">resp_js</span><span class="p">[</span><span class="s2">&quot;redirect_to&quot;</span><span class="p">]</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">make_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;expected url to end with </span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">, but got </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_dataset_complete</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">)</span>
+                <span class="n">wms</span> <span class="o">=</span> <span class="n">get_wms</span><span class="p">(</span><span class="n">type_name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;geonode:</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">GEOSERVER_USER</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">GEOSERVER_PASSWD</span><span class="p">)</span>
+                <span class="n">dataset_info</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wms</span><span class="o">.</span><span class="n">items</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset_info</span><span class="o">.</span><span class="n">timepositions</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;error_msg&quot;</span> <span class="ow">in</span> <span class="n">resp_js</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

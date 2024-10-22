@@ -1,0 +1,575 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fabfile &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="geonode" href="../geonode/index.html" />
+    <link rel="prev" title="upload" href="../upload/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload/index.html">upload</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">fabfile</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.INSTALLDIR"><code class="docutils literal notranslate"><span class="pre">INSTALLDIR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.POSTGIS_VER"><code class="docutils literal notranslate"><span class="pre">POSTGIS_VER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.GEONODE_BRANCH"><code class="docutils literal notranslate"><span class="pre">GEONODE_BRANCH</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.GEONODE_GIT_URL"><code class="docutils literal notranslate"><span class="pre">GEONODE_GIT_URL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.ADMIN_USER"><code class="docutils literal notranslate"><span class="pre">ADMIN_USER</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.ADMIN_PASSWORD"><code class="docutils literal notranslate"><span class="pre">ADMIN_PASSWORD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.ADMIN_EMAIL"><code class="docutils literal notranslate"><span class="pre">ADMIN_EMAIL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.UBUNTU_VERSION"><code class="docutils literal notranslate"><span class="pre">UBUNTU_VERSION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.ARCH"><code class="docutils literal notranslate"><span class="pre">ARCH</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.VERSION"><code class="docutils literal notranslate"><span class="pre">VERSION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.MAKE_PUBLIC"><code class="docutils literal notranslate"><span class="pre">MAKE_PUBLIC</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.AMI_BUCKET"><code class="docutils literal notranslate"><span class="pre">AMI_BUCKET</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.AWS_USER_ID"><code class="docutils literal notranslate"><span class="pre">AWS_USER_ID</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.AWS_ACCESS_KEY_ID"><code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.AWS_SECRET_ACCESS_KEY"><code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.KEY_BASE"><code class="docutils literal notranslate"><span class="pre">KEY_BASE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.KEY_PATH"><code class="docutils literal notranslate"><span class="pre">KEY_PATH</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.GEONODEDIR"><code class="docutils literal notranslate"><span class="pre">GEONODEDIR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.PYLIBS"><code class="docutils literal notranslate"><span class="pre">PYLIBS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.ACT"><code class="docutils literal notranslate"><span class="pre">ACT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.install_depend"><code class="docutils literal notranslate"><span class="pre">install_depend()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.create_postgis_template"><code class="docutils literal notranslate"><span class="pre">create_postgis_template()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.deploy_geonode"><code class="docutils literal notranslate"><span class="pre">deploy_geonode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.deploy_project"><code class="docutils literal notranslate"><span class="pre">deploy_project()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.enable_site"><code class="docutils literal notranslate"><span class="pre">enable_site()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.restore_data"><code class="docutils literal notranslate"><span class="pre">restore_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.create_database"><code class="docutils literal notranslate"><span class="pre">create_database()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.setup_pgsql"><code class="docutils literal notranslate"><span class="pre">setup_pgsql()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.deploy"><code class="docutils literal notranslate"><span class="pre">deploy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.deploy_default_geonode"><code class="docutils literal notranslate"><span class="pre">deploy_default_geonode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.deploy_geonode_testing_package"><code class="docutils literal notranslate"><span class="pre">deploy_geonode_testing_package()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.deploy_geonode_snapshot_package"><code class="docutils literal notranslate"><span class="pre">deploy_geonode_snapshot_package()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.deploy_geonode_unstable_package"><code class="docutils literal notranslate"><span class="pre">deploy_geonode_unstable_package()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.deploy_geonode_dev_deb"><code class="docutils literal notranslate"><span class="pre">deploy_geonode_dev_deb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.change_admin_password"><code class="docutils literal notranslate"><span class="pre">change_admin_password()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.geonode_updateip"><code class="docutils literal notranslate"><span class="pre">geonode_updateip()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.set_temp_hosts_entry"><code class="docutils literal notranslate"><span class="pre">set_temp_hosts_entry()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.remove_temp_hosts_entry"><code class="docutils literal notranslate"><span class="pre">remove_temp_hosts_entry()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.update_geoserver_geonode_auth"><code class="docutils literal notranslate"><span class="pre">update_geoserver_geonode_auth()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.update_instance"><code class="docutils literal notranslate"><span class="pre">update_instance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.cleanup_temp"><code class="docutils literal notranslate"><span class="pre">cleanup_temp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.copy_keys"><code class="docutils literal notranslate"><span class="pre">copy_keys()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.install_ec2_tools"><code class="docutils literal notranslate"><span class="pre">install_ec2_tools()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.build_geonode_ami"><code class="docutils literal notranslate"><span class="pre">build_geonode_ami()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#fabfile.install_sample_data"><code class="docutils literal notranslate"><span class="pre">install_sample_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../geonode/index.html">geonode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">fabfile</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/autoapi/fabfile/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-fabfile">
+<span id="fabfile"></span><h1>fabfile<a class="headerlink" href="#module-fabfile" title="Link to this heading"></a></h1>
+<p>This is a fabric script file that allows for remote deployment of
+GeoNode and a downstream GeoNode project via ssh.</p>
+<dl class="simple">
+<dt>To deploy a default GeoNode:</dt><dd><p>fab -H <a class="reference external" href="mailto:user&#37;&#52;&#48;hostname">user<span>&#64;</span>hostname</a> deploy_default_geonode</p>
+</dd>
+<dt>To deploy a GeoNode project from current directory:</dt><dd><dl class="simple">
+<dt>fab -H <a class="reference external" href="mailto:user&#37;&#52;&#48;hostname">user<span>&#64;</span>hostname</a> deploy:’project’</dt><dd><p>project - name of project (name of site directory in current dir)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>This file currently gets GeoNode from GitHub, eventually will install
+from repo or debian package (once release candidate phase or later)</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.logger" title="fabfile.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.INSTALLDIR" title="fabfile.INSTALLDIR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">INSTALLDIR</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.POSTGIS_VER" title="fabfile.POSTGIS_VER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">POSTGIS_VER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.GEONODE_BRANCH" title="fabfile.GEONODE_BRANCH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GEONODE_BRANCH</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.GEONODE_GIT_URL" title="fabfile.GEONODE_GIT_URL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GEONODE_GIT_URL</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.ADMIN_USER" title="fabfile.ADMIN_USER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADMIN_USER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.ADMIN_PASSWORD" title="fabfile.ADMIN_PASSWORD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADMIN_PASSWORD</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.ADMIN_EMAIL" title="fabfile.ADMIN_EMAIL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADMIN_EMAIL</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.UBUNTU_VERSION" title="fabfile.UBUNTU_VERSION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UBUNTU_VERSION</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.ARCH" title="fabfile.ARCH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ARCH</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.VERSION" title="fabfile.VERSION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VERSION</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.MAKE_PUBLIC" title="fabfile.MAKE_PUBLIC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MAKE_PUBLIC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.AMI_BUCKET" title="fabfile.AMI_BUCKET"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AMI_BUCKET</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.AWS_USER_ID" title="fabfile.AWS_USER_ID"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AWS_USER_ID</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.AWS_ACCESS_KEY_ID" title="fabfile.AWS_ACCESS_KEY_ID"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.AWS_SECRET_ACCESS_KEY" title="fabfile.AWS_SECRET_ACCESS_KEY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.KEY_BASE" title="fabfile.KEY_BASE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KEY_BASE</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.KEY_PATH" title="fabfile.KEY_PATH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KEY_PATH</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.GEONODEDIR" title="fabfile.GEONODEDIR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GEONODEDIR</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.PYLIBS" title="fabfile.PYLIBS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PYLIBS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.ACT" title="fabfile.ACT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.install_depend" title="fabfile.install_depend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">install_depend</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.create_postgis_template" title="fabfile.create_postgis_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_postgis_template</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.deploy_geonode" title="fabfile.deploy_geonode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deploy_geonode</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.deploy_project" title="fabfile.deploy_project"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deploy_project</span></code></a>(project)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.enable_site" title="fabfile.enable_site"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enable_site</span></code></a>(project)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.restore_data" title="fabfile.restore_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">restore_data</span></code></a>(project)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.create_database" title="fabfile.create_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_database</span></code></a>(db, user, password)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.setup_pgsql" title="fabfile.setup_pgsql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_pgsql</span></code></a>(project)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.deploy" title="fabfile.deploy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deploy</span></code></a>(project)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.deploy_default_geonode" title="fabfile.deploy_default_geonode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deploy_default_geonode</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.deploy_geonode_testing_package" title="fabfile.deploy_geonode_testing_package"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deploy_geonode_testing_package</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.deploy_geonode_snapshot_package" title="fabfile.deploy_geonode_snapshot_package"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deploy_geonode_snapshot_package</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.deploy_geonode_unstable_package" title="fabfile.deploy_geonode_unstable_package"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deploy_geonode_unstable_package</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.deploy_geonode_dev_deb" title="fabfile.deploy_geonode_dev_deb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deploy_geonode_dev_deb</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.change_admin_password" title="fabfile.change_admin_password"><code class="xref py py-obj docutils literal notranslate"><span class="pre">change_admin_password</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.geonode_updateip" title="fabfile.geonode_updateip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode_updateip</span></code></a>([server_name])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.set_temp_hosts_entry" title="fabfile.set_temp_hosts_entry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_temp_hosts_entry</span></code></a>([server_name])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.remove_temp_hosts_entry" title="fabfile.remove_temp_hosts_entry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_temp_hosts_entry</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.update_geoserver_geonode_auth" title="fabfile.update_geoserver_geonode_auth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_geoserver_geonode_auth</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.update_instance" title="fabfile.update_instance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_instance</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.cleanup_temp" title="fabfile.cleanup_temp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cleanup_temp</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.copy_keys" title="fabfile.copy_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy_keys</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.install_ec2_tools" title="fabfile.install_ec2_tools"><code class="xref py py-obj docutils literal notranslate"><span class="pre">install_ec2_tools</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#fabfile.build_geonode_ami" title="fabfile.build_geonode_ami"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_geonode_ami</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fabfile.install_sample_data" title="fabfile.install_sample_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">install_sample_data</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.logger">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../_modules/fabfile.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.INSTALLDIR">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">INSTALLDIR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/var/lib'</span></em><a class="reference internal" href="../../_modules/fabfile.html#INSTALLDIR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.INSTALLDIR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.POSTGIS_VER">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">POSTGIS_VER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'1.5.3-2'</span></em><a class="reference internal" href="../../_modules/fabfile.html#POSTGIS_VER"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.POSTGIS_VER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.GEONODE_BRANCH">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">GEONODE_BRANCH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dev'</span></em><a class="reference internal" href="../../_modules/fabfile.html#GEONODE_BRANCH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.GEONODE_BRANCH" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.GEONODE_GIT_URL">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">GEONODE_GIT_URL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'git://github.com/GeoNode/geonode.git'</span></em><a class="reference internal" href="../../_modules/fabfile.html#GEONODE_GIT_URL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.GEONODE_GIT_URL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.ADMIN_USER">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">ADMIN_USER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'geonode'</span></em><a class="reference internal" href="../../_modules/fabfile.html#ADMIN_USER"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.ADMIN_USER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.ADMIN_PASSWORD">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">ADMIN_PASSWORD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'adm1n'</span></em><a class="reference internal" href="../../_modules/fabfile.html#ADMIN_PASSWORD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.ADMIN_PASSWORD" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.ADMIN_EMAIL">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">ADMIN_EMAIL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'admin&#64;admin.admin'</span></em><a class="reference internal" href="../../_modules/fabfile.html#ADMIN_EMAIL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.ADMIN_EMAIL" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.UBUNTU_VERSION">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">UBUNTU_VERSION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'precise'</span></em><a class="reference internal" href="../../_modules/fabfile.html#UBUNTU_VERSION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.UBUNTU_VERSION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.ARCH">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">ARCH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'x86_64'</span></em><a class="reference internal" href="../../_modules/fabfile.html#ARCH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.ARCH" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.VERSION">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">VERSION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'2.0a0'</span></em><a class="reference internal" href="../../_modules/fabfile.html#VERSION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.VERSION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.MAKE_PUBLIC">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">MAKE_PUBLIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="reference internal" href="../../_modules/fabfile.html#MAKE_PUBLIC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.MAKE_PUBLIC" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.AMI_BUCKET">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">AMI_BUCKET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'geonode-ami-dev'</span></em><a class="reference internal" href="../../_modules/fabfile.html#AMI_BUCKET"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.AMI_BUCKET" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.AWS_USER_ID">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">AWS_USER_ID</span></span><a class="reference internal" href="../../_modules/fabfile.html#AWS_USER_ID"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.AWS_USER_ID" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.AWS_ACCESS_KEY_ID">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">AWS_ACCESS_KEY_ID</span></span><a class="reference internal" href="../../_modules/fabfile.html#AWS_ACCESS_KEY_ID"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.AWS_ACCESS_KEY_ID" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.AWS_SECRET_ACCESS_KEY">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">AWS_SECRET_ACCESS_KEY</span></span><a class="reference internal" href="../../_modules/fabfile.html#AWS_SECRET_ACCESS_KEY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.AWS_SECRET_ACCESS_KEY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.KEY_BASE">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">KEY_BASE</span></span><a class="reference internal" href="../../_modules/fabfile.html#KEY_BASE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.KEY_BASE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.KEY_PATH">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">KEY_PATH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'~/.ssh/'</span></em><a class="reference internal" href="../../_modules/fabfile.html#KEY_PATH"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.KEY_PATH" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.GEONODEDIR">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">GEONODEDIR</span></span><a class="reference internal" href="../../_modules/fabfile.html#GEONODEDIR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.GEONODEDIR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.PYLIBS">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">PYLIBS</span></span><a class="reference internal" href="../../_modules/fabfile.html#PYLIBS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.PYLIBS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fabfile.ACT">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">ACT</span></span><a class="reference internal" href="../../_modules/fabfile.html#ACT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.ACT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.install_depend">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">install_depend</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#install_depend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.install_depend" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.create_postgis_template">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">create_postgis_template</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#create_postgis_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.create_postgis_template" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.deploy_geonode">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">deploy_geonode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#deploy_geonode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.deploy_geonode" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.deploy_project">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">deploy_project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#deploy_project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.deploy_project" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.enable_site">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">enable_site</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#enable_site"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.enable_site" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.restore_data">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">restore_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#restore_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.restore_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.create_database">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">create_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#create_database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.create_database" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.setup_pgsql">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">setup_pgsql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#setup_pgsql"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.setup_pgsql" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.deploy">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">deploy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#deploy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.deploy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.deploy_default_geonode">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">deploy_default_geonode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#deploy_default_geonode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.deploy_default_geonode" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.deploy_geonode_testing_package">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">deploy_geonode_testing_package</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#deploy_geonode_testing_package"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.deploy_geonode_testing_package" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.deploy_geonode_snapshot_package">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">deploy_geonode_snapshot_package</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#deploy_geonode_snapshot_package"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.deploy_geonode_snapshot_package" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.deploy_geonode_unstable_package">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">deploy_geonode_unstable_package</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#deploy_geonode_unstable_package"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.deploy_geonode_unstable_package" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.deploy_geonode_dev_deb">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">deploy_geonode_dev_deb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#deploy_geonode_dev_deb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.deploy_geonode_dev_deb" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.change_admin_password">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">change_admin_password</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#change_admin_password"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.change_admin_password" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.geonode_updateip">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">geonode_updateip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'demo.geonode.org'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#geonode_updateip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.geonode_updateip" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.set_temp_hosts_entry">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">set_temp_hosts_entry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">server_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'demo.geonode.org'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#set_temp_hosts_entry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.set_temp_hosts_entry" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.remove_temp_hosts_entry">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">remove_temp_hosts_entry</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#remove_temp_hosts_entry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.remove_temp_hosts_entry" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.update_geoserver_geonode_auth">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">update_geoserver_geonode_auth</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#update_geoserver_geonode_auth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.update_geoserver_geonode_auth" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.update_instance">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">update_instance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#update_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.update_instance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.cleanup_temp">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">cleanup_temp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#cleanup_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.cleanup_temp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.copy_keys">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">copy_keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#copy_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.copy_keys" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.install_ec2_tools">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">install_ec2_tools</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#install_ec2_tools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.install_ec2_tools" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.build_geonode_ami">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">build_geonode_ami</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#build_geonode_ami"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.build_geonode_ami" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="fabfile.install_sample_data">
+<span class="sig-prename descclassname"><span class="pre">fabfile.</span></span><span class="sig-name descname"><span class="pre">install_sample_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/fabfile.html#install_sample_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fabfile.install_sample_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../upload/index.html" class="btn btn-neutral float-left" title="upload" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../geonode/index.html" class="btn btn-neutral float-right" title="geonode" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

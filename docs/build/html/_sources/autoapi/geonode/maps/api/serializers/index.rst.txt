@@ -1,0 +1,194 @@
+geonode.maps.api.serializers
+============================
+
+.. py:module:: geonode.maps.api.serializers
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.maps.api.serializers.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.maps.api.serializers.DynamicListAsStringField
+   geonode.maps.api.serializers.DynamicFullyEmbedM2MRelationField
+   geonode.maps.api.serializers.MapLayerDatasetSerializer
+   geonode.maps.api.serializers.MapLayerSerializer
+   geonode.maps.api.serializers.SimpleMapLayerSerializer
+   geonode.maps.api.serializers.MapSerializer
+   geonode.maps.api.serializers.SimpleMapSerializer
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: DynamicListAsStringField
+
+   Bases: :py:obj:`dynamic_rest.fields.fields.DynamicField`
+
+
+   .. py:method:: to_representation(value)
+
+
+   .. py:method:: to_internal_value(data)
+
+
+.. py:class:: DynamicFullyEmbedM2MRelationField(serializer_class, queryset=None, sideloading=None, debug=False, **kwargs)
+
+   Bases: :py:obj:`dynamic_rest.fields.fields.DynamicRelationField`
+
+
+   .. py:method:: to_internal_value_single(data, serializer)
+
+      Return the underlying object, given the serialized form.
+
+
+
+   .. py:method:: to_internal_value(data)
+
+      Return the underlying object(s), given the serialized form.
+
+
+
+.. py:class:: MapLayerDatasetSerializer
+
+   Bases: :py:obj:`geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin`
+
+
+   .. py:attribute:: default_style
+
+
+   .. py:attribute:: styles
+
+
+   .. py:attribute:: featureinfo_custom_template
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'dataset'
+
+
+
+      .. py:attribute:: fields
+         :value: ('alternate', 'featureinfo_custom_template', 'title', 'perms', 'pk', 'has_time',...
+
+
+
+
+.. py:class:: MapLayerSerializer
+
+   Bases: :py:obj:`dynamic_rest.serializers.DynamicModelSerializer`
+
+
+   .. py:attribute:: dataset
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'maplayer'
+
+
+
+      .. py:attribute:: fields
+         :value: ('pk', 'extra_params', 'current_style', 'dataset', 'name', 'order', 'visibility', 'opacity')
+
+
+
+
+.. py:class:: SimpleMapLayerSerializer
+
+   Bases: :py:obj:`rest_framework.serializers.ModelSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'maplayer'
+
+
+
+      .. py:attribute:: fields
+         :value: ('pk', 'name', 'extra_params', 'current_style', 'order', 'visibility', 'opacity')
+
+
+
+
+.. py:class:: MapSerializer(*args, **kwargs)
+
+   Bases: :py:obj:`geonode.base.api.serializers.ResourceBaseSerializer`
+
+
+   .. py:attribute:: maplayers
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'map'
+
+
+
+      .. py:attribute:: view_name
+         :value: 'maps-list'
+
+
+
+      .. py:attribute:: fields
+         :value: ('pk', 'uuid', 'urlsuffix', 'featuredurl', 'data', 'maplayers', 'executions', 'metadata')
+
+
+
+
+.. py:class:: SimpleMapSerializer
+
+   Bases: :py:obj:`geonode.base.api.serializers.BaseDynamicModelSerializer`
+
+
+   .. py:attribute:: detail_url
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'map'
+
+
+
+      .. py:attribute:: view_name
+         :value: 'maps-list'
+
+
+
+      .. py:attribute:: fields
+         :value: ('pk', 'title', 'detail_url')
+
+
+
+
