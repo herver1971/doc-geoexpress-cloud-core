@@ -1,0 +1,347 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.geoapps.api.tests &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../geoapps.html">geonode.geoapps</a></li>
+      <li class="breadcrumb-item active">geonode.geoapps.api.tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.geoapps.api.tests</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">MagicMock</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urljoin</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">rest_framework.test</span> <span class="kn">import</span> <span class="n">APITestCase</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.populate_test_data</span> <span class="kn">import</span> <span class="n">create_models</span>
+<span class="kn">from</span> <span class="nn">geonode.geoapps.api.exceptions</span> <span class="kn">import</span> <span class="n">DuplicateGeoAppException</span><span class="p">,</span> <span class="n">InvalidGeoAppException</span>
+<span class="kn">from</span> <span class="nn">geonode.geoapps.api.serializers</span> <span class="kn">import</span> <span class="n">GeoAppSerializer</span>
+<span class="kn">from</span> <span class="nn">geonode.geoapps.models</span> <span class="kn">import</span> <span class="n">GeoApp</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GeoAppsApiTests">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoAppsApiTests</span><span class="p">(</span><span class="n">APITestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="GeoAppsApiTests.fixtures">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.fixtures">[docs]</a>
+    <span class="n">fixtures</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;initial_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;group_test_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;default_oauth_apps.json&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.setUp">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;document&quot;</span><span class="p">)</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;map&quot;</span><span class="p">)</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">admin</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bobby</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;bobby&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norman</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;norman&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gep_app</span> <span class="o">=</span> <span class="n">GeoApp</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Test GeoApp&quot;</span><span class="p">,</span>
+            <span class="n">owner</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bobby</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="s2">&quot;geostory&quot;</span><span class="p">,</span>
+            <span class="n">blob</span><span class="o">=</span><span class="s1">&#39;{&quot;test_data&quot;: {&quot;test&quot;: [&quot;test_1&quot;,&quot;test_2&quot;,&quot;test_3&quot;]}}&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gep_app</span><span class="o">.</span><span class="n">set_default_permissions</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.test_geoapps_list">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.test_geoapps_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_geoapps_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensure we can access the GeoApps list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;geoapps-list&quot;</span><span class="p">)</span>
+        <span class="c1"># Anonymous</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Pagination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapps&quot;</span><span class="p">]),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapps&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Pagination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapps&quot;</span><span class="p">]),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapps&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapps&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]),</span> <span class="p">{</span><span class="s2">&quot;test_data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;test_1&quot;</span><span class="p">,</span> <span class="s2">&quot;test_2&quot;</span><span class="p">,</span> <span class="s2">&quot;test_3&quot;</span><span class="p">]}}</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.test_extra_metadata_included_with_param">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.test_extra_metadata_included_with_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_extra_metadata_included_with_param</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_app</span> <span class="o">=</span> <span class="n">GeoApp</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;geoapps-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_app</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;include[]&quot;</span><span class="p">:</span> <span class="s2">&quot;metadata&quot;</span><span class="p">}</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">))</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapp&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.test_geoapps_crud">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.test_geoapps_crud">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_geoapps_crud</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensure we can create/update GeoApps.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Bobby</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;bobby&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;bob&quot;</span><span class="p">))</span>
+        <span class="c1"># Create</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;geoapps-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Test Create&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Test Create&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;geostory&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="s2">&quot;bobby&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;extent&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;coords&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1123692.0</span><span class="p">,</span> <span class="mf">5338214.0</span><span class="p">,</span> <span class="mf">1339852.0</span><span class="p">,</span> <span class="mf">5482615.0</span><span class="p">],</span> <span class="s2">&quot;srid&quot;</span><span class="p">:</span> <span class="s2">&quot;EPSG:3857&quot;</span><span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>  <span class="c1"># 201 - Created</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">GeoApp</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Test Create&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">srid</span><span class="p">,</span> <span class="s2">&quot;EPSG:3857&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;geoapp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;extent&quot;</span><span class="p">)[</span><span class="s2">&quot;srid&quot;</span><span class="p">],</span> <span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;geoapp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;extent&quot;</span><span class="p">)[</span><span class="s2">&quot;coords&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="mf">10.094296982428332</span><span class="p">,</span> <span class="mf">43.1721654049465</span><span class="p">,</span> <span class="mf">12.03609530058109</span><span class="p">,</span> <span class="mf">44.11086592050112</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># Pagination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapps&quot;</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Update: PATCH</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;geoapps-detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">gep_app</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;blob&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;test_data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;test_4&quot;</span><span class="p">,</span> <span class="s2">&quot;test_5&quot;</span><span class="p">,</span> <span class="s2">&quot;test_6&quot;</span><span class="p">]}}}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Pagination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapp&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapp&quot;</span><span class="p">][</span><span class="s2">&quot;resource_type&quot;</span><span class="p">],</span> <span class="s2">&quot;geostory&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;geoapp&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;test_data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;test_4&quot;</span><span class="p">,</span> <span class="s2">&quot;test_5&quot;</span><span class="p">,</span> <span class="s2">&quot;test_6&quot;</span><span class="p">]}})</span>
+
+        <span class="c1"># Update: POST</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test_data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;test_1&quot;</span><span class="p">,</span> <span class="s2">&quot;test_2&quot;</span><span class="p">,</span> <span class="s2">&quot;test_3&quot;</span><span class="p">]}}</span>
+
+        <span class="n">_app</span> <span class="o">=</span> <span class="n">GeoApp</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">_app</span><span class="o">.</span><span class="n">set_permissions</span><span class="p">({</span><span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bobby</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;base.add_resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;base.delete_resourcebase&quot;</span><span class="p">]}})</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">405</span><span class="p">)</span>  <span class="c1"># 405 – Method not allowed</span>
+
+        <span class="c1"># Delete</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">405</span><span class="p">)</span>  <span class="c1"># 405 - Method Not Allowed</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.test_extra_create_checks_with_no_owner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.test_extra_create_checks_with_no_owner">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_extra_create_checks_with_no_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">GeoAppSerializer</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;fakename&quot;</span><span class="p">}</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidGeoAppException</span><span class="p">)</span> <span class="k">as</span> <span class="n">exp</span><span class="p">:</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">extra_create_checks</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;geoapp_api&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">default_code</span><span class="p">,</span> <span class="s2">&quot;geoapp_exception&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">detail</span><span class="p">),</span> <span class="s2">&quot;No valid data: &#39;name&#39; and &#39;owner&#39; are mandatory fields!&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.test_extra_create_checks_duplicated">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.test_extra_create_checks_duplicated">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_extra_create_checks_duplicated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">GeoAppSerializer</span><span class="p">()</span>
+        <span class="n">_geoapp</span> <span class="o">=</span> <span class="n">GeoApp</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">_geoapp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">_geoapp</span><span class="o">.</span><span class="n">owner</span><span class="p">}</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">DuplicateGeoAppException</span><span class="p">)</span> <span class="k">as</span> <span class="n">exp</span><span class="p">:</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">extra_create_checks</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;geoapp_api&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">default_code</span><span class="p">,</span> <span class="s2">&quot;geoapp_exception&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">detail</span><span class="p">),</span> <span class="s2">&quot;A GeoApp with the same &#39;name&#39; already exists!&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.test_create_with_no_owner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.test_create_with_no_owner">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_create_with_no_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">GeoAppSerializer</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;fakename&quot;</span><span class="p">}</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidGeoAppException</span><span class="p">)</span> <span class="k">as</span> <span class="n">exp</span><span class="p">:</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;geoapp_api&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">default_code</span><span class="p">,</span> <span class="s2">&quot;geoapp_exception&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">detail</span><span class="p">),</span> <span class="s2">&quot;No valid data: [&#39;name&#39;, &#39;owner&#39;, &#39;resource_type&#39;] are mandatory fields!&quot;</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.test_update_with_no_owner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.test_update_with_no_owner">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_update_with_no_owner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">GeoAppSerializer</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;fakename&quot;</span><span class="p">}</span>
+        <span class="n">_geoapp</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">_geoapp</span><span class="o">.</span><span class="n">resource_type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">InvalidGeoAppException</span><span class="p">)</span> <span class="k">as</span> <span class="n">exp</span><span class="p">:</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_geoapp</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;geoapp_api&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">default_code</span><span class="p">,</span> <span class="s2">&quot;geoapp_exception&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">detail</span><span class="p">),</span> <span class="s2">&quot;No valid data: [&#39;resource_type&#39;] are mandatory fields!&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoAppsApiTests.test_create_checks_duplicated">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoapps/api/tests/index.html#geonode.geoapps.api.tests.GeoAppsApiTests.test_create_checks_duplicated">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_create_checks_duplicated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">GeoAppSerializer</span><span class="p">()</span>
+        <span class="n">_geoapp</span> <span class="o">=</span> <span class="n">GeoApp</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">_geoapp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">_geoapp</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="n">_geoapp</span><span class="o">.</span><span class="n">resource_type</span><span class="p">}</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">DuplicateGeoAppException</span><span class="p">)</span> <span class="k">as</span> <span class="n">exp</span><span class="p">:</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;geoapp_api&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">default_code</span><span class="p">,</span> <span class="s2">&quot;geoapp_exception&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">detail</span><span class="p">),</span> <span class="s2">&quot;A GeoApp with the same &#39;name&#39; already exists!&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

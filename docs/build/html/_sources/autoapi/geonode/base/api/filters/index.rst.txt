@@ -1,0 +1,97 @@
+geonode.base.api.filters
+========================
+
+.. py:module:: geonode.base.api.filters
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.base.api.filters.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.api.filters.DynamicSearchFilter
+   geonode.base.api.filters.ExtentFilter
+   geonode.base.api.filters.TKeywordsFilter
+   geonode.base.api.filters.FavoriteFilter
+   geonode.base.api.filters.FacetVisibleResourceFilter
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: DynamicSearchFilter
+
+   Bases: :py:obj:`rest_framework.filters.SearchFilter`
+
+
+   .. py:method:: get_search_fields(view, request)
+
+
+.. py:class:: ExtentFilter
+
+   Bases: :py:obj:`rest_framework.filters.BaseFilterBackend`
+
+
+   Filter that only allows users to see their own objects.
+
+
+   .. py:method:: filter_queryset(request, queryset, view)
+
+
+.. py:class:: TKeywordsFilter
+
+   Bases: :py:obj:`rest_framework.filters.BaseFilterBackend`
+
+
+   TKeywords are a ManyToMany relation but DREST can't handle AND filtering the way we need.
+   When the filter has more than one tkeyword, DREST by default will return Resources associated at least to one
+   of the keywords.
+
+
+   .. py:method:: filter_queryset(request, queryset, view)
+
+
+   .. py:method:: filter_queryset_AND(request, queryset, view)
+
+      This implementation requires all the tkeywords to be assigned to the Resource
+
+
+
+   .. py:method:: filter_queryset_GROUP(request, queryset, view)
+
+      This implementation requires that at least one tkeyword for each thesaurus is assigned to the Resource
+
+
+
+.. py:class:: FavoriteFilter
+
+   Bases: :py:obj:`rest_framework.filters.BaseFilterBackend`
+
+
+   Filter that only allows users to see their own objects.
+
+
+   .. py:method:: filter_queryset(request, queryset, _)
+
+
+.. py:class:: FacetVisibleResourceFilter
+
+   Bases: :py:obj:`rest_framework.filters.BaseFilterBackend`
+
+
+   Return Only elements that have a resource assigned.
+
+
+   .. py:method:: filter_queryset(request, queryset, _)
+
+

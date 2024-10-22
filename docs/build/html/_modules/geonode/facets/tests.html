@@ -1,0 +1,731 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.facets.tests &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../facets.html">geonode.facets</a></li>
+      <li class="breadcrumb-item active">geonode.facets.tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.facets.tests</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2023 Open Source Geospatial Foundation - all rights reserved</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">tastypie.test</span> <span class="kn">import</span> <span class="n">TestApiClient</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span> <span class="nn">django.test</span> <span class="kn">import</span> <span class="n">RequestFactory</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Thesaurus</span><span class="p">,</span>
+    <span class="n">ThesaurusLabel</span><span class="p">,</span>
+    <span class="n">ThesaurusKeyword</span><span class="p">,</span>
+    <span class="n">ThesaurusKeywordLabel</span><span class="p">,</span>
+    <span class="n">ResourceBase</span><span class="p">,</span>
+    <span class="n">Region</span><span class="p">,</span>
+    <span class="n">TopicCategory</span><span class="p">,</span>
+    <span class="n">HierarchicalKeyword</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">geonode.facets.models</span> <span class="kn">import</span> <span class="n">facet_registry</span>
+<span class="kn">from</span> <span class="nn">geonode.facets.providers.baseinfo</span> <span class="kn">import</span> <span class="n">FeaturedFacetProvider</span>
+<span class="kn">from</span> <span class="nn">geonode.facets.providers.category</span> <span class="kn">import</span> <span class="n">CategoryFacetProvider</span>
+<span class="kn">from</span> <span class="nn">geonode.facets.providers.keyword</span> <span class="kn">import</span> <span class="n">KeywordFacetProvider</span>
+<span class="kn">from</span> <span class="nn">geonode.facets.providers.region</span> <span class="kn">import</span> <span class="n">RegionFacetProvider</span>
+<span class="kn">from</span> <span class="nn">geonode.facets.views</span> <span class="kn">import</span> <span class="n">ListFacetsView</span><span class="p">,</span> <span class="n">GetFacetView</span>
+<span class="kn">from</span> <span class="nn">geonode.tests.base</span> <span class="kn">import</span> <span class="n">GeoNodeBaseTestSupport</span>
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="TestFacets">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets">[docs]</a>
+<span class="k">class</span> <span class="nc">TestFacets</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestFacets.setUpClass">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.setUpClass">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUpClass</span><span class="p">()</span>
+
+        <span class="bp">cls</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;user_00&quot;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">admin</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_create_thesauri</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_create_regions</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_create_categories</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_create_keywords</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_create_resources</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">rf</span> <span class="o">=</span> <span class="n">RequestFactory</span><span class="p">()</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestFacets.tearDownClass">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.tearDownClass">[docs]</a>
+    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tearDownClass</span><span class="p">()</span></div>
+
+        <span class="c1"># remove_models(cls.get_obj_ids, type=cls.get_type, integration=cls.get_integration)</span>
+
+<div class="viewcode-block" id="TestFacets.setUp">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_client</span> <span class="o">=</span> <span class="n">TestApiClient</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">admin</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">admin</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestFacets._create_thesauri">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets._create_thesauri">[docs]</a>
+    <span class="k">def</span> <span class="nf">_create_thesauri</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">thesauri</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">thesauri_k</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">tn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">Thesaurus</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;t_</span><span class="si">{</span><span class="n">tn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Thesaurus </span><span class="si">{</span><span class="n">tn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">100</span> <span class="o">+</span> <span class="n">tn</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">thesauri</span><span class="p">[</span><span class="n">tn</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+            <span class="k">for</span> <span class="n">tl</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+                <span class="s2">&quot;en&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;it&quot;</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="n">ThesaurusLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">tl</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;TLabel </span><span class="si">{</span><span class="n">tn</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">tl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">tkn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+                <span class="n">tk</span> <span class="o">=</span> <span class="n">ThesaurusKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">alt_label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;T</span><span class="si">{</span><span class="n">tn</span><span class="si">}</span><span class="s2">_K</span><span class="si">{</span><span class="n">tkn</span><span class="si">}</span><span class="s2">_ALT&quot;</span><span class="p">)</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tn</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">tkn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tk</span>
+                <span class="k">for</span> <span class="n">tkl</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+                    <span class="s2">&quot;en&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;it&quot;</span><span class="p">,</span>
+                <span class="p">):</span>
+                    <span class="n">ThesaurusKeywordLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">keyword</span><span class="o">=</span><span class="n">tk</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">tkl</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;T</span><span class="si">{</span><span class="n">tn</span><span class="si">}</span><span class="s2">_K</span><span class="si">{</span><span class="n">tkn</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">tkl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestFacets._create_regions">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets._create_regions">[docs]</a>
+    <span class="k">def</span> <span class="nf">_create_regions</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">code</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+            <span class="p">(</span><span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="s2">&quot;Region0&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;R1&quot;</span><span class="p">,</span> <span class="s2">&quot;Region1&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;R2&quot;</span><span class="p">,</span> <span class="s2">&quot;Region2&quot;</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">regions</span><span class="p">[</span><span class="n">code</span><span class="p">]</span> <span class="o">=</span> <span class="n">Region</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestFacets._create_categories">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets._create_categories">[docs]</a>
+    <span class="k">def</span> <span class="nf">_create_categories</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">cats</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">code</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+            <span class="p">(</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="s2">&quot;Cat0&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="s2">&quot;Cat1&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;C2&quot;</span><span class="p">,</span> <span class="s2">&quot;Cat2&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;C3&quot;</span><span class="p">,</span> <span class="s2">&quot;Cat3&quot;</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">cats</span><span class="p">[</span><span class="n">code</span><span class="p">]</span> <span class="o">=</span> <span class="n">TopicCategory</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">code</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">gn_description</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestFacets._create_keywords">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets._create_keywords">[docs]</a>
+    <span class="k">def</span> <span class="nf">_create_keywords</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">kw</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">code</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+            <span class="p">(</span><span class="s2">&quot;K0&quot;</span><span class="p">,</span> <span class="s2">&quot;Keyword0&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;K1&quot;</span><span class="p">,</span> <span class="s2">&quot;Keyword1&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="s2">&quot;Keyword2&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;K3&quot;</span><span class="p">,</span> <span class="s2">&quot;Keyword3&quot;</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">kw</span><span class="p">[</span><span class="n">code</span><span class="p">]</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">code</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="TestFacets._create_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets._create_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">_create_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">public_perm_spec</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;view_resourcebase&quot;</span><span class="p">]},</span> <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+            <span class="n">d</span><span class="p">:</span> <span class="n">ResourceBase</span> <span class="o">=</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;dataset_</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">()),</span>
+                <span class="n">owner</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                <span class="n">abstract</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Abstract for dataset </span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">subtype</span><span class="o">=</span><span class="s2">&quot;vector&quot;</span><span class="p">,</span>
+                <span class="n">is_approved</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">is_published</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># These are the assigned keywords to the Resources</span>
+
+            <span class="c1"># RB00 -&gt;           T1K0      R0,R1    FEAT  K0      C0</span>
+            <span class="c1"># RB01 -&gt; T0K0      T1K0      R0       FEAT    K1</span>
+            <span class="c1"># RB02 -&gt;           T1K0         R1    FEAT      K2  C0</span>
+            <span class="c1"># RB03 -&gt; T0K0      T1K0                     K0</span>
+            <span class="c1"># RB04 -&gt;           T1K0                     K0K1    C0</span>
+            <span class="c1"># RB05 -&gt; T0K0      T1K0                     K0  K2  C1</span>
+            <span class="c1"># RB06 -&gt;           T1K0               FEAT</span>
+            <span class="c1"># RB07 -&gt; T0K0      T1K0            R2 FEAT      K3  C3</span>
+            <span class="c1"># RB08 -&gt;           T1K0 T1K1    R1,R2 FEAT      K3  C3</span>
+            <span class="c1"># RB09 -&gt; T0K0      T1K0 T1K1       R2           K3  C3</span>
+            <span class="c1"># RB10 -&gt;                T1K1       R2           K3  C3</span>
+            <span class="c1"># RB11 -&gt; T0K0 T0K1      T1K1</span>
+            <span class="c1"># RB12 -&gt;                T1K1          FEAT</span>
+            <span class="c1"># RB13 -&gt; T0K0 T0K1              R1    FEAT</span>
+            <span class="c1"># RB14 -&gt;                              FEAT</span>
+            <span class="c1"># RB15 -&gt; T0K0 T0K1                                  C1</span>
+            <span class="c1"># RB16 -&gt;                                            C1</span>
+            <span class="c1"># RB17 -&gt; T0K0 T0K1</span>
+            <span class="c1"># RB18 -&gt;                              FEAT          C2</span>
+            <span class="c1"># RB19 -&gt; T0K0 T0K1                    FEAT          C2</span>
+
+            <span class="k">if</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ADDING KEYWORDS </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s1">&#39;0_0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> to RB </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s2">&quot;0_0&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ADDING KEYWORDS </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s1">&#39;0_1&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> to RB </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s2">&quot;0_1&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ADDING KEYWORDS </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s1">&#39;1_0&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> to RB </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s2">&quot;1_0&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="mi">7</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">13</span><span class="p">:</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s2">&quot;1_1&quot;</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">%</span> <span class="mi">6</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">featured</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">for</span> <span class="n">reg</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+                <span class="p">(</span><span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;R1&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;R2&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)),</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">:</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">regions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">regions</span><span class="p">[</span><span class="n">reg</span><span class="p">])</span>
+
+            <span class="k">for</span> <span class="n">kw</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+                <span class="p">(</span><span class="s2">&quot;K0&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)),</span>
+                <span class="p">(</span><span class="s2">&quot;K1&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;K2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;K3&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]),</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">:</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kw</span><span class="p">[</span><span class="n">kw</span><span class="p">])</span>
+
+            <span class="k">for</span> <span class="n">cat</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+                <span class="p">(</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;C2&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">18</span><span class="p">,</span> <span class="mi">19</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;C3&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]),</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">:</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cats</span><span class="p">[</span><span class="n">cat</span><span class="p">]</span>
+
+            <span class="n">d</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">set_permissions</span><span class="p">(</span><span class="n">public_perm_spec</span><span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="TestFacets._facets_to_map">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets._facets_to_map">[docs]</a>
+    <span class="k">def</span> <span class="nf">_facets_to_map</span><span class="p">(</span><span class="n">facets</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]:</span> <span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">facets</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_facets_base">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_facets_base">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_facets_base</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;list_facets&quot;</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span><span class="p">})</span>
+        <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">ListFacetsView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;facets&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+        <span class="n">facets_list</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;facets&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">facets_list</span><span class="p">))</span>
+        <span class="n">fmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facets_to_map</span><span class="p">(</span><span class="n">facets_list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;owner&quot;</span><span class="p">,</span> <span class="s2">&quot;t_0&quot;</span><span class="p">,</span> <span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="s2">&quot;featured&quot;</span><span class="p">,</span> <span class="s2">&quot;resourcetype&quot;</span><span class="p">,</span> <span class="s2">&quot;keyword&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fmap</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_facets_rich">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_facets_rich">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_facets_rich</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># make sure the resources are in</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+        <span class="c1"># make sure tkeywords have been assigned by checking a sample resource</span>
+        <span class="n">rb</span> <span class="o">=</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;dataset_01&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">rb</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">count</span><span class="p">())</span>
+
+        <span class="c1"># run the request</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;list_facets&quot;</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;include_topics&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span><span class="p">})</span>
+        <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">ListFacetsView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="n">facets_list</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;facets&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">facets_list</span><span class="p">))</span>
+        <span class="n">fmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facets_to_map</span><span class="p">(</span><span class="n">facets_list</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">expected</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Cat0&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Cat1&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Cat3&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Cat2&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;keyword&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Keyword0&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Keyword1&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Keyword2&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Keyword3&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;owner&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;t_0&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;T0_K0_en&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;T0_K1_en&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;t_1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;T1_K0_en&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;region&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Region0&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Region1&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;R1&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Region2&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;R2&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;featured&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">11</span><span class="p">},</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">},</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;resourcetype&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">},</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fmap</span><span class="p">)</span>
+            <span class="n">facet</span> <span class="o">=</span> <span class="n">fmap</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">expected_topics</span> <span class="o">=</span> <span class="n">expected</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">topic_key</span> <span class="ow">in</span> <span class="n">expected_topics</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">topic_key</span> <span class="o">!=</span> <span class="s2">&quot;items&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                        <span class="n">expected_topics</span><span class="p">[</span><span class="n">topic_key</span><span class="p">],</span> <span class="n">facet</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="n">topic_key</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Mismatching &#39;</span><span class="si">{</span><span class="n">topic_key</span><span class="si">}</span><span class="s2">&#39; for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">items</span> <span class="o">=</span> <span class="n">facet</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">]</span>
+                    <span class="n">expected_items</span> <span class="o">=</span> <span class="n">expected_topics</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">exp_item</span> <span class="ow">in</span> <span class="n">expected_items</span><span class="p">:</span>
+                        <span class="n">exp_label</span> <span class="o">=</span> <span class="n">exp_item</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+                        <span class="n">found</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">exp_label</span><span class="p">:</span>
+                                <span class="n">found</span> <span class="o">=</span> <span class="n">item</span>
+                                <span class="k">break</span>
+
+                        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span>
+                            <span class="n">found</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;topic not found &#39;</span><span class="si">{</span><span class="n">exp_label</span><span class="si">}</span><span class="s2">&#39; for facet &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; -- found items </span><span class="si">{</span><span class="n">items</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">for</span> <span class="n">exp_field</span> <span class="ow">in</span> <span class="n">exp_item</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                                <span class="n">exp_item</span><span class="p">[</span><span class="n">exp_field</span><span class="p">],</span> <span class="n">found</span><span class="p">[</span><span class="n">exp_field</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Mismatch item key:</span><span class="si">{</span><span class="n">exp_field</span><span class="si">}</span><span class="s2"> facet:</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_bad_lang">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_bad_lang">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_bad_lang</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># for thesauri, make sure that by requesting a non-existent language the faceting is still working,</span>
+        <span class="c1"># using the default labels</span>
+
+        <span class="c1"># run the request with a valid language</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;get_facet&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t_0&quot;</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span><span class="p">})</span>
+        <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">GetFacetView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">,</span> <span class="s2">&quot;t_0&quot;</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;total&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;count&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;T0_K0_en&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;is_localized&quot;</span><span class="p">])</span>
+
+        <span class="c1"># run the request with an INVALID language</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;get_facet&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t_0&quot;</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;lang&quot;</span><span class="p">:</span> <span class="s2">&quot;ZZ&quot;</span><span class="p">})</span>
+        <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">GetFacetView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">,</span> <span class="s2">&quot;t_0&quot;</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;total&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;count&quot;</span><span class="p">])</span>  <span class="c1"># make sure the count is still there</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s2">&quot;T0_K0_ALT&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">])</span>  <span class="c1"># check for the alternate label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;is_localized&quot;</span><span class="p">])</span>  <span class="c1"># check for the localization flag</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_prefiltering">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_prefiltering">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_prefiltering</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">reginfo</span> <span class="o">=</span> <span class="n">RegionFacetProvider</span><span class="p">()</span><span class="o">.</span><span class="n">get_info</span><span class="p">()</span>
+        <span class="n">regfilter</span> <span class="o">=</span> <span class="n">reginfo</span><span class="p">[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+        <span class="n">t0filter</span> <span class="o">=</span> <span class="n">facet_registry</span><span class="o">.</span><span class="n">get_provider</span><span class="p">(</span><span class="s2">&quot;t_0&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_info</span><span class="p">()[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+        <span class="n">t1filter</span> <span class="o">=</span> <span class="n">facet_registry</span><span class="o">.</span><span class="n">get_provider</span><span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_info</span><span class="p">()[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">facet</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">totals</span><span class="p">,</span> <span class="n">count0</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;t_0&quot;</span><span class="p">,</span> <span class="p">{},</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;t_0&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">regfilter</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{},</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">regfilter</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">regfilter</span><span class="p">:</span> <span class="s2">&quot;R1&quot;</span><span class="p">},</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">reginfo</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="p">{},</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">reginfo</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="p">{</span><span class="n">t0filter</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s2">&quot;0_0&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">},</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">reginfo</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="p">{</span><span class="n">t1filter</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s2">&quot;1_0&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">},</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;get_facet&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">facet</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+            <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">GetFacetView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">,</span> <span class="n">facet</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                <span class="n">totals</span><span class="p">,</span>
+                <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;total&quot;</span><span class="p">],</span>
+                <span class="sa">f</span><span class="s2">&quot;Bad totals for facet &#39;</span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2"> and filter </span><span class="si">{</span><span class="n">filters</span><span class="si">}</span><span class="se">\n</span><span class="s2">RESPONSE: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                <span class="n">count0</span><span class="p">,</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;count&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Bad count0 for facet &#39;</span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="se">\n</span><span class="s2">RESPONSE: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_prefiltering_tkeywords">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_prefiltering_tkeywords">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_prefiltering_tkeywords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">regname</span> <span class="o">=</span> <span class="n">RegionFacetProvider</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">featname</span> <span class="o">=</span> <span class="n">FeaturedFacetProvider</span><span class="p">()</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">t1filter</span> <span class="o">=</span> <span class="n">facet_registry</span><span class="o">.</span><span class="n">get_provider</span><span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_info</span><span class="p">()[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+        <span class="n">tkey_1_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="s2">&quot;1_1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">id</span>
+
+        <span class="n">expected_region</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;R1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;R2&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+        <span class="n">expected_feat</span> <span class="o">=</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+
+        <span class="c1"># Run the single requests</span>
+        <span class="k">for</span> <span class="n">facet</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">regname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1filter</span><span class="p">:</span> <span class="n">tkey_1_1</span><span class="p">},</span> <span class="n">expected_region</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">featname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1filter</span><span class="p">:</span> <span class="n">tkey_1_1</span><span class="p">},</span> <span class="n">expected_feat</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;get_facet&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">facet</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">GetFacetView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">,</span> <span class="n">facet</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">),</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">]),</span>
+                <span class="sa">f</span><span class="s2">&quot;Bad count for items &#39;</span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> PARAMS: </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> RESULT: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> EXPECTED: </span><span class="si">{</span><span class="n">items</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># search item</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">item</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Topic &#39;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&#39; not found in facet </span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2"> -- </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="n">item</span><span class="p">],</span> <span class="n">found</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Bad count for facet &#39;</span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Run the single request</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;list_facets&quot;</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;include_topics&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">t1filter</span><span class="p">:</span> <span class="n">tkey_1_1</span><span class="p">})</span>
+        <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">ListFacetsView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="n">facets_list</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;facets&quot;</span><span class="p">]</span>
+        <span class="n">fmap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_facets_to_map</span><span class="p">(</span><span class="n">facets_list</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+            <span class="p">(</span><span class="n">regname</span><span class="p">,</span> <span class="n">expected_region</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">featname</span><span class="p">,</span> <span class="n">expected_feat</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">fmap</span><span class="p">)</span>
+            <span class="n">facet</span> <span class="o">=</span> <span class="n">fmap</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">facet</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">item</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Topic &#39;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&#39; not found in facet </span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2"> -- </span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="n">item</span><span class="p">],</span> <span class="n">found</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Bad count for facet &#39;</span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_config">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_config">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">facet</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">order</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;resourcetype&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;t_0&quot;</span><span class="p">,</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">,</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;owner&quot;</span><span class="p">,</span> <span class="s2">&quot;select&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;get_facet&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">facet</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;include_config&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+            <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">GetFacetView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">,</span> <span class="n">facet</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;Config info not found in payload&quot;</span><span class="p">)</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">],</span> <span class="s2">&quot;Unexpected type&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">],</span> <span class="s2">&quot;Unexpected order&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_count0">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_count0">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_count0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">reginfo</span> <span class="o">=</span> <span class="n">RegionFacetProvider</span><span class="p">()</span><span class="o">.</span><span class="n">get_info</span><span class="p">()</span>
+        <span class="n">regflt</span> <span class="o">=</span> <span class="n">reginfo</span><span class="p">[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+        <span class="n">regname</span> <span class="o">=</span> <span class="n">reginfo</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+
+        <span class="n">catinfo</span> <span class="o">=</span> <span class="n">CategoryFacetProvider</span><span class="p">()</span><span class="o">.</span><span class="n">get_info</span><span class="p">()</span>
+        <span class="n">catflt</span> <span class="o">=</span> <span class="n">catinfo</span><span class="p">[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+        <span class="n">catname</span> <span class="o">=</span> <span class="n">catinfo</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+
+        <span class="n">kwinfo</span> <span class="o">=</span> <span class="n">KeywordFacetProvider</span><span class="p">()</span><span class="o">.</span><span class="n">get_info</span><span class="p">()</span>
+        <span class="n">kwflt</span> <span class="o">=</span> <span class="n">kwinfo</span><span class="p">[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+        <span class="n">kwname</span> <span class="o">=</span> <span class="n">kwinfo</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+
+        <span class="n">t0flt</span> <span class="o">=</span> <span class="n">facet_registry</span><span class="o">.</span><span class="n">get_provider</span><span class="p">(</span><span class="s2">&quot;t_0&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_info</span><span class="p">()[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+        <span class="n">t1flt</span> <span class="o">=</span> <span class="n">facet_registry</span><span class="o">.</span><span class="n">get_provider</span><span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_info</span><span class="p">()[</span><span class="s2">&quot;filter&quot;</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="n">tk</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">thesauri_k</span><span class="p">[</span><span class="n">tk</span><span class="p">]</span><span class="o">.</span><span class="n">id</span>
+
+        <span class="k">for</span> <span class="n">facet</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="p">(</span>  <span class="c1"># fmt: skip</span>
+            <span class="c1"># thesauri</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">regflt</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">},</span> <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">):</span> <span class="mi">2</span><span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">regflt</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">)]},</span> <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">):</span> <span class="mi">2</span><span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">regflt</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_1&quot;</span><span class="p">)},</span> <span class="p">{}),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">regflt</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_1&quot;</span><span class="p">),</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">)]},</span> <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">):</span> <span class="kc">None</span><span class="p">}),</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;t_1&quot;</span><span class="p">,</span>
+                <span class="p">{</span><span class="n">regflt</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_1&quot;</span><span class="p">),</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">),</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">)]},</span>
+                <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">):</span> <span class="kc">None</span><span class="p">,</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">):</span> <span class="kc">None</span><span class="p">},</span>
+            <span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_1&quot;</span><span class="p">)]},</span> <span class="p">{}),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_0&quot;</span><span class="p">)},</span> <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">):</span> <span class="mi">5</span><span class="p">,</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">):</span> <span class="mi">2</span><span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_1&quot;</span><span class="p">)},</span> <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">):</span> <span class="mi">1</span><span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">t0flt</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_1&quot;</span><span class="p">),</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_0&quot;</span><span class="p">)]},</span> <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">):</span> <span class="mi">5</span><span class="p">,</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">):</span> <span class="mi">2</span><span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">catflt</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;C0&quot;</span><span class="p">]},</span> <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">):</span> <span class="mi">3</span><span class="p">}),</span>
+            <span class="p">(</span><span class="s2">&quot;t_1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="n">catflt</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="s2">&quot;C1&quot;</span><span class="p">]},</span> <span class="p">{</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">):</span> <span class="mi">4</span><span class="p">}),</span>
+            <span class="c1"># regions</span>
+            <span class="p">(</span><span class="n">regname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">)},</span> <span class="p">{</span><span class="s2">&quot;R0&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;R1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;R2&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">regname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">)},</span> <span class="p">{</span><span class="s2">&quot;R1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;R2&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">regname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1flt</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">),</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">)]},</span> <span class="p">{</span><span class="s2">&quot;R0&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;R1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;R2&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">regname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">),</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="s2">&quot;R1&quot;</span><span class="p">]},</span> <span class="p">{</span><span class="s2">&quot;R1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;R0&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">regname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">),</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;R0&quot;</span><span class="p">]},</span> <span class="p">{</span><span class="s2">&quot;R0&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}),</span>
+            <span class="c1"># category</span>
+            <span class="p">(</span><span class="n">catname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">)},</span> <span class="p">{</span><span class="s2">&quot;C0&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;C1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;C3&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">catname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">),</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="s2">&quot;C2&quot;</span><span class="p">]},</span> <span class="p">{</span><span class="s2">&quot;C0&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;C2&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">catname</span><span class="p">,</span> <span class="p">{</span><span class="n">t1flt</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">),</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">)]},</span> <span class="p">{</span><span class="s2">&quot;C0&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;C1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;C3&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">catname</span><span class="p">,</span> <span class="p">{</span><span class="n">kwflt</span><span class="p">:</span> <span class="s2">&quot;K1&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;C0&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">catname</span><span class="p">,</span> <span class="p">{</span><span class="n">kwflt</span><span class="p">:</span> <span class="s2">&quot;K1&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;C0&quot;</span><span class="p">,</span> <span class="s2">&quot;C2&quot;</span><span class="p">]},</span> <span class="p">{</span><span class="s2">&quot;C0&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;C2&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}),</span>
+            <span class="c1"># keyword</span>
+            <span class="p">(</span><span class="n">kwname</span><span class="p">,</span> <span class="p">{</span><span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_0&quot;</span><span class="p">)},</span> <span class="p">{</span><span class="s2">&quot;K0&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;K1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;K2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;K3&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">kwname</span><span class="p">,</span> <span class="p">{</span><span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">)},</span> <span class="p">{</span><span class="s2">&quot;K0&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;K1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;K2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;K3&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">kwname</span><span class="p">,</span> <span class="p">{</span><span class="n">t0flt</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_0&quot;</span><span class="p">),</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;1_1&quot;</span><span class="p">)]},</span> <span class="p">{</span><span class="s2">&quot;K0&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;K1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;K2&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;K3&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">kwname</span><span class="p">,</span> <span class="p">{</span><span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_0&quot;</span><span class="p">),</span> <span class="n">regflt</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;K1&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}),</span>
+            <span class="p">(</span><span class="n">kwname</span><span class="p">,</span> <span class="p">{</span><span class="n">t0flt</span><span class="p">:</span> <span class="n">t</span><span class="p">(</span><span class="s2">&quot;0_0&quot;</span><span class="p">),</span> <span class="n">regflt</span><span class="p">:</span> <span class="s2">&quot;R0&quot;</span><span class="p">,</span> <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;K0&quot;</span><span class="p">]},</span> <span class="p">{</span><span class="s2">&quot;K0&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}),</span>
+        <span class="p">):</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;get_facet&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">facet</span><span class="p">]),</span> <span class="n">data</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">admin</span>
+            <span class="n">res</span><span class="p">:</span> <span class="n">JsonResponse</span> <span class="o">=</span> <span class="n">GetFacetView</span><span class="o">.</span><span class="n">as_view</span><span class="p">()(</span><span class="n">req</span><span class="p">,</span> <span class="n">facet</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+            <span class="c1"># self.assertEqual(totals, obj[&quot;topics&quot;][&quot;total&quot;], f&quot;Bad totals for facet &#39;{facet} and params {params}&quot;)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">),</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">]),</span>
+                <span class="sa">f</span><span class="s2">&quot;Bad count for items &#39;</span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> PARAMS: </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> RESULT: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2"> EXPECTED: </span><span class="si">{</span><span class="n">items</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># search item</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">][</span><span class="s2">&quot;items&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">item</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Topic &#39;</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&#39; not found in facet </span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2"> -- </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="n">item</span><span class="p">],</span> <span class="n">found</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Bad count for facet &#39;</span><span class="si">{</span><span class="n">facet</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_user_auth">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_user_auth">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_user_auth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># make sure the user authorization pre-filters the visible resources</span>
+        <span class="c1"># TODO test</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="TestFacets.test_thesauri_reloading">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/tests/index.html#geonode.facets.tests.TestFacets.test_thesauri_reloading">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_thesauri_reloading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Thesauri facets are cached.</span>
+        <span class="c1"># Make sure that when Thesauri or ThesauriLabel change the facets cache is invalidated</span>
+        <span class="c1"># TODO impl+test</span>
+        <span class="k">pass</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

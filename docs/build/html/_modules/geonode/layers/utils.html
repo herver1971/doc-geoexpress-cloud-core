@@ -1,0 +1,824 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.layers.utils &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../layers.html">geonode.layers</a></li>
+      <li class="breadcrumb-item active">geonode.layers.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.layers.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;Utilities for managing GeoNode layers</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Standard Modules</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">tarfile</span>
+
+<span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">gdal</span><span class="p">,</span> <span class="n">osr</span><span class="p">,</span> <span class="n">ogr</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span><span class="p">,</span> <span class="n">is_zipfile</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">choice</span>
+
+<span class="c1"># Django functionality</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.module_loading</span> <span class="kn">import</span> <span class="n">import_string</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ObjectDoesNotExist</span><span class="p">,</span> <span class="n">SuspiciousFileOperation</span>
+
+<span class="kn">from</span> <span class="nn">geonode.layers.api.exceptions</span> <span class="kn">import</span> <span class="n">InvalidDatasetException</span>
+<span class="kn">from</span> <span class="nn">geonode.security.permissions</span> <span class="kn">import</span> <span class="n">PermSpec</span><span class="p">,</span> <span class="n">PermSpecCompact</span>
+<span class="kn">from</span> <span class="nn">geonode.storage.manager</span> <span class="kn">import</span> <span class="n">storage_manager</span>
+
+<span class="c1"># Geonode functionality</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">Region</span>
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">check_ogc_backend</span>
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">GeoNodeException</span><span class="p">,</span> <span class="n">geoserver</span>
+<span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">gs_catalog</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">shp_exts</span><span class="p">,</span> <span class="n">csv_exts</span><span class="p">,</span> <span class="n">vec_exts</span><span class="p">,</span> <span class="n">cov_exts</span><span class="p">,</span> <span class="n">Dataset</span>
+
+<div class="viewcode-block" id="READ_PERMISSIONS">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.READ_PERMISSIONS">[docs]</a>
+<span class="n">READ_PERMISSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;view_resourcebase&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="WRITE_PERMISSIONS">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.WRITE_PERMISSIONS">[docs]</a>
+<span class="n">WRITE_PERMISSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;change_dataset_data&quot;</span><span class="p">,</span> <span class="s2">&quot;change_dataset_style&quot;</span><span class="p">,</span> <span class="s2">&quot;change_resourcebase_metadata&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DOWNLOAD_PERMISSIONS">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.DOWNLOAD_PERMISSIONS">[docs]</a>
+<span class="n">DOWNLOAD_PERMISSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;download_resourcebase&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="OWNER_PERMISSIONS">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.OWNER_PERMISSIONS">[docs]</a>
+<span class="n">OWNER_PERMISSIONS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;change_resourcebase&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;delete_resourcebase&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;change_resourcebase_permissions&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;publish_resourcebase&quot;</span><span class="p">,</span>
+<span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;geonode.layers.utils&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_separator">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils._separator">[docs]</a>
+<span class="n">_separator</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="_clean_string">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils._clean_string">[docs]</a>
+<span class="k">def</span> <span class="nf">_clean_string</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;(^[^a-zA-Z\._]+)|([^a-zA-Z\._0-9]+)&quot;</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replaces a string that matches the regex with the replacement.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">regex</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+        <span class="nb">str</span> <span class="o">=</span> <span class="n">replace</span> <span class="o">+</span> <span class="nb">str</span>
+
+    <span class="k">return</span> <span class="n">regex</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">replace</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="resolve_regions">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.resolve_regions">[docs]</a>
+<span class="k">def</span> <span class="nf">resolve_regions</span><span class="p">(</span><span class="n">regions</span><span class="p">):</span>
+    <span class="n">regions_resolved</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">regions_unresolved</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">regions</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">regions</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">region</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">region</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
+                    <span class="n">region_resolved</span> <span class="o">=</span> <span class="n">Region</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">region</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">region_resolved</span> <span class="o">=</span> <span class="n">Region</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">name__iexact</span><span class="o">=</span><span class="n">region</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">code__iexact</span><span class="o">=</span><span class="n">region</span><span class="p">))</span>
+                <span class="n">regions_resolved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region_resolved</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+                <span class="n">regions_unresolved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">regions_resolved</span><span class="p">,</span> <span class="n">regions_unresolved</span></div>
+
+
+
+<div class="viewcode-block" id="get_files">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_files">[docs]</a>
+<span class="k">def</span> <span class="nf">get_files</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the data to Shapefiles or Geotiffs and returns</span>
+<span class="sd">    a dictionary with all the required files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Verify if the filename is in ascii format.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">filename</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">UnicodeEncodeError</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Please use only characters from the english alphabet for the filename. &#39;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;strict&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39; is not yet supported.&quot;</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># Let&#39;s unzip the filname in case it is a ZIP file</span>
+    <span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">unzip_file</span><span class="p">,</span> <span class="n">mkdtemp</span>
+
+    <span class="n">tempdir</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">is_zipfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="n">tempdir</span> <span class="o">=</span> <span class="n">mkdtemp</span><span class="p">()</span>
+        <span class="n">_filename</span> <span class="o">=</span> <span class="n">unzip_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;.shp&quot;</span><span class="p">,</span> <span class="n">tempdir</span><span class="o">=</span><span class="n">tempdir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_filename</span><span class="p">:</span>
+            <span class="c1"># We need to iterate files as filename could be the zipfile</span>
+            <span class="kn">import</span> <span class="nn">ntpath</span>
+            <span class="kn">from</span> <span class="nn">geonode.upload.utils</span> <span class="kn">import</span> <span class="n">_SUPPORTED_EXT</span>
+
+            <span class="n">file_basename</span><span class="p">,</span> <span class="n">file_ext</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">tempdir</span><span class="p">):</span>
+                <span class="n">item_basename</span><span class="p">,</span> <span class="n">item_ext</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">item_basename</span><span class="p">)</span> <span class="o">==</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file_basename</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                    <span class="n">item_ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">_SUPPORTED_EXT</span>
+                <span class="p">):</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempdir</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+                    <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">_filename</span>
+
+    <span class="c1"># Make sure the file exists.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Could not open </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">. Make sure you are using a valid file&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">base_name</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="c1"># Replace special characters in filenames - []{}()</span>
+    <span class="n">glob_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([\[\]\(\)\{\}])&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;[\g&lt;1&gt;]&quot;</span><span class="p">,</span> <span class="n">base_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">extension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.shp&quot;</span><span class="p">:</span>
+        <span class="n">required_extensions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="s2">&quot;.[sS][hH][pP]&quot;</span><span class="p">,</span> <span class="n">dbf</span><span class="o">=</span><span class="s2">&quot;.[dD][bB][fF]&quot;</span><span class="p">,</span> <span class="n">shx</span><span class="o">=</span><span class="s2">&quot;.[sS][hH][xX]&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ext</span><span class="p">,</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">required_extensions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">glob_name</span> <span class="o">+</span> <span class="n">pattern</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Expected helper file </span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2"> does not exist; a Shapefile &quot;</span>
+                    <span class="s2">&quot;requires helper files with the following extensions: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">required_extensions</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;Multiple helper files for </span><span class="si">%s</span><span class="s2"> exist; they need to be &quot;</span> <span class="s2">&quot;distinct by spelling and not just case.&quot;</span>
+                <span class="p">)</span> <span class="o">%</span> <span class="n">filename</span>
+                <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">files</span><span class="p">[</span><span class="n">ext</span><span class="p">]</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">glob_name</span><span class="si">}</span><span class="s2">.[pP][rR][jJ]&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;prj&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Multiple helper files for </span><span class="si">%s</span><span class="s2"> exist; they need to be &quot;</span> <span class="s2">&quot;distinct by spelling and not just case.&quot;</span>
+            <span class="p">)</span> <span class="o">%</span> <span class="n">filename</span>
+            <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">extension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">cov_exts</span><span class="p">:</span>
+        <span class="n">files</span><span class="p">[</span><span class="n">extension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">filename</span>
+
+    <span class="c1"># Only for GeoServer</span>
+    <span class="k">if</span> <span class="n">check_ogc_backend</span><span class="p">(</span><span class="n">geoserver</span><span class="o">.</span><span class="n">BACKEND_PACKAGE</span><span class="p">):</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">glob_name</span><span class="p">)</span><span class="si">}</span><span class="s2">.[sS][lL][dD]&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">files</span><span class="p">[</span><span class="s2">&quot;sld&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">glob_name</span><span class="si">}</span><span class="s2">.[sS][lL][dD]&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">files</span><span class="p">[</span><span class="s2">&quot;sld&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;Multiple style files (sld) for </span><span class="si">%s</span><span class="s2"> exist; they need to be &quot;</span>
+                    <span class="s2">&quot;distinct by spelling and not just case.&quot;</span>
+                <span class="p">)</span> <span class="o">%</span> <span class="n">filename</span>
+                <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">glob_name</span><span class="si">}</span><span class="s2">.[xX][mM][lL]&quot;</span><span class="p">)</span>
+
+    <span class="c1"># shapefile XML metadata is sometimes named base_name.shp.xml</span>
+    <span class="c1"># try looking for filename.xml if base_name.xml does not exist</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">.[xX][mM][lL]&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">files</span><span class="p">[</span><span class="s2">&quot;xml&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Multiple XML files for </span><span class="si">%s</span><span class="s2"> exist; they need to be &quot;</span> <span class="s2">&quot;distinct by spelling and not just case.&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">filename</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">files</span><span class="p">,</span> <span class="n">tempdir</span></div>
+
+
+
+<div class="viewcode-block" id="dataset_type">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.dataset_type">[docs]</a>
+<span class="k">def</span> <span class="nf">dataset_type</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Finds out if a filename is a Feature or a Vector</span>
+<span class="sd">    returns a gsconfig resource_type string</span>
+<span class="sd">    that can be either &#39;featureType&#39; or &#39;coverage&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base_name</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">extension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.zip&quot;</span><span class="p">:</span>
+        <span class="n">zf</span> <span class="o">=</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">allowZip64</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># ZipFile doesn&#39;t support with statement in 2.6, so don&#39;t do it</span>
+        <span class="k">with</span> <span class="n">zf</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">zf</span><span class="o">.</span><span class="n">namelist</span><span class="p">():</span>
+                <span class="n">b</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">shp_exts</span> <span class="ow">or</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">cov_exts</span> <span class="ow">or</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">csv_exts</span><span class="p">:</span>
+                    <span class="n">extension</span> <span class="o">=</span> <span class="n">e</span>
+
+    <span class="k">if</span> <span class="n">extension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.tar&quot;</span> <span class="ow">or</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.tar.gz&quot;</span><span class="p">):</span>
+        <span class="n">tf</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="c1"># TarFile doesn&#39;t support with statement in 2.6, so don&#39;t do it</span>
+        <span class="k">with</span> <span class="n">tf</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">tf</span><span class="o">.</span><span class="n">getnames</span><span class="p">():</span>
+                <span class="n">b</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">shp_exts</span> <span class="ow">or</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">cov_exts</span> <span class="ow">or</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">csv_exts</span><span class="p">:</span>
+                    <span class="n">extension</span> <span class="o">=</span> <span class="n">e</span>
+
+    <span class="k">if</span> <span class="n">extension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">vec_exts</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;vector&quot;</span>
+    <span class="k">elif</span> <span class="n">extension</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">cov_exts</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;raster&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Saving of extension [</span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2">] is not implemented&quot;</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_valid_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_valid_name">[docs]</a>
+<span class="k">def</span> <span class="nf">get_valid_name</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a brand new name</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_clean_string</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span>
+    <span class="n">proposed_name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">while</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">proposed_name</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">possible_chars</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">choice</span><span class="p">(</span><span class="n">possible_chars</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)])</span>
+        <span class="n">proposed_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Requested name already used; adjusting name &quot;</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">] =&gt; [</span><span class="si">{</span><span class="n">proposed_name</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">proposed_name</span></div>
+
+
+
+<div class="viewcode-block" id="get_valid_dataset_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_valid_dataset_name">[docs]</a>
+<span class="k">def</span> <span class="nf">get_valid_dataset_name</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks if the layer is a string and fetches it from the database.&quot;&quot;&quot;</span>
+    <span class="c1"># The first thing we do is get the layer name string</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+        <span class="n">dataset_name</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">dataset_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;You must pass either a filename or a GeoNode dataset object&quot;</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">overwrite</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dataset_name</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">get_valid_name</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_default_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_default_user">[docs]</a>
+<span class="k">def</span> <span class="nf">get_default_user</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a default user&quot;&quot;&quot;</span>
+    <span class="n">superusers</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_superuser</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">superusers</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="c1"># Return the first created superuser</span>
+        <span class="k">return</span> <span class="n">superusers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span>
+            <span class="s2">&quot;You must have an admin account configured &quot;</span>
+            <span class="s2">&quot;before importing data. &quot;</span>
+            <span class="s2">&quot;Try: django-admin.py createsuperuser&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="is_vector">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.is_vector">[docs]</a>
+<span class="k">def</span> <span class="nf">is_vector</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">__</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="n">vec_exts</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="is_raster">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.is_raster">[docs]</a>
+<span class="k">def</span> <span class="nf">is_raster</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">__</span><span class="p">,</span> <span class="n">extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">extension</span> <span class="ow">in</span> <span class="n">cov_exts</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="get_resolution">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_resolution">[docs]</a>
+<span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">gtif</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">gtif</span><span class="o">.</span><span class="n">GetGeoTransform</span><span class="p">()</span>
+        <span class="n">__</span><span class="p">,</span> <span class="n">resx</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">resy</span> <span class="o">=</span> <span class="n">gt</span>
+        <span class="n">resolution</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resx</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">resy</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">resolution</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="get_bbox">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_bbox">[docs]</a>
+<span class="k">def</span> <span class="nf">get_bbox</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return bbox in the format [xmin,xmax,ymin,ymax].&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">django.contrib.gis.gdal</span> <span class="kn">import</span> <span class="n">DataSource</span><span class="p">,</span> <span class="n">SRSException</span>
+
+    <span class="n">srid</span> <span class="o">=</span> <span class="mi">4326</span>
+    <span class="n">bbox_x0</span><span class="p">,</span> <span class="n">bbox_y0</span><span class="p">,</span> <span class="n">bbox_x1</span><span class="p">,</span> <span class="n">bbox_y1</span> <span class="o">=</span> <span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">90</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_vector</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="n">y_min</span> <span class="o">=</span> <span class="o">-</span><span class="mi">90</span>
+            <span class="n">y_max</span> <span class="o">=</span> <span class="mi">90</span>
+            <span class="n">x_min</span> <span class="o">=</span> <span class="o">-</span><span class="mi">180</span>
+            <span class="n">x_max</span> <span class="o">=</span> <span class="mi">180</span>
+            <span class="n">datasource</span> <span class="o">=</span> <span class="n">DataSource</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">layer</span> <span class="o">=</span> <span class="n">datasource</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">bbox_x0</span><span class="p">,</span> <span class="n">bbox_y0</span><span class="p">,</span> <span class="n">bbox_x1</span><span class="p">,</span> <span class="n">bbox_y1</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">extent</span><span class="o">.</span><span class="n">tuple</span>
+            <span class="n">srs</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">srs</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">srs</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="s2">&quot;Invalid Projection. Dataset is missing CRS!&quot;</span><span class="p">)</span>
+                <span class="n">srs</span><span class="o">.</span><span class="n">identify_epsg</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">SRSException</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="n">epsg_code</span> <span class="o">=</span> <span class="n">srs</span><span class="o">.</span><span class="n">srid</span>
+            <span class="c1"># can&#39;t find epsg code, then check if bbox is within the 4326 boundary</span>
+            <span class="k">if</span> <span class="n">epsg_code</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="n">x_min</span> <span class="o">&lt;=</span> <span class="n">bbox_x0</span> <span class="o">&lt;=</span> <span class="n">x_max</span>
+                <span class="ow">and</span> <span class="n">x_min</span> <span class="o">&lt;=</span> <span class="n">bbox_x1</span> <span class="o">&lt;=</span> <span class="n">x_max</span>
+                <span class="ow">and</span> <span class="n">y_min</span> <span class="o">&lt;=</span> <span class="n">bbox_y0</span> <span class="o">&lt;=</span> <span class="n">y_max</span>
+                <span class="ow">and</span> <span class="n">y_min</span> <span class="o">&lt;=</span> <span class="n">bbox_y1</span> <span class="o">&lt;=</span> <span class="n">y_max</span>
+            <span class="p">):</span>
+                <span class="c1"># set default epsg code</span>
+                <span class="n">epsg_code</span> <span class="o">=</span> <span class="s2">&quot;4326&quot;</span>
+            <span class="k">elif</span> <span class="n">epsg_code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># otherwise, stop the upload process</span>
+                <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="s2">&quot;Invalid    Datasets. &quot;</span> <span class="s2">&quot;Needs an authoritative SRID in its CRS to be accepted&quot;</span><span class="p">)</span>
+
+            <span class="c1"># eliminate default EPSG srid as it will be added when this function returned</span>
+            <span class="n">srid</span> <span class="o">=</span> <span class="n">epsg_code</span> <span class="k">if</span> <span class="n">epsg_code</span> <span class="k">else</span> <span class="s2">&quot;4326&quot;</span>
+        <span class="k">elif</span> <span class="n">is_raster</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="n">gtif</span> <span class="o">=</span> <span class="n">gdal</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">gt</span> <span class="o">=</span> <span class="n">gtif</span><span class="o">.</span><span class="n">GetGeoTransform</span><span class="p">()</span>
+            <span class="n">prj</span> <span class="o">=</span> <span class="n">gtif</span><span class="o">.</span><span class="n">GetProjection</span><span class="p">()</span>
+            <span class="n">srs</span> <span class="o">=</span> <span class="n">osr</span><span class="o">.</span><span class="n">SpatialReference</span><span class="p">(</span><span class="n">wkt</span><span class="o">=</span><span class="n">prj</span><span class="p">)</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="n">gtif</span><span class="o">.</span><span class="n">RasterXSize</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">gtif</span><span class="o">.</span><span class="n">RasterYSize</span>
+
+            <span class="n">ext</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">xarr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">cols</span><span class="p">]</span>
+            <span class="n">yarr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">rows</span><span class="p">]</span>
+
+            <span class="c1"># Get the extent.</span>
+            <span class="k">for</span> <span class="n">px</span> <span class="ow">in</span> <span class="n">xarr</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">py</span> <span class="ow">in</span> <span class="n">yarr</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="n">gt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">px</span> <span class="o">*</span> <span class="n">gt</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="n">py</span> <span class="o">*</span> <span class="n">gt</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="n">gt</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">px</span> <span class="o">*</span> <span class="n">gt</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="n">py</span> <span class="o">*</span> <span class="n">gt</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+                    <span class="n">ext</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+
+                <span class="n">yarr</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+
+            <span class="c1"># ext has four corner points, get a bbox from them.</span>
+            <span class="c1"># order is important, so make sure min and max is correct.</span>
+            <span class="n">bbox_x0</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ext</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ext</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">bbox_y0</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ext</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ext</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">bbox_x1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ext</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ext</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">bbox_y1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ext</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">ext</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">srid</span> <span class="o">=</span> <span class="n">srs</span><span class="o">.</span><span class="n">GetAuthorityCode</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">srs</span> <span class="k">else</span> <span class="s2">&quot;4326&quot;</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">bbox_x0</span><span class="p">,</span> <span class="n">bbox_x1</span><span class="p">,</span> <span class="n">bbox_y0</span><span class="p">,</span> <span class="n">bbox_y1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;EPSG:</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">srid</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="delete_orphaned_datasets">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.delete_orphaned_datasets">[docs]</a>
+<span class="k">def</span> <span class="nf">delete_orphaned_datasets</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete orphaned layer files.&quot;&quot;&quot;</span>
+    <span class="n">deleted</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="o">=</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;layers&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">file__icontains</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleting orphaned dataset file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">storage_manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;layers&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+                <span class="n">deleted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">NotImplementedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to delete orphaned dataset file &#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">deleted</span></div>
+
+
+
+<div class="viewcode-block" id="surrogate_escape_string">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.surrogate_escape_string">[docs]</a>
+<span class="k">def</span> <span class="nf">surrogate_escape_string</span><span class="p">(</span><span class="n">input_string</span><span class="p">,</span> <span class="n">source_character_set</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Escapes a given input string using the provided source character set,</span>
+<span class="sd">    using the `surrogateescape` codec error handler.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">input_string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">source_character_set</span><span class="p">,</span> <span class="s2">&quot;surrogateescape&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="s2">&quot;surrogateescape&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="set_datasets_permissions">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.set_datasets_permissions">[docs]</a>
+<span class="k">def</span> <span class="nf">set_datasets_permissions</span><span class="p">(</span>
+    <span class="n">permissions_name</span><span class="p">,</span> <span class="n">resources_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">users_usernames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delete_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
+    <span class="c1"># here to avoid circular import</span>
+    <span class="kn">from</span> <span class="nn">geonode.resource.manager</span> <span class="kn">import</span> <span class="n">resource_manager</span>
+
+    <span class="c1"># Processing information</span>
+    <span class="n">resources_as_pk</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">resources_names</span> <span class="ow">or</span> <span class="p">[]:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">el</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">el</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">el</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">resources_as_pk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">first</span><span class="p">()</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resources_as_pk</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">el</span><span class="p">)</span>
+
+    <span class="n">not_found</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">final_perms_payload</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">rpk</span> <span class="ow">in</span> <span class="n">resources_as_pk</span><span class="p">:</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">rpk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">resource</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">not_found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rpk</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resource named: </span><span class="si">{</span><span class="n">rpk</span><span class="si">}</span><span class="s2"> not found, skipping....&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># creating the payload from the CompactPermissions like we do in the UI.</span>
+            <span class="c1"># the result will be a payload with the compact permissions list required</span>
+            <span class="c1"># for the selected resource</span>
+            <span class="n">resource</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+            <span class="c1"># getting the actual permissions available for the dataset</span>
+            <span class="n">original_perms</span> <span class="o">=</span> <span class="n">PermSpec</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">get_all_level_info</span><span class="p">(),</span> <span class="n">resource</span><span class="p">)</span>
+            <span class="n">new_perms_payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;organizations&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="c1"># if the username is specified, we add them to the payload with the compact</span>
+            <span class="c1"># perm value</span>
+            <span class="k">if</span> <span class="n">users_usernames</span><span class="p">:</span>
+                <span class="n">User</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">_user</span> <span class="ow">in</span> <span class="n">users_usernames</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">new_perms_payload</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">_user</span><span class="p">)</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="s2">&quot;permissions&quot;</span><span class="p">:</span> <span class="n">permissions_name</span><span class="p">}</span>
+                        <span class="p">)</span>
+                    <span class="k">except</span> <span class="n">User</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The user </span><span class="si">{</span><span class="n">_user</span><span class="si">}</span><span class="s2"> does not exists. &quot;</span> <span class="s2">&quot;It has been skipped.&quot;</span><span class="p">)</span>
+            <span class="c1"># GROUPS</span>
+            <span class="c1"># if the group is specified, we add them to the payload with the compact</span>
+            <span class="c1"># perm value</span>
+            <span class="k">if</span> <span class="n">groups_names</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">group_name</span> <span class="ow">in</span> <span class="n">groups_names</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">new_perms_payload</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">group_name</span><span class="p">)</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="s2">&quot;permissions&quot;</span><span class="p">:</span> <span class="n">permissions_name</span><span class="p">}</span>
+                        <span class="p">)</span>
+                    <span class="k">except</span> <span class="n">Group</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The group </span><span class="si">{</span><span class="n">group_name</span><span class="si">}</span><span class="s2"> does not exists. &quot;</span> <span class="s2">&quot;It has been skipped.&quot;</span><span class="p">)</span>
+            <span class="c1"># Using the compact permissions payload to calculate the permissions</span>
+            <span class="c1"># that we want to give for each user/group</span>
+            <span class="c1"># This part is in common with the permissions API</span>
+            <span class="n">new_compact_perms</span> <span class="o">=</span> <span class="n">PermSpecCompact</span><span class="p">(</span><span class="n">new_perms_payload</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span>
+            <span class="n">copy_compact_perms</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">new_compact_perms</span><span class="p">)</span>
+
+            <span class="n">perms_spec_compact_resource</span> <span class="o">=</span> <span class="n">PermSpecCompact</span><span class="p">(</span><span class="n">original_perms</span><span class="o">.</span><span class="n">compact</span><span class="p">,</span> <span class="n">resource</span><span class="p">)</span>
+            <span class="n">perms_spec_compact_resource</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">new_compact_perms</span><span class="p">)</span>
+
+            <span class="n">final_perms_payload</span> <span class="o">=</span> <span class="n">perms_spec_compact_resource</span><span class="o">.</span><span class="n">extended</span>
+            <span class="c1"># if the delete flag is set, we must delete the permissions for the input user/group</span>
+            <span class="k">if</span> <span class="n">delete_flag</span><span class="p">:</span>
+                <span class="c1"># since is a delete operation, we must remove the users/group from the resource</span>
+                <span class="c1"># so this will return the updated dict without the user/groups to be removed</span>
+                <span class="n">final_perms_payload</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">_user</span><span class="p">:</span> <span class="n">_perms</span>
+                    <span class="k">for</span> <span class="n">_user</span><span class="p">,</span> <span class="n">_perms</span> <span class="ow">in</span> <span class="n">perms_spec_compact_resource</span><span class="o">.</span><span class="n">extended</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">_user</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">copy_compact_perms</span><span class="o">.</span><span class="n">extended</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span>
+                <span class="p">}</span>
+                <span class="n">final_perms_payload</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">_group</span><span class="p">:</span> <span class="n">_perms</span>
+                    <span class="k">for</span> <span class="n">_group</span><span class="p">,</span> <span class="n">_perms</span> <span class="ow">in</span> <span class="n">perms_spec_compact_resource</span><span class="o">.</span><span class="n">extended</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">_group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">copy_compact_perms</span><span class="o">.</span><span class="n">extended</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span>
+                <span class="p">}</span>
+                <span class="k">if</span> <span class="n">final_perms_payload</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">final_perms_payload</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;anonymous&quot;</span>
+                <span class="p">):</span>
+                    <span class="n">final_perms_payload</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;anonymous&quot;</span><span class="p">)</span>
+
+            <span class="c1"># calling the resource manager to set the permissions</span>
+            <span class="n">resource_manager</span><span class="o">.</span><span class="n">set_permissions</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">resource</span><span class="p">,</span> <span class="n">permissions</span><span class="o">=</span><span class="n">final_perms_payload</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_uuid_handler">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_uuid_handler">[docs]</a>
+<span class="k">def</span> <span class="nf">get_uuid_handler</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">import_string</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">LAYER_UUID_HANDLER</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="validate_input_source">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.validate_input_source">[docs]</a>
+<span class="k">def</span> <span class="nf">validate_input_source</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">gtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">action_type</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">,</span> <span class="n">storage_manager</span><span class="o">=</span><span class="n">storage_manager</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">is_vector</span><span class="p">()</span> <span class="ow">and</span> <span class="n">is_raster</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You are attempting to </span><span class="si">{</span><span class="n">action_type</span><span class="si">}</span><span class="s2"> a vector dataset with a raster.&quot;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="ow">not</span> <span class="n">layer</span><span class="o">.</span><span class="n">is_vector</span><span class="p">())</span> <span class="ow">and</span> <span class="n">is_vector</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You are attempting to </span><span class="si">{</span><span class="n">action_type</span><span class="si">}</span><span class="s2"> a raster dataset with a vector.&quot;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">is_vector</span><span class="p">():</span>
+        <span class="n">absolute_base_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">absolute_base_file</span> <span class="o">=</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="s2">&quot;shp&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">SuspiciousFileOperation</span><span class="p">:</span>
+            <span class="n">absolute_base_file</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="s2">&quot;shp&quot;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="n">InvalidDatasetException</span><span class="p">:</span>
+            <span class="n">absolute_base_file</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">absolute_base_file</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">absolute_base_file</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;.shp&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span>
+                <span class="n">_</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You are attempting to </span><span class="si">{</span><span class="n">action_type</span><span class="si">}</span><span class="s2"> a vector dataset with an unknown format.&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">gtype</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">gtype</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">gtype</span> <span class="k">else</span> <span class="n">gtype</span>
+                <span class="n">inDataSource</span> <span class="o">=</span> <span class="n">ogr</span><span class="o">.</span><span class="n">Open</span><span class="p">(</span><span class="n">absolute_base_file</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">inDataSource</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span>
+                        <span class="n">_</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Please ensure that the base_file </span><span class="si">{</span><span class="n">absolute_base_file</span><span class="si">}</span><span class="s2"> is not empty&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="n">lyr</span> <span class="o">=</span> <span class="n">inDataSource</span><span class="o">.</span><span class="n">GetLayer</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">lyr</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span>
+                        <span class="n">_</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Please ensure the name is consistent with the file you are trying to </span><span class="si">{</span><span class="n">action_type</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="n">schema_is_compliant</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">_ff</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">lyr</span><span class="o">.</span><span class="n">GetFeature</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">ExportToJson</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">gtype</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Local GeoNode dataset has no geometry type.&quot;</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">_ff</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">gtype</span> <span class="ow">or</span> <span class="n">gtype</span> <span class="ow">in</span> <span class="n">_ff</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]:</span>
+                        <span class="n">schema_is_compliant</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="s2">&quot;geometry&quot;</span> <span class="ow">in</span> <span class="n">_ff</span> <span class="ow">and</span> <span class="n">_ff</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]:</span>
+                    <span class="n">schema_is_compliant</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">schema_is_compliant</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span>
+                        <span class="n">_</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Please ensure there is at least one geometry type </span><span class="se">\</span>
+<span class="s2">                            that is consistent with the file you are trying to </span><span class="si">{</span><span class="n">action_type</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+
+                <span class="n">new_schema_fields</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">lyr</span><span class="o">.</span><span class="n">schema</span><span class="p">]</span>
+                <span class="n">gs_dataset</span> <span class="o">=</span> <span class="n">gs_catalog</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">gs_dataset</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;The selected Dataset does not exists in the catalog.&quot;</span><span class="p">))</span>
+
+                <span class="n">gs_dataset</span> <span class="o">=</span> <span class="n">gs_dataset</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">attributes</span>
+                <span class="n">schema_is_compliant</span> <span class="o">=</span> <span class="nb">all</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">gs_dataset</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">new_schema_fields</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">schema_is_compliant</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span>
+                        <span class="n">_</span><span class="p">(</span>
+                            <span class="s2">&quot;Please ensure that the dataset structure is consistent &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;with the file you are trying to </span><span class="si">{</span><span class="n">action_type</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidDatasetException</span><span class="p">(</span>
+                    <span class="n">_</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Some error occurred while trying to access the uploaded schema: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="is_xml_upload_only">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.is_xml_upload_only">[docs]</a>
+<span class="k">def</span> <span class="nf">is_xml_upload_only</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="c1"># will check if only the XML file is provided</span>
+    <span class="k">return</span> <span class="n">mdata_search_by_type</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;xml&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="is_sld_upload_only">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.is_sld_upload_only">[docs]</a>
+<span class="k">def</span> <span class="nf">is_sld_upload_only</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">mdata_search_by_type</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;sld&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="mdata_search_by_type">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.mdata_search_by_type">[docs]</a>
+<span class="k">def</span> <span class="nf">mdata_search_by_type</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">filetype</span><span class="p">):</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">({</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">FILES</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">([</span><span class="n">filetype</span> <span class="ow">in</span> <span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="default_dataset_download_handler">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.default_dataset_download_handler">[docs]</a>
+<span class="n">default_dataset_download_handler</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="dataset_download_handler_list">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.dataset_download_handler_list">[docs]</a>
+<span class="n">dataset_download_handler_list</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+
+<div class="viewcode-block" id="get_dataset_download_handlers">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_dataset_download_handlers">[docs]</a>
+<span class="k">def</span> <span class="nf">get_dataset_download_handlers</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_download_handler_list</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;DATASET_DOWNLOAD_HANDLERS&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">dataset_download_handler_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">import_string</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">DATASET_DOWNLOAD_HANDLERS</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">dataset_download_handler_list</span></div>
+
+
+
+<div class="viewcode-block" id="get_default_dataset_download_handler">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.get_default_dataset_download_handler">[docs]</a>
+<span class="k">def</span> <span class="nf">get_default_dataset_download_handler</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">default_dataset_download_handler</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">default_dataset_download_handler</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;DEFAULT_DATASET_DOWNLOAD_HANDLER&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">default_dataset_download_handler</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">DEFAULT_DATASET_DOWNLOAD_HANDLER</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">default_dataset_download_handler</span></div>
+
+
+
+<div class="viewcode-block" id="set_default_dataset_download_handler">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.set_default_dataset_download_handler">[docs]</a>
+<span class="k">def</span> <span class="nf">set_default_dataset_download_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">default_dataset_download_handler</span>
+    <span class="n">handler_module</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">handler_module</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_download_handler_list</span><span class="p">:</span>
+        <span class="n">dataset_download_handler_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">handler_module</span><span class="p">)</span>
+
+    <span class="n">default_dataset_download_handler</span> <span class="o">=</span> <span class="n">handler_module</span></div>
+
+
+
+<div class="viewcode-block" id="clear_dataset_download_handlers">
+<a class="viewcode-back" href="../../../autoapi/geonode/layers/utils/index.html#geonode.layers.utils.clear_dataset_download_handlers">[docs]</a>
+<span class="k">def</span> <span class="nf">clear_dataset_download_handlers</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">default_dataset_download_handler</span>
+    <span class="n">dataset_download_handler_list</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">default_dataset_download_handler</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,399 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.maps.api.serializers &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../maps.html">geonode.maps</a></li>
+      <li class="breadcrumb-item active">geonode.maps.api.serializers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.maps.api.serializers</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">dynamic_rest.fields.fields</span> <span class="kn">import</span> <span class="n">DynamicField</span><span class="p">,</span> <span class="n">DynamicRelationField</span>
+<span class="kn">from</span> <span class="nn">dynamic_rest.serializers</span> <span class="kn">import</span> <span class="n">DynamicModelSerializer</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">rest_framework.exceptions</span> <span class="kn">import</span> <span class="n">ParseError</span><span class="p">,</span> <span class="n">ValidationError</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.api.serializers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DetailUrlField</span><span class="p">,</span>
+    <span class="n">BaseDynamicModelSerializer</span><span class="p">,</span>
+    <span class="n">ResourceBaseSerializer</span><span class="p">,</span>
+    <span class="n">ResourceBaseToRepresentationSerializerMixin</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.api.serializers</span> <span class="kn">import</span> <span class="n">FeatureInfoTemplateField</span><span class="p">,</span> <span class="n">StyleSerializer</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.maps.models</span> <span class="kn">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">MapLayer</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DynamicListAsStringField">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.DynamicListAsStringField">[docs]</a>
+<span class="k">class</span> <span class="nc">DynamicListAsStringField</span><span class="p">(</span><span class="n">DynamicField</span><span class="p">):</span>
+<div class="viewcode-block" id="DynamicListAsStringField.to_representation">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.DynamicListAsStringField.to_representation">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="DynamicListAsStringField.to_internal_value">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.DynamicListAsStringField.to_internal_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_internal_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DynamicFullyEmbedM2MRelationField">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.DynamicFullyEmbedM2MRelationField">[docs]</a>
+<span class="k">class</span> <span class="nc">DynamicFullyEmbedM2MRelationField</span><span class="p">(</span><span class="n">DynamicRelationField</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serializer_class</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sideloading</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;queryset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">queryset</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sideloading&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sideloading</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">debug</span>
+        <span class="c1"># Assures embed and many are always true</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;many&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;embed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DynamicFullyEmbedM2MRelationField</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">serializer_class</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DynamicFullyEmbedM2MRelationField.to_internal_value_single">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.DynamicFullyEmbedM2MRelationField.to_internal_value_single">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_internal_value_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the underlying object, given the serialized form.&quot;&quot;&quot;</span>
+        <span class="n">related_model</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">Meta</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># When updating a Map element, it&#39;s possible to update or create new m2m elements</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_serializer</span><span class="o">.</span><span class="n">instance</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;pk&quot;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">or</span> <span class="s2">&quot;id&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
+            <span class="n">instance_pk</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;pk&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;pk&quot;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+            <span class="c1"># Get object</span>
+            <span class="k">if</span> <span class="n">instance_pk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">instance</span> <span class="o">=</span> <span class="n">related_model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">instance_pk</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">related_model</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Invalid value for &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">field_name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">related_model</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> object with ID=</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2"> not found&quot;</span>
+                    <span class="p">)</span>
+
+        <span class="c1"># If we found a instance, we should update it instead of creating a new one</span>
+        <span class="k">if</span> <span class="n">instance</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">serializer</span><span class="o">.</span><span class="n">instance</span><span class="p">:</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">instance</span> <span class="o">=</span> <span class="n">instance</span>
+
+        <span class="c1"># Save object</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">instance</span></div>
+
+
+<div class="viewcode-block" id="DynamicFullyEmbedM2MRelationField.to_internal_value">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.DynamicFullyEmbedM2MRelationField.to_internal_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_internal_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the underlying object(s), given the serialized form.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">field_name</span><span class="si">}</span><span class="s2">&#39; value must be a list&quot;</span><span class="p">)</span>
+
+        <span class="n">instance_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">instance_pk_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">instance_data</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">serializer_class</span><span class="o">.</span><span class="n">Meta</span><span class="o">.</span><span class="n">model</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">instance_data</span>
+            <span class="n">serializer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_serializer</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">instance_data</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_internal_value_single</span><span class="p">(</span><span class="n">instance_data</span><span class="p">,</span> <span class="n">serializer</span><span class="p">)</span>
+            <span class="n">instance_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+            <span class="n">instance_pk_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+
+        <span class="c1"># Delete removed instances</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_serializer</span><span class="o">.</span><span class="n">instance</span><span class="p">:</span>
+            <span class="n">m2m_field_manager</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_serializer</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_name</span><span class="p">)</span>
+            <span class="n">m2m_field_manager</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">instance_pk_list</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">instance_list</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MapLayerDatasetSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerDatasetSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">MapLayerDatasetSerializer</span><span class="p">(</span><span class="n">ResourceBaseToRepresentationSerializerMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="MapLayerDatasetSerializer.default_style">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerDatasetSerializer.default_style">[docs]</a>
+    <span class="n">default_style</span> <span class="o">=</span> <span class="n">DynamicRelationField</span><span class="p">(</span><span class="n">StyleSerializer</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MapLayerDatasetSerializer.styles">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerDatasetSerializer.styles">[docs]</a>
+    <span class="n">styles</span> <span class="o">=</span> <span class="n">DynamicRelationField</span><span class="p">(</span><span class="n">StyleSerializer</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MapLayerDatasetSerializer.featureinfo_custom_template">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerDatasetSerializer.featureinfo_custom_template">[docs]</a>
+    <span class="n">featureinfo_custom_template</span> <span class="o">=</span> <span class="n">FeatureInfoTemplateField</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MapLayerDatasetSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerDatasetSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="MapLayerDatasetSerializer.Meta.model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerDatasetSerializer.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Dataset</span></div>
+
+<div class="viewcode-block" id="MapLayerDatasetSerializer.Meta.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerDatasetSerializer.Meta.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;dataset&quot;</span></div>
+
+<div class="viewcode-block" id="MapLayerDatasetSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerDatasetSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;alternate&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;perms&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;has_time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_style&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;styles&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ptype&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="MapLayerSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">MapLayerSerializer</span><span class="p">(</span><span class="n">DynamicModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="MapLayerSerializer.dataset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerSerializer.dataset">[docs]</a>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">DynamicRelationField</span><span class="p">(</span><span class="n">MapLayerDatasetSerializer</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MapLayerSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="MapLayerSerializer.Meta.model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerSerializer.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">MapLayer</span></div>
+
+<div class="viewcode-block" id="MapLayerSerializer.Meta.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerSerializer.Meta.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;maplayer&quot;</span></div>
+
+<div class="viewcode-block" id="MapLayerSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapLayerSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;extra_params&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;current_style&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dataset&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;order&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;visibility&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;opacity&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="SimpleMapLayerSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapLayerSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">SimpleMapLayerSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="SimpleMapLayerSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapLayerSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="SimpleMapLayerSerializer.Meta.model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapLayerSerializer.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">MapLayer</span></div>
+
+<div class="viewcode-block" id="SimpleMapLayerSerializer.Meta.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapLayerSerializer.Meta.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;maplayer&quot;</span></div>
+
+<div class="viewcode-block" id="SimpleMapLayerSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapLayerSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;extra_params&quot;</span><span class="p">,</span> <span class="s2">&quot;current_style&quot;</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="s2">&quot;visibility&quot;</span><span class="p">,</span> <span class="s2">&quot;opacity&quot;</span><span class="p">)</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="MapSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">MapSerializer</span><span class="p">(</span><span class="n">ResourceBaseSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="MapSerializer.maplayers">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapSerializer.maplayers">[docs]</a>
+    <span class="n">maplayers</span> <span class="o">=</span> <span class="n">DynamicFullyEmbedM2MRelationField</span><span class="p">(</span><span class="n">MapLayerSerializer</span><span class="p">,</span> <span class="n">deferred</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MapSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="MapSerializer.Meta.model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapSerializer.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Map</span></div>
+
+<div class="viewcode-block" id="MapSerializer.Meta.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapSerializer.Meta.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;map&quot;</span></div>
+
+<div class="viewcode-block" id="MapSerializer.Meta.view_name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapSerializer.Meta.view_name">[docs]</a>
+        <span class="n">view_name</span> <span class="o">=</span> <span class="s2">&quot;maps-list&quot;</span></div>
+
+<div class="viewcode-block" id="MapSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.MapSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">,</span> <span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;urlsuffix&quot;</span><span class="p">,</span> <span class="s2">&quot;featuredurl&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;maplayers&quot;</span><span class="p">,</span> <span class="s2">&quot;executions&quot;</span><span class="p">,</span> <span class="s2">&quot;metadata&quot;</span><span class="p">)</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="SimpleMapSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">SimpleMapSerializer</span><span class="p">(</span><span class="n">BaseDynamicModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="SimpleMapSerializer.detail_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapSerializer.detail_url">[docs]</a>
+    <span class="n">detail_url</span> <span class="o">=</span> <span class="n">DetailUrlField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimpleMapSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="SimpleMapSerializer.Meta.model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapSerializer.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Map</span></div>
+
+<div class="viewcode-block" id="SimpleMapSerializer.Meta.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapSerializer.Meta.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;map&quot;</span></div>
+
+<div class="viewcode-block" id="SimpleMapSerializer.Meta.view_name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapSerializer.Meta.view_name">[docs]</a>
+        <span class="n">view_name</span> <span class="o">=</span> <span class="s2">&quot;maps-list&quot;</span></div>
+
+<div class="viewcode-block" id="SimpleMapSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/serializers/index.html#geonode.maps.api.serializers.SimpleMapSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;detail_url&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

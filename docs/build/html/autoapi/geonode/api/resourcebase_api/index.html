@@ -1,0 +1,704 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.api.resourcebase_api &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="geonode.api.tests" href="../tests/index.html" />
+    <link rel="prev" title="geonode.api.paginator" href="../paginator/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">geonode</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">geonode.api</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../base/index.html">geonode.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../br/index.html">geonode.br</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogue/index.html">geonode.catalogue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../client/index.html">geonode.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../documents/index.html">geonode.documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../facets/index.html">geonode.facets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../favorite/index.html">geonode.favorite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoapps/index.html">geonode.geoapps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoserver/index.html">geonode.geoserver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../groups/index.html">geonode.groups</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../harvesting/index.html">geonode.harvesting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../invitations/index.html">geonode.invitations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../layers/index.html">geonode.layers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../management_commands_http/index.html">geonode.management_commands_http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../maps/index.html">geonode.maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../messaging/index.html">geonode.messaging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../monitoring/index.html">geonode.monitoring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../people/index.html">geonode.people</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../proxy/index.html">geonode.proxy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resource/index.html">geonode.resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../security/index.html">geonode.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../services/index.html">geonode.services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../social/index.html">geonode.social</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../storage/index.html">geonode.storage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tasks/index.html">geonode.tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tests/index.html">geonode.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../themes/index.html">geonode.themes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../thumbs/index.html">geonode.thumbs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../upload/index.html">geonode.upload</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">geonode.api</a></li>
+      <li class="breadcrumb-item active">geonode.api.resourcebase_api</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/geonode/api/resourcebase_api/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-geonode.api.resourcebase_api">
+<span id="geonode-api-resourcebase-api"></span><h1>geonode.api.resourcebase_api<a class="headerlink" href="#module-geonode.api.resourcebase_api" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.logger" title="geonode.api.resourcebase_api.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.CommonMetaApi" title="geonode.api.resourcebase_api.CommonMetaApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonMetaApi</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.CommonModelApi" title="geonode.api.resourcebase_api.CommonModelApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonModelApi</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.ResourceBaseResource" title="geonode.api.resourcebase_api.ResourceBaseResource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResourceBaseResource</span></code></a></p></td>
+<td><p>ResourceBase api</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.FeaturedResourceBaseResource" title="geonode.api.resourcebase_api.FeaturedResourceBaseResource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FeaturedResourceBaseResource</span></code></a></p></td>
+<td><p>Only the featured resourcebases</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.LayerResource" title="geonode.api.resourcebase_api.LayerResource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LayerResource</span></code></a></p></td>
+<td><p>Dataset API</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.MapResource" title="geonode.api.resourcebase_api.MapResource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MapResource</span></code></a></p></td>
+<td><p>Maps API</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.GeoAppResource" title="geonode.api.resourcebase_api.GeoAppResource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoAppResource</span></code></a></p></td>
+<td><p>GeoApps API</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.api.resourcebase_api.DocumentResource" title="geonode.api.resourcebase_api.DocumentResource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentResource</span></code></a></p></td>
+<td><p>Documents API</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.logger">
+<span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonMetaApi">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">CommonMetaApi</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonMetaApi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonMetaApi" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonMetaApi.authorization">
+<span class="sig-name descname"><span class="pre">authorization</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonMetaApi.authorization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonMetaApi.authorization" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonMetaApi.allowed_methods">
+<span class="sig-name descname"><span class="pre">allowed_methods</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['get']</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonMetaApi.allowed_methods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonMetaApi.allowed_methods" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonMetaApi.filtering">
+<span class="sig-name descname"><span class="pre">filtering</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonMetaApi.filtering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonMetaApi.filtering" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonMetaApi.ordering">
+<span class="sig-name descname"><span class="pre">ordering</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['date',</span> <span class="pre">'title',</span> <span class="pre">'popular_count']</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonMetaApi.ordering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonMetaApi.ordering" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonMetaApi.max_limit">
+<span class="sig-name descname"><span class="pre">max_limit</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonMetaApi.max_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonMetaApi.max_limit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">CommonModelApi</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">tastypie.resources.ModelResource</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.keywords">
+<span class="sig-name descname"><span class="pre">keywords</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.keywords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.keywords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.regions">
+<span class="sig-name descname"><span class="pre">regions</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.regions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.regions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.category">
+<span class="sig-name descname"><span class="pre">category</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.category" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.group">
+<span class="sig-name descname"><span class="pre">group</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.group" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.owner">
+<span class="sig-name descname"><span class="pre">owner</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.owner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.owner" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.tkeywords">
+<span class="sig-name descname"><span class="pre">tkeywords</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.tkeywords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.tkeywords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.VALUES">
+<span class="sig-name descname"><span class="pre">VALUES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['id',</span> <span class="pre">'uuid',</span> <span class="pre">'name',</span> <span class="pre">'typename',</span> <span class="pre">'title',</span> <span class="pre">'date',</span> <span class="pre">'date_type',</span> <span class="pre">'edition',</span> <span class="pre">'purpose',...</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.VALUES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.VALUES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.build_filters">
+<span class="sig-name descname"><span class="pre">build_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_bad_filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.build_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.build_filters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi._remove_additional_filters">
+<span class="sig-name descname"><span class="pre">_remove_additional_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orm_filters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi._remove_additional_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi._remove_additional_filters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.apply_filters">
+<span class="sig-name descname"><span class="pre">apply_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">applicable_filters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.apply_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.apply_filters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.filter_h_keywords">
+<span class="sig-name descname"><span class="pre">filter_h_keywords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.filter_h_keywords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.filter_h_keywords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.build_haystack_filters">
+<span class="sig-name descname"><span class="pre">build_haystack_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.build_haystack_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.build_haystack_filters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.get_search">
+<span class="sig-name descname"><span class="pre">get_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.get_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.get_search" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.get_haystack_api_fields">
+<span class="sig-name descname"><span class="pre">get_haystack_api_fields</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">haystack_object</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.get_haystack_api_fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.get_haystack_api_fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.get_list">
+<span class="sig-name descname"><span class="pre">get_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.get_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.get_list" title="Link to this definition"></a></dt>
+<dd><p>Returns a serialized list of resources.</p>
+<p>Calls <code class="docutils literal notranslate"><span class="pre">obj_get_list</span></code> to provide the data, then handles that result
+set and serializes it.</p>
+<p>Should return a HttpResponse (200 OK).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.format_objects">
+<span class="sig-name descname"><span class="pre">format_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objects</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.format_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.format_objects" title="Link to this definition"></a></dt>
+<dd><p>Format the objects for output in a response.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.create_response">
+<span class="sig-name descname"><span class="pre">create_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">response_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">HttpResponse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">response_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">response_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.create_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.create_response" title="Link to this definition"></a></dt>
+<dd><p>Extracts the common “which-format/serialize/return-response” cycle.</p>
+<p>Mostly a useful shortcut/hook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.prepend_urls">
+<span class="sig-name descname"><span class="pre">prepend_urls</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.prepend_urls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.prepend_urls" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.CommonModelApi.hydrate_title">
+<span class="sig-name descname"><span class="pre">hydrate_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#CommonModelApi.hydrate_title"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.CommonModelApi.hydrate_title" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.ResourceBaseResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">ResourceBaseResource</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#ResourceBaseResource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.ResourceBaseResource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonModelApi" title="geonode.api.resourcebase_api.CommonModelApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonModelApi</span></code></a></p>
+<p>ResourceBase api</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.ResourceBaseResource.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#ResourceBaseResource.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.ResourceBaseResource.Meta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonMetaApi" title="geonode.api.resourcebase_api.CommonMetaApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonMetaApi</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.ResourceBaseResource.Meta.paginator_class">
+<span class="sig-name descname"><span class="pre">paginator_class</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#ResourceBaseResource.Meta.paginator_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.ResourceBaseResource.Meta.paginator_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.ResourceBaseResource.Meta.queryset">
+<span class="sig-name descname"><span class="pre">queryset</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#ResourceBaseResource.Meta.queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.ResourceBaseResource.Meta.queryset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.ResourceBaseResource.Meta.resource_name">
+<span class="sig-name descname"><span class="pre">resource_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'base'</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#ResourceBaseResource.Meta.resource_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.ResourceBaseResource.Meta.resource_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.ResourceBaseResource.Meta.excludes">
+<span class="sig-name descname"><span class="pre">excludes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['csw_anytext',</span> <span class="pre">'metadata_xml']</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#ResourceBaseResource.Meta.excludes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.ResourceBaseResource.Meta.excludes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.ResourceBaseResource.Meta.authentication">
+<span class="sig-name descname"><span class="pre">authentication</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#ResourceBaseResource.Meta.authentication"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.ResourceBaseResource.Meta.authentication" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.FeaturedResourceBaseResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">FeaturedResourceBaseResource</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#FeaturedResourceBaseResource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.FeaturedResourceBaseResource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonModelApi" title="geonode.api.resourcebase_api.CommonModelApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonModelApi</span></code></a></p>
+<p>Only the featured resourcebases</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#FeaturedResourceBaseResource.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonMetaApi" title="geonode.api.resourcebase_api.CommonMetaApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonMetaApi</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta.paginator_class">
+<span class="sig-name descname"><span class="pre">paginator_class</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#FeaturedResourceBaseResource.Meta.paginator_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta.paginator_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta.queryset">
+<span class="sig-name descname"><span class="pre">queryset</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#FeaturedResourceBaseResource.Meta.queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta.queryset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta.resource_name">
+<span class="sig-name descname"><span class="pre">resource_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'featured'</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#FeaturedResourceBaseResource.Meta.resource_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta.resource_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta.authentication">
+<span class="sig-name descname"><span class="pre">authentication</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#FeaturedResourceBaseResource.Meta.authentication"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.FeaturedResourceBaseResource.Meta.authentication" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">LayerResource</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonModelApi" title="geonode.api.resourcebase_api.CommonModelApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonModelApi</span></code></a></p>
+<p>Dataset API</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.links">
+<span class="sig-name descname"><span class="pre">links</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.links" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.default_style">
+<span class="sig-name descname"><span class="pre">default_style</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.default_style"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.default_style" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.build_filters">
+<span class="sig-name descname"><span class="pre">build_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_bad_filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.build_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.build_filters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.format_objects">
+<span class="sig-name descname"><span class="pre">format_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objects</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.format_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.format_objects" title="Link to this definition"></a></dt>
+<dd><p>Formats the object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource._dehydrate_links">
+<span class="sig-name descname"><span class="pre">_dehydrate_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">link_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource._dehydrate_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource._dehydrate_links" title="Link to this definition"></a></dt>
+<dd><p>Dehydrate links field.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.dehydrate_links">
+<span class="sig-name descname"><span class="pre">dehydrate_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.dehydrate_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.dehydrate_links" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.dehydrate_ogc_links">
+<span class="sig-name descname"><span class="pre">dehydrate_ogc_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.dehydrate_ogc_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.dehydrate_ogc_links" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.dehydrate_gtype">
+<span class="sig-name descname"><span class="pre">dehydrate_gtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bundle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.dehydrate_gtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.dehydrate_gtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.build_bundle">
+<span class="sig-name descname"><span class="pre">build_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.build_bundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.build_bundle" title="Link to this definition"></a></dt>
+<dd><p>Override build_bundle method to add additional info.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.populate_object">
+<span class="sig-name descname"><span class="pre">populate_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.populate_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.populate_object" title="Link to this definition"></a></dt>
+<dd><p>Populate results with necessary fields</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<a class="reference internal" href="../../layers/models/index.html#geonode.layers.models.Dataset" title="geonode.layers.models.Dataset"><em>Dataset</em></a>) – Dataset obj</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.VALUES">
+<span class="sig-name descname"><span class="pre">VALUES</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.VALUES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.VALUES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonMetaApi" title="geonode.api.resourcebase_api.CommonMetaApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonMetaApi</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.paginator_class">
+<span class="sig-name descname"><span class="pre">paginator_class</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.paginator_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.paginator_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.queryset">
+<span class="sig-name descname"><span class="pre">queryset</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.queryset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.resource_name">
+<span class="sig-name descname"><span class="pre">resource_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'datasets'</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.resource_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.resource_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.detail_uri_name">
+<span class="sig-name descname"><span class="pre">detail_uri_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'id'</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.detail_uri_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.detail_uri_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.include_resource_uri">
+<span class="sig-name descname"><span class="pre">include_resource_uri</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.include_resource_uri"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.include_resource_uri" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.allowed_methods">
+<span class="sig-name descname"><span class="pre">allowed_methods</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['get',</span> <span class="pre">'patch']</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.allowed_methods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.allowed_methods" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.excludes">
+<span class="sig-name descname"><span class="pre">excludes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['csw_anytext',</span> <span class="pre">'metadata_xml']</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.excludes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.excludes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.authentication">
+<span class="sig-name descname"><span class="pre">authentication</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.authentication"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.authentication" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.LayerResource.Meta.filtering">
+<span class="sig-name descname"><span class="pre">filtering</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#LayerResource.Meta.filtering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.LayerResource.Meta.filtering" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.MapResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">MapResource</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#MapResource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.MapResource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonModelApi" title="geonode.api.resourcebase_api.CommonModelApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonModelApi</span></code></a></p>
+<p>Maps API</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.MapResource.build_filters">
+<span class="sig-name descname"><span class="pre">build_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_bad_filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#MapResource.build_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.MapResource.build_filters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.MapResource.format_objects">
+<span class="sig-name descname"><span class="pre">format_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objects</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#MapResource.format_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.MapResource.format_objects" title="Link to this definition"></a></dt>
+<dd><p>Formats the objects and provides reference to list of layers in map
+resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>objects</strong> – Map objects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.MapResource.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#MapResource.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.MapResource.Meta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonMetaApi" title="geonode.api.resourcebase_api.CommonMetaApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonMetaApi</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.MapResource.Meta.paginator_class">
+<span class="sig-name descname"><span class="pre">paginator_class</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#MapResource.Meta.paginator_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.MapResource.Meta.paginator_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.MapResource.Meta.queryset">
+<span class="sig-name descname"><span class="pre">queryset</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#MapResource.Meta.queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.MapResource.Meta.queryset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.MapResource.Meta.resource_name">
+<span class="sig-name descname"><span class="pre">resource_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'maps'</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#MapResource.Meta.resource_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.MapResource.Meta.resource_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.MapResource.Meta.authentication">
+<span class="sig-name descname"><span class="pre">authentication</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#MapResource.Meta.authentication"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.MapResource.Meta.authentication" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.GeoAppResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">GeoAppResource</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#GeoAppResource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.GeoAppResource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonModelApi" title="geonode.api.resourcebase_api.CommonModelApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonModelApi</span></code></a></p>
+<p>GeoApps API</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.GeoAppResource.format_objects">
+<span class="sig-name descname"><span class="pre">format_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objects</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#GeoAppResource.format_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.GeoAppResource.format_objects" title="Link to this definition"></a></dt>
+<dd><p>Formats the objects and provides reference to list of layers in GeoApp
+resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>objects</strong> – GeoApp objects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.GeoAppResource.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#GeoAppResource.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.GeoAppResource.Meta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonMetaApi" title="geonode.api.resourcebase_api.CommonMetaApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonMetaApi</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.GeoAppResource.Meta.paginator_class">
+<span class="sig-name descname"><span class="pre">paginator_class</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#GeoAppResource.Meta.paginator_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.GeoAppResource.Meta.paginator_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.GeoAppResource.Meta.filtering">
+<span class="sig-name descname"><span class="pre">filtering</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#GeoAppResource.Meta.filtering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.GeoAppResource.Meta.filtering" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.GeoAppResource.Meta.queryset">
+<span class="sig-name descname"><span class="pre">queryset</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#GeoAppResource.Meta.queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.GeoAppResource.Meta.queryset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.GeoAppResource.Meta.resource_name">
+<span class="sig-name descname"><span class="pre">resource_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'geoapps'</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#GeoAppResource.Meta.resource_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.GeoAppResource.Meta.resource_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.GeoAppResource.Meta.authentication">
+<span class="sig-name descname"><span class="pre">authentication</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#GeoAppResource.Meta.authentication"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.GeoAppResource.Meta.authentication" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.api.resourcebase_api.</span></span><span class="sig-name descname"><span class="pre">DocumentResource</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonModelApi" title="geonode.api.resourcebase_api.CommonModelApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonModelApi</span></code></a></p>
+<p>Documents API</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource.build_filters">
+<span class="sig-name descname"><span class="pre">build_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_bad_filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource.build_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource.build_filters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource.format_objects">
+<span class="sig-name descname"><span class="pre">format_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objects</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource.format_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource.format_objects" title="Link to this definition"></a></dt>
+<dd><p>Formats the objects and provides reference to list of layers in map
+resources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>objects</strong> – Map objects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource.Meta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.api.resourcebase_api.CommonMetaApi" title="geonode.api.resourcebase_api.CommonMetaApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonMetaApi</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource.Meta.paginator_class">
+<span class="sig-name descname"><span class="pre">paginator_class</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource.Meta.paginator_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource.Meta.paginator_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource.Meta.filtering">
+<span class="sig-name descname"><span class="pre">filtering</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource.Meta.filtering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource.Meta.filtering" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource.Meta.queryset">
+<span class="sig-name descname"><span class="pre">queryset</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource.Meta.queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource.Meta.queryset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource.Meta.resource_name">
+<span class="sig-name descname"><span class="pre">resource_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'documents'</span></em><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource.Meta.resource_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource.Meta.resource_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.api.resourcebase_api.DocumentResource.Meta.authentication">
+<span class="sig-name descname"><span class="pre">authentication</span></span><a class="reference internal" href="../../../../_modules/geonode/api/resourcebase_api.html#DocumentResource.Meta.authentication"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.api.resourcebase_api.DocumentResource.Meta.authentication" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../paginator/index.html" class="btn btn-neutral float-left" title="geonode.api.paginator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tests/index.html" class="btn btn-neutral float-right" title="geonode.api.tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+geonode.layers.admin
+====================
+
+.. py:module:: geonode.layers.admin
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.layers.admin.AttributeInline
+   geonode.layers.admin.DatasetAdminForm
+   geonode.layers.admin.DatasetAdmin
+   geonode.layers.admin.AttributeAdmin
+   geonode.layers.admin.StyleAdmin
+
+
+Module Contents
+---------------
+
+.. py:class:: AttributeInline
+
+   Bases: :py:obj:`django.contrib.admin.TabularInline`
+
+
+   .. py:attribute:: model
+
+
+.. py:class:: DatasetAdminForm
+
+   Bases: :py:obj:`geonode.base.admin.ResourceBaseAdminForm`
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`geonode.base.admin.ResourceBaseAdminForm.Meta`
+
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: '__all__'
+
+
+
+
+   .. py:attribute:: tkeywords
+
+
+.. py:class:: DatasetAdmin
+
+   Bases: :py:obj:`modeltranslation.admin.TabbedTranslationAdmin`
+
+
+   .. py:attribute:: exclude
+      :value: ('ll_bbox_polygon', 'bbox_polygon', 'srid')
+
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'alternate', 'title', 'date', 'category', 'group', 'is_approved', 'is_published',...
+
+
+
+   .. py:attribute:: list_display_links
+      :value: ('id',)
+
+
+
+   .. py:attribute:: list_editable
+      :value: ('title', 'category', 'group', 'is_approved', 'is_published', 'dirty_state')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('subtype', 'owner', 'category', 'group', 'restriction_code_type__identifier', 'date',...
+
+
+
+   .. py:attribute:: search_fields
+      :value: ('alternate', 'title', 'abstract', 'purpose', 'is_approved', 'is_published', 'state')
+
+
+
+   .. py:attribute:: filter_horizontal
+      :value: ('contacts',)
+
+
+
+   .. py:attribute:: date_hierarchy
+      :value: 'date'
+
+
+
+   .. py:attribute:: readonly_fields
+      :value: ('uuid', 'alternate', 'workspace', 'geographic_bounding_box')
+
+
+
+   .. py:attribute:: inlines
+
+
+   .. py:attribute:: form
+
+
+   .. py:attribute:: actions
+
+
+   .. py:method:: delete_queryset(request, queryset)
+
+      We need to invoke the 'ResourceBase.delete' method even when deleting
+      through the admin batch action
+
+
+
+.. py:class:: AttributeAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display_links
+      :value: ('id',)
+
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'dataset', 'attribute', 'description', 'attribute_label', 'attribute_type', 'display_order')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('dataset', 'attribute_type')
+
+
+
+   .. py:attribute:: search_fields
+      :value: ('attribute', 'attribute_label')
+
+
+
+.. py:class:: StyleAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display_links
+      :value: ('sld_title',)
+
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'name', 'sld_title', 'workspace', 'sld_url')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('workspace',)
+
+
+
+   .. py:attribute:: search_fields
+      :value: ('name', 'workspace')
+
+
+

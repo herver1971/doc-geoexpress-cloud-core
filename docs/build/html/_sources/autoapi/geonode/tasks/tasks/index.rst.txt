@@ -1,0 +1,98 @@
+geonode.tasks.tasks
+===================
+
+.. py:module:: geonode.tasks.tasks
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.tasks.tasks.memcache_client
+   geonode.tasks.tasks.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.tasks.tasks.AcquireLock
+   geonode.tasks.tasks.FaultTolerantTask
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.tasks.tasks.memcache_lock
+   geonode.tasks.tasks.send_email
+   geonode.tasks.tasks.send_queued_notifications
+   geonode.tasks.tasks.set_permissions
+
+
+Module Contents
+---------------
+
+.. py:data:: memcache_client
+
+.. py:data:: logger
+
+.. py:function:: memcache_lock(lock_id)
+
+.. py:class:: AcquireLock(lock_id, blocking=False)
+
+   .. py:attribute:: lock_id
+
+
+   .. py:attribute:: blocking
+
+
+   .. py:method:: __enter__()
+
+
+   .. py:method:: __exit__(exc_type, exc_value, exc_traceback)
+
+
+   .. py:method:: acquire()
+
+
+   .. py:method:: release()
+
+
+.. py:class:: FaultTolerantTask
+
+   Bases: :py:obj:`celery.Task`
+
+
+   Implements after return hook to close the invalid connection.
+   This way, django is forced to serve a new connection for the next
+   task.
+
+
+   .. py:attribute:: abstract
+      :value: True
+
+
+
+   .. py:method:: after_return(*args, **kwargs)
+
+
+.. py:function:: send_email(self, *args, **kwargs)
+
+   Sends an email using django's send_mail functionality.
+
+
+.. py:function:: send_queued_notifications(self, *args)
+
+   Sends queued notifications.
+
+   settings.PINAX_NOTIFICATIONS_QUEUE_ALL needs to be true in order to take
+   advantage of this.
+
+
+
+.. py:function:: set_permissions(self, permissions_names, resources_names, users_usernames, groups_names, delete_flag)
+
