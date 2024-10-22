@@ -1,0 +1,258 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.people.utils &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../people.html">geonode.people</a></li>
+      <li class="breadcrumb-item active">geonode.people.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.people.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Group</span>
+
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">GeoNodeException</span>
+<span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span><span class="p">,</span> <span class="n">GroupMember</span>
+<span class="kn">from</span> <span class="nn">geonode.groups.conf</span> <span class="kn">import</span> <span class="n">settings</span> <span class="k">as</span> <span class="n">groups_settings</span>
+
+
+<div class="viewcode-block" id="get_default_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/utils/index.html#geonode.people.utils.get_default_user">[docs]</a>
+<span class="k">def</span> <span class="nf">get_default_user</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a default user&quot;&quot;&quot;</span>
+    <span class="n">superusers</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_superuser</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">superusers</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="c1"># Return the first created superuser</span>
+        <span class="k">return</span> <span class="n">superusers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span>
+            <span class="s2">&quot;You must have an admin account configured &quot;</span>
+            <span class="s2">&quot;before importing data. &quot;</span>
+            <span class="s2">&quot;Try: django-admin.py createsuperuser&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_valid_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/utils/index.html#geonode.people.utils.get_valid_user">[docs]</a>
+<span class="k">def</span> <span class="nf">get_valid_user</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the default user or creates it if it does not exist&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">theuser</span> <span class="o">=</span> <span class="n">get_default_user</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">theuser</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">user</span> <span class="o">==</span> <span class="n">user</span><span class="o">.</span><span class="n">get_anonymous</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="s2">&quot;The user uploading files must not &quot;</span> <span class="s2">&quot;be anonymous&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">theuser</span> <span class="o">=</span> <span class="n">user</span>
+
+    <span class="c1"># FIXME: Pass a user in the unit tests that is not yet saved ;)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">theuser</span><span class="p">,</span> <span class="n">get_user_model</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">theuser</span></div>
+
+
+
+<div class="viewcode-block" id="format_address">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/utils/index.html#geonode.people.utils.format_address">[docs]</a>
+<span class="k">def</span> <span class="nf">format_address</span><span class="p">(</span><span class="n">street</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zipcode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">city</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">area</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">country</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">country</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">country</span> <span class="o">==</span> <span class="s2">&quot;USA&quot;</span><span class="p">:</span>
+        <span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">city</span> <span class="ow">and</span> <span class="n">area</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">street</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">street</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">city</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">area</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">zipcode</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">zipcode</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="ow">not</span> <span class="n">city</span><span class="p">)</span> <span class="ow">and</span> <span class="n">area</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">street</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">street</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="n">address</span> <span class="o">+=</span> <span class="n">area</span>
+            <span class="k">if</span> <span class="n">zipcode</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">zipcode</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elif</span> <span class="n">city</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">area</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">street</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">street</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="n">address</span> <span class="o">+=</span> <span class="n">city</span>
+            <span class="k">if</span> <span class="n">zipcode</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">zipcode</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">street</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">street</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">zipcode</span><span class="p">:</span>
+                <span class="n">address</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">zipcode</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">if</span> <span class="n">address</span><span class="p">:</span>
+            <span class="n">address</span> <span class="o">+=</span> <span class="s2">&quot;, United States&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">address</span> <span class="o">+=</span> <span class="s2">&quot;United States&quot;</span>
+
+        <span class="k">return</span> <span class="n">address</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">address</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">street</span><span class="p">:</span>
+            <span class="n">address</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">street</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">zipcode</span><span class="p">:</span>
+            <span class="n">address</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">zipcode</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">city</span><span class="p">:</span>
+            <span class="n">address</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">city</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">area</span><span class="p">:</span>
+            <span class="n">address</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">area</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">country</span><span class="p">:</span>
+            <span class="n">address</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">country</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">address</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_available_users">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/utils/index.html#geonode.people.utils.get_available_users">[docs]</a>
+<span class="k">def</span> <span class="nf">get_available_users</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filters users a given user can see.</span>
+<span class="sd">    eg all users from public groups and all users in private groups as a given user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        user (settings.AUTH_USER_MODEL): User object</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Queryset: Queryset of users a given user can see</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">is_active</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+    <span class="n">member_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">:</span>
+        <span class="c1"># Append current user profile in the list of users to be returned</span>
+        <span class="n">member_ids</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+
+    <span class="c1"># Only return user that are members of any group profile the current user is member of</span>
+    <span class="n">member_ids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+        <span class="nb">list</span><span class="p">(</span>
+            <span class="n">GroupMember</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">group__in</span><span class="o">=</span><span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;public&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">group__in</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">all</span><span class="p">()))</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">select_related</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;user__id&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">groups_settings</span><span class="o">.</span><span class="n">REGISTERED_MEMBERS_GROUP_NAME</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="c1"># Retrieve all members in Registered member&#39;s group</span>
+        <span class="n">rm_group</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">groups_settings</span><span class="o">.</span><span class="n">REGISTERED_MEMBERS_GROUP_NAME</span><span class="p">)</span>
+        <span class="n">users_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rm_group</span><span class="o">.</span><span class="n">user_set</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">member_ids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">users_ids</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,581 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.proxy.views &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../proxy.html">geonode.proxy</a></li>
+      <li class="breadcrumb-item active">geonode.proxy.views</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.proxy.views</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">zipstream</span>
+
+<span class="kn">from</span> <span class="nn">hyperlink</span> <span class="kn">import</span> <span class="n">URL</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">urlsplit</span><span class="p">,</span> <span class="n">urljoin</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">loader</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span><span class="p">,</span> <span class="n">StreamingHttpResponse</span>
+<span class="kn">from</span> <span class="nn">django.views.generic</span> <span class="kn">import</span> <span class="n">View</span>
+<span class="kn">from</span> <span class="nn">distutils.version</span> <span class="kn">import</span> <span class="n">StrictVersion</span>
+<span class="kn">from</span> <span class="nn">django.http.request</span> <span class="kn">import</span> <span class="n">validate_host</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.csrf</span> <span class="kn">import</span> <span class="n">requires_csrf_token</span>
+
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.upload.models</span> <span class="kn">import</span> <span class="n">Upload</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+<span class="kn">from</span> <span class="nn">geonode.storage.manager</span> <span class="kn">import</span> <span class="n">storage_manager</span>
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">resolve_object</span><span class="p">,</span>
+    <span class="n">check_ogc_backend</span><span class="p">,</span>
+    <span class="n">get_headers</span><span class="p">,</span>
+    <span class="n">http_client</span><span class="p">,</span>
+    <span class="n">json_response</span><span class="p">,</span>
+    <span class="n">extract_ip_or_domain</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">geonode.base.enumerations</span> <span class="kn">import</span> <span class="n">LINK_TYPES</span> <span class="k">as</span> <span class="n">_LT</span>
+
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">geoserver</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">geonode.base</span> <span class="kn">import</span> <span class="n">register_event</span>
+<span class="kn">from</span> <span class="nn">geonode.base.auth</span> <span class="kn">import</span> <span class="n">get_auth_user</span><span class="p">,</span> <span class="n">get_token_from_auth_header</span>
+
+<div class="viewcode-block" id="BUFFER_CHUNK_SIZE">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.BUFFER_CHUNK_SIZE">[docs]</a>
+<span class="n">BUFFER_CHUNK_SIZE</span> <span class="o">=</span> <span class="mi">64</span> <span class="o">*</span> <span class="mi">1024</span></div>
+
+
+<div class="viewcode-block" id="TIMEOUT">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.TIMEOUT">[docs]</a>
+<span class="n">TIMEOUT</span> <span class="o">=</span> <span class="mi">30</span></div>
+
+
+<div class="viewcode-block" id="LINK_TYPES">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.LINK_TYPES">[docs]</a>
+<span class="n">LINK_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span> <span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="n">_LT</span> <span class="k">if</span> <span class="n">L</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;OGC:&quot;</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ows_regexp">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.ows_regexp">[docs]</a>
+<span class="n">ows_regexp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(?i)(version)=(\d\.\d\.\d)(?i)&amp;(?i)request=(?i)(GetCapabilities)&amp;(?i)service=(?i)(\w\w\w)$&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@requires_csrf_token</span>
+<div class="viewcode-block" id="proxy">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.proxy">[docs]</a>
+<span class="k">def</span> <span class="nf">proxy</span><span class="p">(</span>
+    <span class="n">request</span><span class="p">,</span>
+    <span class="n">url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">response_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">sec_chk_hosts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">sec_chk_rules</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">allowed_hosts</span><span class="o">=</span><span class="p">[],</span>
+    <span class="n">headers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">access_token</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="c1"># Request default timeout</span>
+    <span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">ogc_server_settings</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">timeout</span><span class="p">:</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ogc_server_settings</span><span class="p">,</span> <span class="s2">&quot;TIMEOUT&quot;</span><span class="p">,</span> <span class="n">TIMEOUT</span><span class="p">)</span>
+
+    <span class="c1"># Security rules and settings</span>
+    <span class="n">PROXY_ALLOWED_HOSTS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;PROXY_ALLOWED_HOSTS&quot;</span><span class="p">,</span> <span class="p">())</span>
+
+    <span class="c1"># Sanity url checks</span>
+    <span class="k">if</span> <span class="s2">&quot;url&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span>
+            <span class="s2">&quot;The proxy service requires a URL-encoded URL as a parameter.&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">raw_url</span> <span class="o">=</span> <span class="n">url</span> <span class="ow">or</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
+    <span class="n">raw_url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="p">,</span> <span class="n">raw_url</span><span class="p">)</span> <span class="k">if</span> <span class="n">raw_url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">raw_url</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">raw_url</span><span class="p">)</span>
+    <span class="n">scheme</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">scheme</span><span class="p">)</span>
+    <span class="n">locator</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">query</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">locator</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;?</span><span class="si">{</span><span class="n">url</span><span class="o">.</span><span class="n">query</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">fragment</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">locator</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;#</span><span class="si">{</span><span class="n">url</span><span class="o">.</span><span class="n">fragment</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># White-Black Listing Hosts</span>
+    <span class="n">site_url</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sec_chk_hosts</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+        <span class="c1"># Attach current SITEURL</span>
+        <span class="k">if</span> <span class="n">site_url</span><span class="o">.</span><span class="n">hostname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PROXY_ALLOWED_HOSTS</span><span class="p">:</span>
+            <span class="n">PROXY_ALLOWED_HOSTS</span> <span class="o">+=</span> <span class="p">(</span><span class="n">site_url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,)</span>
+
+        <span class="c1"># Attach current hostname</span>
+        <span class="n">hostname</span> <span class="o">=</span> <span class="p">(</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">hostname</span><span class="p">,)</span> <span class="k">if</span> <span class="n">ogc_server_settings</span> <span class="k">else</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="n">hostname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PROXY_ALLOWED_HOSTS</span><span class="p">:</span>
+            <span class="n">PROXY_ALLOWED_HOSTS</span> <span class="o">+=</span> <span class="n">hostname</span>
+
+        <span class="c1"># Check OWS regexp</span>
+        <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">query</span> <span class="ow">and</span> <span class="n">ows_regexp</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">query</span><span class="p">):</span>
+            <span class="n">ows_tokens</span> <span class="o">=</span> <span class="n">ows_regexp</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">ows_tokens</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+                <span class="ow">and</span> <span class="s2">&quot;version&quot;</span> <span class="o">==</span> <span class="n">ows_tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="ow">and</span> <span class="n">StrictVersion</span><span class="p">(</span><span class="n">ows_tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">StrictVersion</span><span class="p">(</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">StrictVersion</span><span class="p">(</span><span class="n">ows_tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">StrictVersion</span><span class="p">(</span><span class="s2">&quot;3.0.0&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">ows_tokens</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;getcapabilities&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">ows_tokens</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;OWS&quot;</span><span class="p">,</span> <span class="s2">&quot;WCS&quot;</span><span class="p">,</span> <span class="s2">&quot;WFS&quot;</span><span class="p">,</span> <span class="s2">&quot;WMS&quot;</span><span class="p">,</span> <span class="s2">&quot;WPS&quot;</span><span class="p">,</span> <span class="s2">&quot;CSW&quot;</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">hostname</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PROXY_ALLOWED_HOSTS</span><span class="p">:</span>
+                    <span class="n">PROXY_ALLOWED_HOSTS</span> <span class="o">+=</span> <span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">hostname</span><span class="p">,)</span>
+
+        <span class="c1"># Check Remote Services base_urls</span>
+        <span class="kn">from</span> <span class="nn">geonode.services.models</span> <span class="kn">import</span> <span class="n">Service</span>
+
+        <span class="k">for</span> <span class="n">_s</span> <span class="ow">in</span> <span class="n">Service</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">_remote_host</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">_s</span><span class="o">.</span><span class="n">base_url</span><span class="p">)</span><span class="o">.</span><span class="n">hostname</span>
+            <span class="n">PROXY_ALLOWED_HOSTS</span> <span class="o">+=</span> <span class="p">(</span><span class="n">_remote_host</span><span class="p">,)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">validate_host</span><span class="p">(</span><span class="n">extract_ip_or_domain</span><span class="p">(</span><span class="n">raw_url</span><span class="p">),</span> <span class="n">PROXY_ALLOWED_HOSTS</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span>
+                <span class="s2">&quot;DEBUG is set to False but the host of the path provided to the proxy service&quot;</span>
+                <span class="s2">&quot; is not in the PROXY_ALLOWED_HOSTS setting.&quot;</span><span class="p">,</span>
+                <span class="n">status</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span>
+                <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Security checks based on rules; allow only specific requests</span>
+    <span class="k">if</span> <span class="n">sec_chk_rules</span><span class="p">:</span>
+        <span class="c1"># TODO: Not yet implemented</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Collecting headers and cookies</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">headers</span><span class="p">:</span>
+        <span class="n">headers</span><span class="p">,</span> <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_headers</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">raw_url</span><span class="p">,</span> <span class="n">allowed_hosts</span><span class="o">=</span><span class="n">allowed_hosts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">access_token</span><span class="p">:</span>
+        <span class="n">auth_header</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;Authorization&quot;</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">:</span>
+            <span class="n">auth_header</span> <span class="o">=</span> <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s2">&quot;HTTP_AUTHORIZATION&quot;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="p">:</span>
+            <span class="n">auth_header</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HTTP_AUTHORIZATION&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HTTP_AUTHORIZATION2&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">auth_header</span><span class="p">:</span>
+            <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_token_from_auth_header</span><span class="p">(</span><span class="n">auth_header</span><span class="p">,</span> <span class="n">create_if_not_exists</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">get_auth_user</span><span class="p">(</span><span class="n">access_token</span><span class="p">)</span>
+
+    <span class="c1"># Inject access_token if necessary</span>
+    <span class="n">parsed</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">raw_url</span><span class="p">)</span>
+    <span class="n">parsed</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">locator</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">netloc</span> <span class="o">==</span> <span class="n">site_url</span><span class="o">.</span><span class="n">netloc</span> <span class="ow">and</span> <span class="n">scheme</span> <span class="o">!=</span> <span class="n">site_url</span><span class="o">.</span><span class="n">scheme</span><span class="p">:</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">scheme</span><span class="o">=</span><span class="n">site_url</span><span class="o">.</span><span class="n">scheme</span><span class="p">)</span>
+
+    <span class="n">_url</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="n">geturl</span><span class="p">()</span>
+
+    <span class="c1"># Some clients / JS libraries generate URLs with relative URL paths, e.g.</span>
+    <span class="c1"># &quot;http://host/path/path/../file.css&quot;, which the requests library cannot</span>
+    <span class="c1"># currently handle (https://github.com/kennethreitz/requests/issues/2982).</span>
+    <span class="c1"># We parse and normalise such URLs into absolute paths before attempting</span>
+    <span class="c1"># to proxy the request.</span>
+    <span class="n">_url</span> <span class="o">=</span> <span class="n">URL</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">_url</span><span class="p">)</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span><span class="o">.</span><span class="n">to_text</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span> <span class="ow">and</span> <span class="n">access_token</span> <span class="ow">and</span> <span class="s2">&quot;access_token&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_url</span><span class="p">:</span>
+        <span class="n">query_separator</span> <span class="o">=</span> <span class="s2">&quot;&amp;&quot;</span> <span class="k">if</span> <span class="s2">&quot;?&quot;</span> <span class="ow">in</span> <span class="n">_url</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span>
+        <span class="n">_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_url</span><span class="si">}{</span><span class="n">query_separator</span><span class="si">}</span><span class="s2">access_token=</span><span class="si">{</span><span class="n">access_token</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">_data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Avoid translating local geoserver calls into external ones</span>
+    <span class="k">if</span> <span class="n">check_ogc_backend</span><span class="p">(</span><span class="n">geoserver</span><span class="o">.</span><span class="n">BACKEND_PACKAGE</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">ogc_server_settings</span>
+
+        <span class="n">_url</span> <span class="o">=</span> <span class="n">_url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="si">}</span><span class="s2">geoserver&quot;</span><span class="p">,</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">LOCATION</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span>
+        <span class="n">_data</span> <span class="o">=</span> <span class="n">_data</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="si">}</span><span class="s2">geoserver&quot;</span><span class="p">,</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">LOCATION</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span>
+
+    <span class="n">response</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="n">http_client</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+        <span class="n">_url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">_data</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">reason</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span>
+    <span class="n">response_headers</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span>
+    <span class="n">content_type</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">status</span> <span class="o">&gt;=</span> <span class="mi">400</span><span class="p">:</span>
+        <span class="n">_response</span> <span class="o">=</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fetch_response_headers</span><span class="p">(</span><span class="n">_response</span><span class="p">,</span> <span class="n">response_headers</span><span class="p">)</span>
+
+    <span class="c1"># decompress GZipped responses if not enabled</span>
+    <span class="c1"># if content and response and response.getheader(&#39;Content-Encoding&#39;) == &#39;gzip&#39;:</span>
+    <span class="k">if</span> <span class="n">content</span> <span class="ow">and</span> <span class="n">content_type</span> <span class="ow">and</span> <span class="n">content_type</span> <span class="o">==</span> <span class="s2">&quot;gzip&quot;</span><span class="p">:</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">GzipFile</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">buf</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">buf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">PLAIN_CONTENT_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;plain&quot;</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="s2">&quot;xml&quot;</span><span class="p">,</span> <span class="s2">&quot;gml&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">_ct</span> <span class="ow">in</span> <span class="n">PLAIN_CONTENT_TYPES</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">content_type</span> <span class="ow">and</span> <span class="n">_ct</span> <span class="ow">in</span> <span class="n">content_type</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">response</span> <span class="ow">and</span> <span class="n">response_callback</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">kwargs</span> <span class="k">else</span> <span class="n">kwargs</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">response</span><span class="p">,</span>
+                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">,</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">,</span>
+                <span class="s2">&quot;response_headers&quot;</span><span class="p">:</span> <span class="n">response_headers</span><span class="p">,</span>
+                <span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="n">content_type</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response_callback</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If we get a redirect, let&#39;s add a useful message.</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">and</span> <span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">301</span><span class="p">,</span> <span class="mi">302</span><span class="p">,</span> <span class="mi">303</span><span class="p">,</span> <span class="mi">307</span><span class="p">):</span>
+            <span class="n">_response</span> <span class="o">=</span> <span class="n">HttpResponse</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;This proxy does not support redirects. The server in &#39;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;asked for a redirect to &#39;</span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="s1">&#39;Location&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                <span class="p">),</span>
+                <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+                <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">_response</span><span class="p">[</span><span class="s2">&quot;Location&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="s2">&quot;Location&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">fetch_response_headers</span><span class="p">(</span><span class="n">_response</span><span class="p">,</span> <span class="n">response_headers</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">_get_message</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+                <span class="n">_s</span> <span class="o">=</span> <span class="n">text</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+                    <span class="n">_s</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;&lt;b&gt;Message&lt;/b&gt;(.+?)&lt;/p&gt;&quot;</span><span class="p">,</span> <span class="n">_s</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="n">_s</span>
+                <span class="k">return</span> <span class="n">found</span>
+
+            <span class="n">_response</span> <span class="o">=</span> <span class="n">HttpResponse</span><span class="p">(</span>
+                <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
+                <span class="n">reason</span><span class="o">=</span><span class="n">_get_message</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="k">if</span> <span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
+                <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">fetch_response_headers</span><span class="p">(</span><span class="n">_response</span><span class="p">,</span> <span class="n">response_headers</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="download">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.download">[docs]</a>
+<span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">resourceid</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="n">_not_authorized</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You are not authorized to download this resource.&quot;</span><span class="p">)</span>
+    <span class="n">_not_permitted</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You are not permitted to save or edit this resource.&quot;</span><span class="p">)</span>
+    <span class="n">_no_files_found</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No files have been found for this resource. Please, contact a system administrator.&quot;</span><span class="p">)</span>
+
+    <span class="n">instance</span> <span class="o">=</span> <span class="n">resolve_object</span><span class="p">(</span>
+        <span class="n">request</span><span class="p">,</span> <span class="n">sender</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">resourceid</span><span class="p">},</span> <span class="n">permission</span><span class="o">=</span><span class="s2">&quot;base.download_resourcebase&quot;</span><span class="p">,</span> <span class="n">permission_msg</span><span class="o">=</span><span class="n">_not_permitted</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">ResourceBase</span><span class="p">):</span>
+        <span class="n">dataset_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">file_list</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Store file info to be returned</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">resourcebase_ptr</span><span class="o">.</span><span class="n">files</span>
+            <span class="c1"># Copy all Dataset related files into a temporary folder</span>
+            <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                    <span class="n">dataset_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+                    <span class="n">file_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span>
+                            <span class="s2">&quot;data_iter&quot;</span><span class="p">:</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">),</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span>
+                        <span class="n">loader</span><span class="o">.</span><span class="n">render_to_string</span><span class="p">(</span>
+                            <span class="s2">&quot;401.html&quot;</span><span class="p">,</span>
+                            <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;error_title&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No files found.&quot;</span><span class="p">),</span> <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="n">_no_files_found</span><span class="p">},</span>
+                            <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+            <span class="c1"># Check we can access the original files</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_files</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span>
+                    <span class="n">loader</span><span class="o">.</span><span class="n">render_to_string</span><span class="p">(</span>
+                        <span class="s2">&quot;401.html&quot;</span><span class="p">,</span>
+                        <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;error_title&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No files found.&quot;</span><span class="p">),</span> <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="n">_no_files_found</span><span class="p">},</span>
+                        <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span>
+                    <span class="p">),</span>
+                    <span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># ZIP everything and return</span>
+            <span class="n">target_file_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">instance</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;.zip&quot;</span><span class="p">])</span>
+
+            <span class="n">target_zip</span> <span class="o">=</span> <span class="n">zipstream</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="n">zipstream</span><span class="o">.</span><span class="n">ZIP_DEFLATED</span><span class="p">,</span> <span class="n">allowZip64</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Iterable: Needed when the file_info has it&#39;s data as a stream</span>
+            <span class="k">def</span> <span class="nf">_iterable</span><span class="p">(</span><span class="n">source_iter</span><span class="p">):</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">buf</span> <span class="o">=</span> <span class="n">source_iter</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">BUFFER_CHUNK_SIZE</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">buf</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="k">yield</span> <span class="n">buf</span>
+
+            <span class="c1"># Add files to zip</span>
+            <span class="k">for</span> <span class="n">file_info</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
+                <span class="n">target_zip</span><span class="o">.</span><span class="n">write_iter</span><span class="p">(</span><span class="n">arcname</span><span class="o">=</span><span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">iterable</span><span class="o">=</span><span class="n">_iterable</span><span class="p">(</span><span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;data_iter&quot;</span><span class="p">]))</span>
+
+            <span class="n">register_event</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;download&quot;</span><span class="p">,</span> <span class="n">instance</span><span class="p">)</span>
+
+            <span class="c1"># Streaming content response</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">StreamingHttpResponse</span><span class="p">(</span><span class="n">target_zip</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;application/zip&quot;</span><span class="p">)</span>
+            <span class="n">response</span><span class="p">[</span><span class="s2">&quot;Content-Disposition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;attachment; filename=&quot;</span><span class="si">{</span><span class="n">target_file_name</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">NotImplementedError</span><span class="p">,</span> <span class="n">Upload</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">):</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+            <span class="n">tb</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span>
+                <span class="n">loader</span><span class="o">.</span><span class="n">render_to_string</span><span class="p">(</span>
+                    <span class="s2">&quot;401.html&quot;</span><span class="p">,</span>
+                    <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;error_title&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;No files found.&quot;</span><span class="p">),</span> <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="n">_no_files_found</span><span class="p">},</span>
+                    <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span>
+        <span class="n">loader</span><span class="o">.</span><span class="n">render_to_string</span><span class="p">(</span>
+            <span class="s2">&quot;401.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;error_title&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not Authorized&quot;</span><span class="p">),</span> <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="n">_not_authorized</span><span class="p">},</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span>
+        <span class="p">),</span>
+        <span class="n">status</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OWSListView">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.OWSListView">[docs]</a>
+<span class="k">class</span> <span class="nc">OWSListView</span><span class="p">(</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="OWSListView.get">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.OWSListView.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">geonode.geoserver</span> <span class="kn">import</span> <span class="n">ows</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="c1"># WMS</span>
+        <span class="n">_raw_url</span> <span class="o">=</span> <span class="n">ows</span><span class="o">.</span><span class="n">_wms_get_capabilities</span><span class="p">()</span>
+        <span class="n">_url</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">_raw_url</span><span class="p">)</span>
+        <span class="n">headers</span><span class="p">,</span> <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_headers</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_url</span><span class="p">,</span> <span class="n">_raw_url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">access_token</span><span class="p">:</span>
+            <span class="n">_j</span> <span class="o">=</span> <span class="s2">&quot;&amp;&quot;</span> <span class="k">if</span> <span class="n">_url</span><span class="o">.</span><span class="n">query</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span>
+            <span class="n">_raw_url</span> <span class="o">=</span> <span class="n">_j</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">_raw_url</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;access_token=</span><span class="si">{</span><span class="n">access_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">_raw_url</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;OGC:WMS&quot;</span><span class="p">})</span>
+
+        <span class="c1"># WCS</span>
+        <span class="n">_raw_url</span> <span class="o">=</span> <span class="n">ows</span><span class="o">.</span><span class="n">_wcs_get_capabilities</span><span class="p">()</span>
+        <span class="n">_url</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">_raw_url</span><span class="p">)</span>
+        <span class="n">headers</span><span class="p">,</span> <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_headers</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_url</span><span class="p">,</span> <span class="n">_raw_url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">access_token</span><span class="p">:</span>
+            <span class="n">_j</span> <span class="o">=</span> <span class="s2">&quot;&amp;&quot;</span> <span class="k">if</span> <span class="n">_url</span><span class="o">.</span><span class="n">query</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span>
+            <span class="n">_raw_url</span> <span class="o">=</span> <span class="n">_j</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">_raw_url</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;access_token=</span><span class="si">{</span><span class="n">access_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">_raw_url</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;OGC:WCS&quot;</span><span class="p">})</span>
+
+        <span class="c1"># WFS</span>
+        <span class="n">_raw_url</span> <span class="o">=</span> <span class="n">ows</span><span class="o">.</span><span class="n">_wfs_get_capabilities</span><span class="p">()</span>
+        <span class="n">_url</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">_raw_url</span><span class="p">)</span>
+        <span class="n">headers</span><span class="p">,</span> <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_headers</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_url</span><span class="p">,</span> <span class="n">_raw_url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">access_token</span><span class="p">:</span>
+            <span class="n">_j</span> <span class="o">=</span> <span class="s2">&quot;&amp;&quot;</span> <span class="k">if</span> <span class="n">_url</span><span class="o">.</span><span class="n">query</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span>
+            <span class="n">_raw_url</span> <span class="o">=</span> <span class="n">_j</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">_raw_url</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;access_token=</span><span class="si">{</span><span class="n">access_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">_raw_url</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;OGC:WFS&quot;</span><span class="p">})</span>
+
+        <span class="c1"># catalogue from configuration</span>
+        <span class="k">for</span> <span class="n">catname</span><span class="p">,</span> <span class="n">catconf</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">CATALOGUE</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># CSW</span>
+            <span class="n">_raw_url</span> <span class="o">=</span> <span class="n">catconf</span><span class="p">[</span><span class="s2">&quot;URL&quot;</span><span class="p">]</span>
+            <span class="n">_url</span> <span class="o">=</span> <span class="n">urlsplit</span><span class="p">(</span><span class="n">_raw_url</span><span class="p">)</span>
+            <span class="n">headers</span><span class="p">,</span> <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_headers</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">_url</span><span class="p">,</span> <span class="n">_raw_url</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">access_token</span><span class="p">:</span>
+                <span class="n">_j</span> <span class="o">=</span> <span class="s2">&quot;&amp;&quot;</span> <span class="k">if</span> <span class="n">_url</span><span class="o">.</span><span class="n">query</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span>
+                <span class="n">_raw_url</span> <span class="o">=</span> <span class="n">_j</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">_raw_url</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;access_token=</span><span class="si">{</span><span class="n">access_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">_raw_url</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;OGC:CSW&quot;</span><span class="p">})</span>
+
+        <span class="c1"># main site url</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;WWW:LINK&quot;</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">json_response</span><span class="p">(</span><span class="n">out</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="_hoppish">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views._hoppish">[docs]</a>
+<span class="n">_hoppish</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;connection&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;keep-alive&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;proxy-authenticate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;proxy-authorization&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;te&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;trailers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transfer-encoding&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;upgrade&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;content-length&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;content-encoding&quot;</span><span class="p">,</span>
+<span class="p">}</span><span class="o">.</span><span class="fm">__contains__</span></div>
+
+
+
+<div class="viewcode-block" id="is_hop_by_hop">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.is_hop_by_hop">[docs]</a>
+<span class="k">def</span> <span class="nf">is_hop_by_hop</span><span class="p">(</span><span class="n">header_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return true if &#39;header_name&#39; is an HTTP/1.1 &quot;Hop-by-Hop&quot; header&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_hoppish</span><span class="p">(</span><span class="n">header_name</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="fetch_response_headers">
+<a class="viewcode-back" href="../../../autoapi/geonode/proxy/views/index.html#geonode.proxy.views.fetch_response_headers">[docs]</a>
+<span class="k">def</span> <span class="nf">fetch_response_headers</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">response_headers</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">response_headers</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">_header</span> <span class="ow">in</span> <span class="n">response_headers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_hop_by_hop</span><span class="p">(</span><span class="n">_header</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;headers&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_header</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">_k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">_k</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="p">]:</span>
+                    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="n">_header</span><span class="p">]</span> <span class="o">=</span> <span class="n">response_headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_header</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">&quot;_headers&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_header</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">_k</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">_k</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">_headers</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="p">]:</span>
+                    <span class="n">response</span><span class="o">.</span><span class="n">_headers</span><span class="p">[</span><span class="n">_header</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">_header</span><span class="p">,</span> <span class="n">response_headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_header</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">response</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,216 @@
+geonode.groups.views
+====================
+
+.. py:module:: geonode.groups.views
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.groups.views.logger
+   geonode.groups.views.group_category_create
+   geonode.groups.views.group_category_detail
+   geonode.groups.views.group_category_update
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.groups.views.SetGroupDatasetPermission
+   geonode.groups.views.GroupCategoryCreateView
+   geonode.groups.views.GroupCategoryDetailView
+   geonode.groups.views.GroupCategoryUpdateView
+   geonode.groups.views.GroupDetailView
+   geonode.groups.views.GroupActivityView
+   geonode.groups.views.GroupProfileAutocomplete
+   geonode.groups.views.GroupCategoryAutocomplete
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.groups.views.group_create
+   geonode.groups.views.group_update
+   geonode.groups.views.group_members
+   geonode.groups.views.group_members_add
+   geonode.groups.views.group_member_remove
+   geonode.groups.views.group_member_promote
+   geonode.groups.views.group_member_demote
+   geonode.groups.views.group_join
+   geonode.groups.views.group_remove
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: SetGroupDatasetPermission
+
+   Bases: :py:obj:`django.views.View`
+
+
+   .. py:method:: get(request)
+
+
+   .. py:method:: post(request)
+
+
+.. py:class:: GroupCategoryCreateView
+
+   Bases: :py:obj:`django.views.generic.CreateView`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: fields
+      :value: ['name', 'description']
+
+
+
+.. py:class:: GroupCategoryDetailView
+
+   Bases: :py:obj:`django.views.generic.detail.DetailView`
+
+
+   .. py:attribute:: model
+
+
+.. py:class:: GroupCategoryUpdateView
+
+   Bases: :py:obj:`django.views.generic.edit.UpdateView`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: fields
+      :value: ['name', 'description']
+
+
+
+   .. py:attribute:: template_name_suffix
+      :value: '_update_form'
+
+
+
+.. py:data:: group_category_create
+
+.. py:data:: group_category_detail
+
+.. py:data:: group_category_update
+
+.. py:function:: group_create(request)
+
+.. py:function:: group_update(request, slug)
+
+.. py:class:: GroupDetailView
+
+   Bases: :py:obj:`django.views.generic.ListView`
+
+
+   Mixes a detail view (the group) with a ListView (the members).
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: template_name
+      :value: 'groups/group_detail.html'
+
+
+
+   .. py:attribute:: paginate_by
+      :value: None
+
+
+
+   .. py:attribute:: group
+      :value: None
+
+
+
+   .. py:method:: get_queryset()
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+   .. py:method:: get_context_data(**kwargs)
+
+
+.. py:function:: group_members(request, slug)
+
+.. py:function:: group_members_add(request, slug)
+
+.. py:function:: group_member_remove(request, slug, username)
+
+.. py:function:: group_member_promote(request, slug, username)
+
+.. py:function:: group_member_demote(request, slug, username)
+
+.. py:function:: group_join(request, slug)
+
+.. py:function:: group_remove(request, slug)
+
+.. py:class:: GroupActivityView
+
+   Bases: :py:obj:`django.views.generic.ListView`
+
+
+   Returns recent group activity.
+
+
+   .. py:attribute:: template_name
+      :value: 'groups/activity.html'
+
+
+
+   .. py:attribute:: group
+      :value: None
+
+
+
+   .. py:method:: get_queryset()
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+   .. py:method:: get_context_data(**kwargs)
+
+
+.. py:class:: GroupProfileAutocomplete
+
+   Bases: :py:obj:`dal.autocomplete.Select2QuerySetView`
+
+
+   .. py:method:: get_queryset()
+
+
+.. py:class:: GroupCategoryAutocomplete(*args, **kwargs)
+
+   Bases: :py:obj:`geonode.base.views.SimpleSelect2View`
+
+
+   Generic select2 view for autocompletes
+   Params:
+       model: model to perform the autocomplete query on
+       filter_arg: property to filter with ie. name__icontains
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: filter_arg
+      :value: 'name__icontains'
+
+
+

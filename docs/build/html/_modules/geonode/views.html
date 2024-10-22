@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.views &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../geonode.html">geonode</a></li>
+      <li class="breadcrumb-item active">geonode.views</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.views</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.decorators</span> <span class="kn">import</span> <span class="n">login_required</span>
+<span class="kn">from</span> <span class="nn">geonode.client.hooks</span> <span class="kn">import</span> <span class="n">hookset</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">django.apps</span> <span class="kn">import</span> <span class="n">apps</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render</span>
+<span class="kn">from</span> <span class="nn">django.template.response</span> <span class="kn">import</span> <span class="n">TemplateResponse</span>
+<span class="kn">from</span> <span class="nn">geonode.base.templatetags.base_tags</span> <span class="kn">import</span> <span class="n">facets</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span><span class="p">,</span> <span class="n">HttpResponseRedirect</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">authenticate</span><span class="p">,</span> <span class="n">login</span><span class="p">,</span> <span class="n">get_user_model</span>
+
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">get_version</span>
+<span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+<span class="kn">from</span> <span class="nn">geonode.geoapps.models</span> <span class="kn">import</span> <span class="n">GeoApp</span>
+
+
+<div class="viewcode-block" id="AjaxLoginForm">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.AjaxLoginForm">[docs]</a>
+<span class="k">class</span> <span class="nc">AjaxLoginForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+<div class="viewcode-block" id="AjaxLoginForm.password">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.AjaxLoginForm.password">[docs]</a>
+    <span class="n">password</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">PasswordInput</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AjaxLoginForm.username">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.AjaxLoginForm.username">[docs]</a>
+    <span class="n">username</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ajax_login">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.ajax_login">[docs]</a>
+<span class="k">def</span> <span class="nf">ajax_login</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">!=</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;ajax login requires HTTP POST&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">405</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">)</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">AjaxLoginForm</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">]</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">&quot;password&quot;</span><span class="p">]</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">authenticate</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_active</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;bad credentials or disabled user&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">login</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">test_cookie_worked</span><span class="p">():</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">delete_test_cookie</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;successful login&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span>
+            <span class="s2">&quot;The form you submitted doesn&#39;t look like a username/password combo.&quot;</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ajax_lookup">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.ajax_lookup">[docs]</a>
+<span class="k">def</span> <span class="nf">ajax_lookup</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">!=</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;ajax user lookup requires HTTP POST&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">405</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s2">&quot;query&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span>
+            <span class="n">content</span><span class="o">=</span><span class="s1">&#39;use a field named &quot;query&quot; to specify a prefix to filter usernames&#39;</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span>
+        <span class="p">)</span>
+    <span class="n">keyword</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span>
+    <span class="n">users</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">get_user_model</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">username__icontains</span><span class="o">=</span><span class="n">keyword</span><span class="p">))</span>
+        <span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">is_active</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">keyword</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">slug__icontains</span><span class="o">=</span><span class="n">keyword</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">:</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">keyword</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">slug__icontains</span><span class="o">=</span><span class="n">keyword</span><span class="p">))</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span>
+            <span class="n">Q</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">keyword</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">slug__icontains</span><span class="o">=</span><span class="n">keyword</span><span class="p">))</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span>
+            <span class="n">Q</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">Q</span><span class="p">(</span><span class="n">slug__in</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">groupmember_set</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;group__slug&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="n">json_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">[({</span><span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">username</span><span class="p">})</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">users</span><span class="p">],</span>
+        <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">users</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span>
+    <span class="p">}</span>
+    <span class="n">json_dict</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">g</span><span class="o">.</span><span class="n">slug</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">g</span><span class="o">.</span><span class="n">title</span><span class="p">})</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json_dict</span><span class="p">),</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="err403">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.err403">[docs]</a>
+<span class="k">def</span> <span class="nf">err403</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;account_login&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">?next=</span><span class="si">{</span><span class="n">request</span><span class="o">.</span><span class="n">get_full_path</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">TemplateResponse</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;401.html&quot;</span><span class="p">,</span> <span class="p">{},</span> <span class="n">status</span><span class="o">=</span><span class="mi">401</span><span class="p">)</span><span class="o">.</span><span class="n">render</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="handler404">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.handler404">[docs]</a>
+<span class="k">def</span> <span class="nf">handler404</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">exception</span><span class="p">,</span> <span class="n">template_name</span><span class="o">=</span><span class="s2">&quot;404.html&quot;</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="mi">404</span>
+    <span class="k">return</span> <span class="n">response</span></div>
+
+
+
+<div class="viewcode-block" id="handler500">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.handler500">[docs]</a>
+<span class="k">def</span> <span class="nf">handler500</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">template_name</span><span class="o">=</span><span class="s2">&quot;500.html&quot;</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">template_name</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="mi">500</span>
+    <span class="k">return</span> <span class="n">response</span></div>
+
+
+
+<div class="viewcode-block" id="ident_json">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.ident_json">[docs]</a>
+<span class="k">def</span> <span class="nf">ident_json</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">site_url</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span>
+    <span class="n">json_data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;siteurl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">site_url</span>
+    <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">PYCSW</span><span class="p">[</span><span class="s2">&quot;CONFIGURATION&quot;</span><span class="p">][</span><span class="s2">&quot;metadata:main&quot;</span><span class="p">][</span><span class="s2">&quot;identification_title&quot;</span><span class="p">]</span>
+
+    <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;poc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">PYCSW</span><span class="p">[</span><span class="s2">&quot;CONFIGURATION&quot;</span><span class="p">][</span><span class="s2">&quot;metadata:main&quot;</span><span class="p">][</span><span class="s2">&quot;contact_name&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">PYCSW</span><span class="p">[</span><span class="s2">&quot;CONFIGURATION&quot;</span><span class="p">][</span><span class="s2">&quot;metadata:main&quot;</span><span class="p">][</span><span class="s2">&quot;contact_email&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;twitter&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;https://twitter.com/</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">TWITTER_SITE</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_version</span><span class="p">()</span>
+
+    <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;services&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;csw&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">CATALOGUE</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;URL&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;ows&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;PUBLIC_LOCATION&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+
+    <span class="n">json_data</span><span class="p">[</span><span class="s2">&quot;counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">facets</span><span class="p">({</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span> <span class="s2">&quot;facet_type&quot;</span><span class="p">:</span> <span class="s2">&quot;home&quot;</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">json_data</span><span class="p">),</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="h_keywords">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.h_keywords">[docs]</a>
+<span class="k">def</span> <span class="nf">h_keywords</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">HierarchicalKeyword</span> <span class="k">as</span> <span class="n">hk</span>
+
+    <span class="n">p_type</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">resource_name</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resource_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">resource_keywords_tree</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="n">p_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="n">resource_name</span><span class="p">)</span>
+
+    <span class="n">subtypes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">p_type</span> <span class="o">==</span> <span class="s2">&quot;geoapp&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">apps</span><span class="o">.</span><span class="n">app_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">app</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;GEONODE_APP&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;default_model&quot;</span><span class="p">):</span>
+                    <span class="n">_model</span> <span class="o">=</span> <span class="n">apps</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">default_model</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">_model</span><span class="p">,</span> <span class="n">GeoApp</span><span class="p">):</span>
+                        <span class="n">subtypes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_model</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
+    <span class="k">for</span> <span class="n">_type</span> <span class="ow">in</span> <span class="n">subtypes</span><span class="p">:</span>
+        <span class="n">_bulk_tree</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">resource_keywords_tree</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">resource_type</span><span class="o">=</span><span class="n">_type</span><span class="p">,</span> <span class="n">resource_name</span><span class="o">=</span><span class="n">resource_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_bulk_tree</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_elem</span> <span class="ow">in</span> <span class="n">_bulk_tree</span><span class="p">:</span>
+                <span class="n">keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_elem</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_bulk_tree</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">keywords</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="moderator_contacted">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.moderator_contacted">[docs]</a>
+<span class="k">def</span> <span class="nf">moderator_contacted</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">inactive_user</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used when a user signs up.&quot;&quot;&quot;</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">inactive_user</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">TemplateResponse</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s2">&quot;account/admin_approval_sent.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span><span class="p">})</span></div>
+
+
+
+<span class="nd">@login_required</span>
+<div class="viewcode-block" id="metadata_update_redirect">
+<a class="viewcode-back" href="../../autoapi/geonode/views/index.html#geonode.views.metadata_update_redirect">[docs]</a>
+<span class="k">def</span> <span class="nf">metadata_update_redirect</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
+    <span class="n">client_redirect_url</span> <span class="o">=</span> <span class="n">hookset</span><span class="o">.</span><span class="n">metadata_update_redirect</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">client_redirect_url</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
