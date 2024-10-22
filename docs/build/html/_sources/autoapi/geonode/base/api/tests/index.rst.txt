@@ -1,0 +1,452 @@
+geonode.base.api.tests
+======================
+
+.. py:module:: geonode.base.api.tests
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.base.api.tests.logger
+   geonode.base.api.tests.test_image
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.api.tests.BaseApiTests
+   geonode.base.api.tests.TestExtraMetadataBaseApi
+   geonode.base.api.tests.TestApiLinkedResources
+   geonode.base.api.tests.TestApiAdditionalBBoxCalculation
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: test_image
+
+.. py:class:: BaseApiTests
+
+   Bases: :py:obj:`rest_framework.test.APITestCase`
+
+
+   .. py:attribute:: fixtures
+      :value: ['initial_data.json', 'group_test_data.json', 'default_oauth_apps.json', 'test_thesaurus.json']
+
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_groups_list()
+
+      Ensure we can access the gropus list.
+
+
+
+   .. py:method:: test_create_group()
+
+      Ensure only Admins can create groups.
+
+
+
+   .. py:method:: test_edit_group()
+
+      Ensure only admins and group managers can edit a group.
+
+
+
+   .. py:method:: test_delete_group()
+
+      Ensure only admins can delete a group.
+
+
+
+   .. py:method:: test_group_resources_shows_related_permissions()
+
+      Calling the resources endpoint of the groups should return also the
+      group permission on that specific resource
+
+
+
+   .. py:method:: test_users_list()
+
+      Ensure we can access the users list.
+
+
+
+   .. py:method:: test_user_resources_shows_related_permissions()
+
+      Calling the resources endpoint of the user should return also the
+      user permission on that specific resource
+
+
+
+   .. py:method:: test_get_self_user_details_outside_registered_member()
+
+
+   .. py:method:: test_get_self_user_details_with_no_group()
+
+
+   .. py:method:: test_register_users()
+
+      Ensure users are created with default groups.
+
+
+
+   .. py:method:: test_update_user_profile()
+
+      Ensure users cannot update others.
+
+
+
+   .. py:method:: test_delete_user_profile()
+
+      Ensure only admins can delete profiles.
+
+
+
+   .. py:method:: test_base_resources()
+
+      Ensure we can access the Resource Base list.
+
+
+
+   .. py:method:: test_write_resources()
+
+      Ensure we can perform write oprtation afainst the Resource Bases.
+
+
+
+   .. py:method:: test_resource_serializer_validation()
+
+      Testing serializing and deserializing of a Dataset base on django-rest description:
+      https://www.django-rest-framework.org/api-guide/serializers/#deserializing-objects
+
+
+
+   .. py:method:: test_delete_user_with_resource()
+
+
+   .. py:method:: test_search_resources()
+
+      Ensure we can search across the Resource Base list.
+
+
+
+   .. py:method:: test_filter_resources()
+
+      Ensure we can filter across the Resource Base list.
+
+
+
+   .. py:method:: test_sort_resources()
+
+      Ensure we can sort the Resource Base list.
+
+
+
+   .. py:method:: test_perms_resources()
+
+      Ensure we can Get & Set Permissions across the Resource Base list.
+
+
+
+   .. py:method:: test_featured_and_published_resources()
+
+      Ensure we can Get & Set Permissions across the Resource Base list.
+
+
+
+   .. py:method:: test_resource_types()
+
+      Ensure we can Get & Set Permissions across the Resource Base list.
+
+
+
+   .. py:method:: test_get_favorites()
+
+      Ensure we get user's favorite resources.
+
+
+
+   .. py:method:: test_get_favorites_is_returned_in_the_base_endpoint_per_user()
+
+      Ensure we get user's favorite resources.
+
+
+
+   .. py:method:: test_get_favorites_is_returned_in_the_base_endpoint()
+
+      Ensure we get user's favorite resources.
+
+
+
+   .. py:method:: test_create_and_delete_favorites()
+
+      Ensure we can add and remove resources to user's favorite.
+
+
+
+   .. py:method:: test_search_resources_with_favorite_true_and_no_favorite_should_return_0()
+
+      Ensure we can search across the Resource Base list.
+
+
+
+   .. py:method:: test_search_resources_with_favorite_true_and_favorite_should_return_1()
+
+      Ensure we can search across the Resource Base list.
+
+
+
+   .. py:method:: test_search_resources_with_favorite_true_with_geoapps_icluded()
+
+
+   .. py:method:: test_thumbnail_urls()
+
+      Ensure the thumbnail url reflects the current active Thumb on the resource.
+
+
+
+   .. py:method:: test_embed_urls()
+
+      Ensure the embed urls reflect the concrete instance ones.
+
+
+
+   .. py:method:: test_owners_list()
+
+      Ensure we can access the list of owners.
+
+
+
+   .. py:method:: test_categories_list()
+
+      Ensure we can access the list of categories.
+
+
+
+   .. py:method:: test_regions_list()
+
+      Ensure we can access the list of regions.
+
+
+
+   .. py:method:: test_regions_with_resources()
+
+      Ensure we can access the list of regions.
+
+
+
+   .. py:method:: test_keywords_list()
+
+      Ensure we can access the list of keywords.
+
+
+
+   .. py:method:: test_tkeywords_list()
+
+      Ensure we can access the list of thasaurus keywords.
+
+
+
+   .. py:method:: test_rating_resource()
+
+
+   .. py:method:: test_set_resource_thumbnail()
+
+
+   .. py:method:: test_set_thumbnail_from_bbox_from_Anonymous_user_raise_permission_error()
+
+      Given a request with Anonymous user, should raise an authentication error.
+
+
+
+   .. py:method:: test_set_thumbnail_from_bbox_from_logged_user_for_existing_dataset(mock_create_thumbnail)
+
+      Given a logged User and an existing dataset, should create the expected thumbnail url.
+
+
+
+   .. py:method:: test_set_thumbnail_from_bbox_from_logged_user_for_not_existing_dataset()
+
+      Given a logged User and an not existing dataset, should raise a 404 error.
+
+
+
+   .. py:method:: test_set_thumbnail_from_bbox_from_logged_user_for_existing_doc()
+
+      Given a logged User and an existing doc, should raise a NotImplemented.
+
+
+
+   .. py:method:: test_set_thumbnail_from_bbox_from_logged_user_for_existing_dataset_raise_exp(mock_exp)
+
+      Given a logged User and an existing dataset, should raise a ThumbnailException.
+
+
+
+   .. py:method:: test_manager_can_edit_map()
+
+      REST API must not forbid saving maps and apps to non-admin and non-owners.
+
+
+
+   .. py:method:: test_resource_service_copy()
+
+
+   .. py:method:: test_resource_service_copy_with_perms_dataset()
+
+
+   .. py:method:: test_resource_service_copy_with_perms_dataset_set_default_perms()
+
+
+   .. py:method:: test_resource_service_copy_with_perms_doc()
+
+
+   .. py:method:: test_resource_service_copy_with_perms_map()
+
+
+   .. py:method:: _assertCloningWithPerms(resource)
+
+
+   .. py:method:: test_base_resources_return_download_link_if_document()
+
+      Ensure we can access the Resource Base list.
+
+
+
+   .. py:method:: test_base_resources_return_download_link_if_dataset()
+
+      Ensure we can access the Resource Base list.
+
+
+
+   .. py:method:: test_base_resources_dont_return_download_link_if_map()
+
+      Ensure we can access the Resource Base list.
+
+
+
+   .. py:method:: test_base_resources_return_not_download_links_for_maps()
+
+      Ensure we can access the Resource Base list.
+
+
+
+   .. py:method:: test_base_resources_return_download_links_for_documents()
+
+      Ensure we can access the Resource Base list.
+
+
+
+   .. py:method:: test_base_resources_return_download_links_for_datasets()
+
+      Ensure we can access the Resource Base list.
+
+
+
+.. py:class:: TestExtraMetadataBaseApi
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_get_will_return_the_list_of_extra_metadata()
+
+
+   .. py:method:: test_put_will_update_the_whole_metadata()
+
+
+   .. py:method:: test_post_will_add_new_metadata()
+
+
+   .. py:method:: test_delete_will_delete_single_metadata()
+
+
+   .. py:method:: test_user_without_view_perms_cannot_see_the_endpoint()
+
+
+.. py:class:: TestApiLinkedResources
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUpClass() -> None
+      :classmethod:
+
+
+
+   .. py:method:: test_only_get_method_is_available()
+
+
+   .. py:method:: test_linked_resource_for_document()
+
+
+   .. py:method:: assert_linkedres_size(payload, element: str, expected_size: int)
+
+
+   .. py:method:: assert_linkedres_contains(payload, element: str, expected_elements: Iterable)
+
+
+   .. py:method:: test_linked_resource_for_maps_mixed()
+
+
+   .. py:method:: test_linked_resources_for_maps()
+
+
+   .. py:method:: test_linked_resource_for_dataset()
+
+
+   .. py:method:: test_linked_resource_for_datasets_mixed()
+
+
+   .. py:method:: test_linked_resource_deprecated_pagination()
+
+
+   .. py:method:: test_linked_resource_filter_one_resource_type()
+
+
+   .. py:method:: test_linked_resource_filter_multiple_resource_type_linktype()
+
+
+   .. py:method:: test_linked_resource_filter_multiple_resource_type_without_linktype()
+
+
+.. py:class:: TestApiAdditionalBBoxCalculation
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUpClass() -> None
+      :classmethod:
+
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_dataset_should_not_update_bbox()
+
+
+   .. py:method:: test_map_should_not_update_bbox()
+
+
+   .. py:method:: test_document_should_update_bbox()
+
+
+   .. py:method:: test_geoapp_should_update_bbox()
+
+
+   .. py:method:: test_geoapp_send_invalid_bbox_should_raise_error()
+
+

@@ -1,0 +1,213 @@
+geonode.upload.files
+====================
+
+.. py:module:: geonode.upload.files
+
+.. autoapi-nested-parse::
+
+   An incomplete replacement for the various file support functions currently
+   scattered over the codebase
+
+   @todo complete and use
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.upload.files.logger
+   geonode.upload.files.vector
+   geonode.upload.files.raster
+   geonode.upload.files.xml_unsafe
+   geonode.upload.files.TYPE_UNKNOWN
+   geonode.upload.files._keep_original_data
+   geonode.upload.files._tif_extensions
+   geonode.upload.files._mosaics_extensions
+   geonode.upload.files.types
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.upload.files.SpatialFiles
+   geonode.upload.files.SpatialFile
+   geonode.upload.files.FileType
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.upload.files.get_type
+   geonode.upload.files._contains_bad_names
+   geonode.upload.files._clean_string
+   geonode.upload.files._rename_files
+   geonode.upload.files._find_file_type
+   geonode.upload.files.clean_macosx_dir
+   geonode.upload.files.get_scan_hint
+   geonode.upload.files.scan_file
+   geonode.upload.files._process_zip
+   geonode.upload.files._sanitize_zip_contents
+   geonode.upload.files._extract_zip
+   geonode.upload.files._probe_zip_for_sld
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: vector
+
+.. py:data:: raster
+
+.. py:data:: xml_unsafe
+
+.. py:class:: SpatialFiles(dirname, data, archive=None)
+
+   Bases: :py:obj:`collections.UserList`
+
+
+   A more or less complete user-defined wrapper around list objects.
+
+
+   .. py:attribute:: dirname
+
+
+   .. py:attribute:: data
+
+
+   .. py:attribute:: archive
+
+
+   .. py:method:: all_files()
+
+
+.. py:class:: SpatialFile(base_file, file_type, auxillary_files, sld_files, xml_files)
+
+   .. py:attribute:: base_file
+
+
+   .. py:attribute:: file_type
+
+
+   .. py:attribute:: auxillary_files
+
+
+   .. py:attribute:: sld_files
+
+
+   .. py:attribute:: xml_files
+
+
+   .. py:method:: all_files()
+
+
+   .. py:method:: __repr__()
+
+
+.. py:class:: FileType(name, code, dataset_type, aliases=None, auxillary_file_exts=None)
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: code
+
+
+   .. py:attribute:: dataset_type
+
+
+   .. py:attribute:: aliases
+
+
+   .. py:attribute:: auxillary_file_exts
+
+
+   .. py:method:: matches(ext)
+
+
+   .. py:method:: build_spatial_file(base, others)
+
+
+   .. py:method:: find_auxillary_files(base, others)
+
+
+   .. py:method:: __repr__()
+
+
+.. py:data:: TYPE_UNKNOWN
+
+.. py:data:: _keep_original_data
+   :value: ('kmz', 'zip-mosaic')
+
+
+.. py:data:: _tif_extensions
+   :value: ('tif', 'tiff', 'geotif', 'geotiff')
+
+
+.. py:data:: _mosaics_extensions
+   :value: ('properties', 'shp', 'aux')
+
+
+.. py:data:: types
+
+.. py:function:: get_type(name)
+
+.. py:function:: _contains_bad_names(file_names)
+
+   return True if the list of names contains a bad one
+
+
+.. py:function:: _clean_string(str, regex='(^[^a-zA-Z\\._]+)|([^a-zA-Z\\._0-9]+)', replace='_')
+
+   Replaces a string that matches the regex with the replacement.
+
+
+.. py:function:: _rename_files(file_names)
+
+.. py:function:: _find_file_type(file_names, extension)
+
+   Returns files that end with the given extension from a list of file names.
+
+
+.. py:function:: clean_macosx_dir(file_names)
+
+   Returns the files sans anything in a __MACOSX directory
+
+
+.. py:function:: get_scan_hint(valid_extensions)
+
+   Provide hint on the type of file being handled in the upload session.
+
+   This function is useful mainly for those file types that can carry
+   either vector or raster formats, like the KML type.
+
+
+.. py:function:: scan_file(file_name, scan_hint=None, charset=None)
+
+   get a list of SpatialFiles for the provided file
+
+
+.. py:function:: _process_zip(zip_path, destination_dir, scan_hint=None, charset=None)
+
+   Perform sanity checks on uploaded zip file
+
+   This function will check if the zip file's contents have legal names.
+   If they do the zipfile remains compressed. Otherwise, it is extracted and
+   the files are renamed.
+
+   It will also check if an .sld file exists inside the zip and extract it
+
+
+
+.. py:function:: _sanitize_zip_contents(zip_handler, destination_dir, charset)
+
+.. py:function:: _extract_zip(zip_handler, destination, charset)
+
+.. py:function:: _probe_zip_for_sld(zip_handler, destination_dir)
+

@@ -1,0 +1,88 @@
+geonode.monitoring.aggregation
+==============================
+
+.. py:module:: geonode.monitoring.aggregation
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.monitoring.aggregation.log
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.monitoring.aggregation.get_metric_names
+   geonode.monitoring.aggregation.get_labels_for_metric
+   geonode.monitoring.aggregation.get_resources_for_metric
+   geonode.monitoring.aggregation.extract_resources
+   geonode.monitoring.aggregation.extract_event_type
+   geonode.monitoring.aggregation.extract_event_types
+   geonode.monitoring.aggregation.extract_special_event_types
+   geonode.monitoring.aggregation.calculate_rate
+   geonode.monitoring.aggregation.calculate_percent
+   geonode.monitoring.aggregation.adjust_now_to_noon
+   geonode.monitoring.aggregation.aggregate_past_periods
+   geonode.monitoring.aggregation.aggregate_period
+
+
+Module Contents
+---------------
+
+.. py:data:: log
+
+.. py:function:: get_metric_names()
+
+   Returns list of tuples: (service type, list of metrics)
+
+
+.. py:function:: get_labels_for_metric(metric_name, resource=None)
+
+.. py:function:: get_resources_for_metric(metric_name)
+
+.. py:function:: extract_resources(requests)
+
+.. py:function:: extract_event_type(requests)
+
+.. py:function:: extract_event_types(requests)
+
+.. py:function:: extract_special_event_types(requests)
+
+   Return list of pairs (event_type, requests)
+   that should be registered as one of aggregating event types: ows:all, other,
+
+
+.. py:function:: calculate_rate(metric_name, metric_label, current_value, valid_to)
+
+   Find previous network metric value and caclulate rate between them
+
+
+.. py:function:: calculate_percent(metric_name, metric_label, current_value, valid_to)
+
+   Find previous network metric value and caclulate percent
+
+
+.. py:function:: adjust_now_to_noon(now)
+
+.. py:function:: aggregate_past_periods(metric_data_q=None, periods=None, cleanup=True, now=None, max_since=None)
+
+   Aggregate past metric data into longer periods
+   @param metric_data_q Query for metric data to use as input
+                        (default: all MetricValues)
+   @param periods list of tuples (cutoff, aggregation) to be used
+                  (default: settings.MONITORING_DATA_AGGREGATION)
+   @param cleanup flag if input data should be removed after aggregation
+                  (default: True)
+   @param now arbitrary now moment to start calculation of cutoff
+              (default: current now)
+   @param max_since look for data no older than max_since
+                    (default: 1 year)
+
+
+.. py:function:: aggregate_period(period_start, period_end, metric_data_q, cleanup=True)
+

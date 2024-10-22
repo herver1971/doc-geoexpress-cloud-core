@@ -1,0 +1,200 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.management.commands.fixoauthuri &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../../base.html">geonode.base</a></li>
+      <li class="breadcrumb-item active">geonode.base.management.commands.fixoauthuri</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.base.management.commands.fixoauthuri</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">BaseCommand</span>
+<span class="kn">from</span> <span class="nn">oauth2_provider.models</span> <span class="kn">import</span> <span class="n">Application</span>
+<span class="kn">from</span> <span class="nn">oauth2_provider.generators</span> <span class="kn">import</span> <span class="n">generate_client_id</span><span class="p">,</span> <span class="n">generate_client_secret</span>
+
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">geoserver</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">check_ogc_backend</span>
+
+
+<div class="viewcode-block" id="Command">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/fixoauthuri/index.html#geonode.base.management.commands.fixoauthuri.Command">[docs]</a>
+<span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates or updates the oauth2 Application</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Command.can_import_settings">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/fixoauthuri/index.html#geonode.base.management.commands.fixoauthuri.Command.can_import_settings">[docs]</a>
+    <span class="n">can_import_settings</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="Command.add_arguments">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/fixoauthuri/index.html#geonode.base.management.commands.fixoauthuri.Command.add_arguments">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+
+        <span class="c1"># Named (optional) arguments</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;-f&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--force&#39;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;force_exec&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Forces the regeneration of OAUth keys.&#39;</span><span class="p">)</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--target-address&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;target_address&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Target Address (the one to be changed e.g. http://my-public.geonode.org)&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Command.handle">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/fixoauthuri/index.html#geonode.base.management.commands.fixoauthuri.Command.handle">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+
+        <span class="n">force_exec</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;force_exec&#39;</span><span class="p">)</span>
+        <span class="n">target_address</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;target_address&#39;</span><span class="p">)</span>
+
+        <span class="n">client_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">client_secret</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">check_ogc_backend</span><span class="p">(</span><span class="n">geoserver</span><span class="o">.</span><span class="n">BACKEND_PACKAGE</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">ogc_server_settings</span>
+            <span class="n">redirect_uris</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">LOCATION</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">public_url</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">target_address</span><span class="si">}</span><span class="s1">/geoserver/&#39;</span>  <span class="c1"># noqa</span>
+            <span class="k">if</span> <span class="n">Application</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GeoServer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">Application</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GeoServer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">redirect_uris</span><span class="o">=</span><span class="n">redirect_uris</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">force_exec</span><span class="p">:</span>
+                    <span class="n">Application</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GeoServer&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                        <span class="n">client_id</span><span class="o">=</span><span class="n">generate_client_id</span><span class="p">(),</span>
+                        <span class="n">client_secret</span><span class="o">=</span><span class="n">generate_client_secret</span><span class="p">()</span>
+                    <span class="p">)</span>
+                <span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GeoServer&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">client_id</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">client_id</span>
+                <span class="n">client_secret</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">client_secret</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">client_id</span> <span class="o">=</span> <span class="n">generate_client_id</span><span class="p">()</span>
+                <span class="n">client_secret</span> <span class="o">=</span> <span class="n">generate_client_secret</span><span class="p">()</span>
+                <span class="n">Application</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                    <span class="n">skip_authorization</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">redirect_uris</span><span class="o">=</span><span class="n">redirect_uris</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GeoServer&#39;</span><span class="p">,</span>
+                    <span class="n">authorization_grant_type</span><span class="o">=</span><span class="s1">&#39;authorization-code&#39;</span><span class="p">,</span>
+                    <span class="n">client_type</span><span class="o">=</span><span class="s1">&#39;confidential&#39;</span><span class="p">,</span>
+                    <span class="n">client_id</span><span class="o">=</span><span class="n">client_id</span><span class="p">,</span>
+                    <span class="n">client_secret</span><span class="o">=</span><span class="n">client_secret</span><span class="p">,</span>
+                    <span class="n">user</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_superuser</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">client_id</span><span class="si">}</span><span class="s1">,</span><span class="si">{</span><span class="n">client_secret</span><span class="si">}</span><span class="s1">&#39;</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

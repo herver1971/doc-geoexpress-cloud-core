@@ -1,0 +1,626 @@
+geonode.base.api.views
+======================
+
+.. py:module:: geonode.base.api.views
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.base.api.views.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.api.views.UserViewSet
+   geonode.base.api.views.GroupViewSet
+   geonode.base.api.views.RegionViewSet
+   geonode.base.api.views.HierarchicalKeywordViewSet
+   geonode.base.api.views.ThesaurusKeywordViewSet
+   geonode.base.api.views.TopicCategoryViewSet
+   geonode.base.api.views.OwnerViewSet
+   geonode.base.api.views.ResourceBaseViewSet
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.base.api.views.base_linked_resources
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: UserViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.DynamicModelViewSet`
+
+
+   API endpoint that allows users to be viewed or edited.
+
+
+   .. py:attribute:: authentication_classes
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+   .. py:method:: get_queryset()
+
+      Filters and sorts users.
+
+
+
+   .. py:method:: resources(request, pk=None)
+
+
+   .. py:method:: groups(request, pk=None)
+
+
+.. py:class:: GroupViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.DynamicModelViewSet`
+
+
+   API endpoint that allows gropus to be viewed or edited.
+
+
+   .. py:attribute:: authentication_classes
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+   .. py:method:: get_queryset()
+
+      Filters the public groups and private ones the current user is member of.
+
+
+
+   .. py:method:: members(request, pk=None)
+
+
+   .. py:method:: managers(request, pk=None)
+
+
+   .. py:method:: resources(request, pk=None)
+
+
+.. py:class:: RegionViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.WithDynamicViewSetMixin`, :py:obj:`rest_framework.mixins.ListModelMixin`, :py:obj:`rest_framework.mixins.RetrieveModelMixin`, :py:obj:`rest_framework.viewsets.GenericViewSet`
+
+
+   API endpoint that lists regions.
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: queryset
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+.. py:class:: HierarchicalKeywordViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.WithDynamicViewSetMixin`, :py:obj:`rest_framework.mixins.ListModelMixin`, :py:obj:`rest_framework.mixins.RetrieveModelMixin`, :py:obj:`rest_framework.viewsets.GenericViewSet`
+
+
+   API endpoint that lists hierarchical keywords.
+
+
+   .. py:method:: get_queryset()
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+.. py:class:: ThesaurusKeywordViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.WithDynamicViewSetMixin`, :py:obj:`rest_framework.mixins.ListModelMixin`, :py:obj:`rest_framework.mixins.RetrieveModelMixin`, :py:obj:`rest_framework.viewsets.GenericViewSet`
+
+
+   API endpoint that lists Thesaurus keywords.
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: queryset
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+.. py:class:: TopicCategoryViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.WithDynamicViewSetMixin`, :py:obj:`rest_framework.mixins.ListModelMixin`, :py:obj:`rest_framework.mixins.RetrieveModelMixin`, :py:obj:`rest_framework.viewsets.GenericViewSet`
+
+
+   API endpoint that lists categories.
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: queryset
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+.. py:class:: OwnerViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.WithDynamicViewSetMixin`, :py:obj:`rest_framework.mixins.ListModelMixin`, :py:obj:`rest_framework.mixins.RetrieveModelMixin`, :py:obj:`rest_framework.viewsets.GenericViewSet`
+
+
+   API endpoint that lists all possible owners.
+
+
+   .. py:attribute:: authentication_classes
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+   .. py:method:: get_queryset()
+
+      Filter users with at least one resource
+
+
+
+.. py:class:: ResourceBaseViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.DynamicModelViewSet`
+
+
+   API endpoint that allows base resources to be viewed or edited.
+
+
+   .. py:attribute:: authentication_classes
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: queryset
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+   .. py:method:: _filtered(request, filter)
+
+
+   .. py:method:: approved(request, *args, **kwargs)
+
+
+   .. py:method:: published(request, *args, **kwargs)
+
+
+   .. py:method:: featured(request, *args, **kwargs)
+
+
+   .. py:method:: favorites(request, pk=None, *args, **kwargs)
+
+
+   .. py:method:: favorite(request, pk=None, *args, **kwargs)
+
+
+   .. py:method:: resource_types(request, *args, **kwargs)
+
+
+   .. py:method:: resource_service_permissions(request, pk, *args, **kwargs)
+
+      Instructs the Async dispatcher to execute a 'DELETE' or 'UPDATE' on the permissions of a valid 'uuid'
+
+          - GET input_params: {
+              id: "<str: ID>"
+          }
+
+          - DELETE input_params: {
+              id: "<str: ID>"
+          }
+
+          - PUT input_params: {
+              id: "<str: ID>"
+              owner: str = None
+              permissions: dict = {}
+              created: bool = False
+          }
+
+          - output_params: {
+              output: {
+                  uuid: "<str: UUID>"
+              }
+          }
+
+      - output: {
+              "status": "ready",
+              "execution_id": "<str: execution ID>",
+              "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/<str: execution ID>"
+          }
+
+      Sample Requests:
+
+      - Removes all the permissions (except owner and admin ones) from a Resource:
+          curl -v -X DELETE -u admin:admin -H "Content-Type: application/json" http://localhost:8000/api/v2/resources/<id>/permissions
+
+      - Changes the owner of a Resource:
+          curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions'                 --header 'Content-Type: application/json'                 --data-raw '{"groups": [],"organizations": [],"users": [{"id": 1001,"permissions": "owner"}]}'
+
+      - Assigns View permissions to some users:
+          curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions'                 --header 'Content-Type: application/json'                 --data-raw '{"groups": [],"organizations": [],"users": [{"id": 1000,"permissions": "view"}]}'
+
+      - Assigns View permissions to anyone:
+          curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions'                 --header 'Content-Type: application/json'                 --data-raw '{"groups": [],"organizations": [],"users": [{"id": -1,"permissions": "view"}]}'
+
+      - Assigns View permissions to anyone and edit permissions to a Group on a Dataset:
+          curl -u admin:admin --location --request PUT 'http://localhost:8000/api/v2/resources/<id>/permissions'                 --header 'Content-Type: application/json'                 --data-raw '{"groups": [{"id": 1,"permissions": "manage"}],"organizations": [],"users": [{"id": -1,"permissions": "view"}]}'
+
+
+
+
+   .. py:method:: set_thumbnail_from_bbox(request, resource_id, *args, **kwargs)
+
+
+   .. py:method:: resource_service_ingest(request, resource_type: str = None, *args, **kwargs)
+
+      Instructs the Async dispatcher to execute a 'INGEST' operation
+
+      - POST input_params: {
+          uuid: "<str: UUID>",
+          files: "<list(str) path>",
+          defaults: "{"owner":"<str: username>",<list: str>}",  # WARNING: 'owner' is mandatory
+          resource_type: "<enum: ['dataset', 'document', 'map', '<GeoApp: name>']>"
+      }
+
+      - output_params: {
+          output: <int: number of resources deleted / 0 if none>
+      }
+
+      - output: {
+              "status": "ready",
+              "execution_id": "<str: execution ID>",
+              "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/<str: execution ID>"
+          }
+
+      Sample Request:
+
+      1. curl -v -X POST -u admin:admin -H "Content-Type: application/json" -d 'defaults={"owner":"admin","title":"pippo"}' -d 'files=["/mnt/c/Data/flowers.jpg"]'
+          http://localhost:8000/api/v2/resources/ingest/document
+          OUTPUT: {
+              "status": "ready",
+              "execution_id": "90ca670d-df60-44b6-b358-d792c6aecc58",
+              "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/90ca670d-df60-44b6-b358-d792c6aecc58"
+          }
+
+      2. curl -v -X GET -u admin:admin http://localhost:8000/api/v2/resource-service/execution-status/90ca670d-df60-44b6-b358-d792c6aecc58
+          OUTPUT: {
+              "user": "admin",
+              "status": "finished",
+              "func_name": "create",
+              "created": "2021-07-22T15:32:09.096075Z",
+              "finished": "2021-07-22T15:32:26.936683Z",
+              "last_updated": "2021-07-22T15:32:09.096129Z",
+              "input_params": {
+                  "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb",
+                  "files": "["/mnt/c/Data/flowers.jpg"]",
+                  "defaults": "{"owner":"admin","title":"pippo"}",
+                  "resource_type": "dataset"
+              },
+              "output_params": {
+                  "output": {
+                      "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb"
+                  }
+              }
+          }
+
+
+
+   .. py:method:: resource_service_create(request, resource_type: str = None, *args, **kwargs)
+
+      Instructs the Async dispatcher to execute a 'CREATE' operation
+
+      .. WARNING:: This will create an empty dataset; if you need to upload a resource to GeoNode, consider using the endpoint "ingest" instead
+
+      - POST input_params: {
+          uuid: "<str: UUID>",
+          defaults: "{"owner":"<str: username>",<list: str>}",  # WARNING: 'owner' is mandatory
+          resource_type: "<enum: ['dataset', 'document', 'map', '<GeoApp: name>']>"
+      }
+
+      - output_params: {
+          output: <int: number of resources deleted / 0 if none>
+      }
+
+      - output: {
+              "status": "ready",
+              "execution_id": "<str: execution ID>",
+              "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/<str: execution ID>"
+          }
+
+      Sample Request:
+
+      .. code-block:: bash
+
+          1. curl -v -X POST -u admin:admin -H "Content-Type: application/json" -d 'defaults={"owner":"admin","title":"pippo"}'
+              http://localhost:8000/api/v2/resources/create/dataset
+              OUTPUT: {
+                  "status": "ready",
+                  "execution_id": "90ca670d-df60-44b6-b358-d792c6aecc58",
+                  "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/90ca670d-df60-44b6-b358-d792c6aecc58"
+              }
+      .. code-block:: bash
+
+          2. curl -v -X GET -u admin:admin http://localhost:8000/api/v2/resource-service/execution-status/90ca670d-df60-44b6-b358-d792c6aecc58
+              OUTPUT: {
+                  "user": "admin",
+                  "status": "finished",
+                  "func_name": "create",
+                  "created": "2021-07-22T15:32:09.096075Z",
+                  "finished": "2021-07-22T15:32:26.936683Z",
+                  "last_updated": "2021-07-22T15:32:09.096129Z",
+                  "input_params": {
+                      "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb",
+                      "defaults": "{"owner":"admin","title":"pippo"}",
+                      "resource_type": "dataset"
+                  },
+                  "output_params": {
+                      "output": {
+                          "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb"
+                      }
+                  }
+              }
+
+
+
+   .. py:method:: resource_service_delete(request, pk, *args, **kwargs)
+
+      Instructs the Async dispatcher to execute a 'DELETE' operation over a valid 'uuid'
+
+      - DELETE input_params: {
+          id: "<str: ID>"
+      }
+
+      - output_params: {
+          output: <int: number of resources deleted / 0 if none>
+      }
+
+      - output: {
+              "status": "ready",
+              "execution_id": "<str: execution ID>",
+              "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/<str: execution ID>"
+          }
+
+      Sample request:
+
+      1. curl -v -X DELETE -u admin:admin http://localhost:8000/api/v2/resources/<id>/delete
+          OUTPUT: {
+              "status":"ready",
+              "execution_id":"7ed0b141-cf85-434f-bbfb-c02447a5221b",
+              "status_url":"http://localhost:8000/api/v2/resource-service/execution-status/7ed0b141-cf85-434f-bbfb-c02447a5221b"
+          }
+
+      2. curl -v -X GET -u admin:admin http://localhost:8000/api/v2/resource-service/execution-status/7ed0b141-cf85-434f-bbfb-c02447a5221b
+          OUTPUT: {
+              "user":"admin",
+              "status":"finished",
+              "func_name":"delete",
+              "created":"2021-07-19T14:09:59.930619Z",
+              "finished":"2021-07-19T14:10:00.054915Z",
+              "last_updated":"2021-07-19T14:09:59.930647Z",
+              "input_params":{"uuid":"1234"},
+              "output_params":{"output":0}
+          }
+
+
+
+   .. py:method:: resource_service_update(request, pk, *args, **kwargs)
+
+      Instructs the Async dispatcher to execute a 'UPDATE' operation over a valid 'uuid'
+
+      - PUT input_params: {
+          id: "<str: ID>"
+          xml_file: str = None
+          metadata_uploaded: bool = False
+          vals: dict = {}
+          regions: list = []
+          keywords: list = []
+          custom: dict = {}
+          notify: bool = True
+      }
+
+      - output_params: {
+          output: {
+              uuid: "<str: UUID>"
+          }
+      }
+
+      - output: {
+              "status": "ready",
+              "execution_id": "<str: execution ID>",
+              "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/<str: execution ID>"
+          }
+
+      Sample Request:
+
+      1. curl -v -X PUT -u admin:admin -H "Content-Type: application/json" -d 'vals={"title":"pippo"}' http://localhost:8000/api/v2/resources/<id>/update
+          OUTPUT: {
+              "status":"ready",
+              "execution_id":"08846e84-eae4-11eb-84be-00155d41f2fb",
+              "status_url":"http://localhost:8000/api/v2/resource-service/execution-status/08846e84-eae4-11eb-84be-00155d41f2fb"
+          }
+
+      2. curl -v -X GET -u admin:admin http://localhost:8000/api/v2/resource-service/execution-status/08846e84-eae4-11eb-84be-00155d41f2fb
+          OUTPUT: {
+              "user": "admin",
+              "status": "finished",
+              "func_name": "update",
+              "created": "2021-07-22T14:42:56.284740Z",
+              "finished": "2021-07-22T14:43:01.813971Z",
+              "last_updated": "2021-07-22T14:42:56.284797Z",
+              "input_params": {
+                  "uuid": "ee11541c-eaee-11eb-942c-00155d41f2fb",
+                  "vals": "{"title":"pippo"}",
+                  "custom": {},
+                  "notify": true,
+                  "regions": [],
+                  "keywords": [],
+                  "xml_file": null,
+                  "metadata_uploaded": false
+              },
+              "output_params": {
+                  "output": {
+                      "uuid": "ee11541c-eaee-11eb-942c-00155d41f2fb"
+                  }
+              }
+          }
+
+      Sample Request with more parameters:
+
+      1. curl -v -X PUT -u admin:admin -H "Content-Type: application/json" -d 'vals={"title":"pippo"}' -d 'metadata_uploaded=true' -d 'keywords=["k1", "k2", "k3"]'
+          http://localhost:8000/api/v2/resources/<id>/update
+
+
+
+   .. py:method:: resource_service_copy(request, pk, *args, **kwargs)
+
+      Instructs the Async dispatcher to execute a 'COPY' operation over a valid 'pk'
+
+      - PUT input_params: {
+          instance: "<str: ID>"
+          owner: "<str: username = <current_user>>"
+          defaults: dict = {}
+      }
+
+      - output_params: {
+          output: {
+              uuid: "<str: UUID>"
+          }
+      }
+
+      - output: {
+              "status": "ready",
+              "execution_id": "<str: execution ID>",
+              "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/<str: execution ID>"
+          }
+
+      Sample Request:
+
+      1. curl -v -X PUT -u admin:admin -H "Content-Type: application/json" -d 'defaults={"title":"pippo"}' http://localhost:8000/api/v2/resources/<id>/copy
+          OUTPUT: {
+              "status":"ready",
+              "execution_id":"08846e84-eae4-11eb-84be-00155d41f2fb",
+              "status_url":"http://localhost:8000/api/v2/resource-service/execution-status/08846e84-eae4-11eb-84be-00155d41f2fb"
+          }
+
+      2. curl -v -X GET -u admin:admin http://localhost:8000/api/v2/resource-service/execution-status/08846e84-eae4-11eb-84be-00155d41f2fb
+          OUTPUT: {
+              "user": "admin",
+              "status": "finished",
+              "func_name": "update",
+              "created": "2021-07-22T14:42:56.284740Z",
+              "finished": "2021-07-22T14:43:01.813971Z",
+              "last_updated": "2021-07-22T14:42:56.284797Z",
+              "input_params": {
+                  "uuid": "ee11541c-eaee-11eb-942c-00155d41f2fb",
+                  "defaults": "{"title":"pippo"}"
+              },
+              "output_params": {
+                  "output": {
+                      "uuid": "ee11541c-eaee-11eb-942c-00155d41f2fb"
+                  }
+              }
+          }
+
+
+
+   .. py:method:: ratings(request, pk, *args, **kwargs)
+
+
+   .. py:method:: set_thumbnail(request, pk, *args, **kwargs)
+
+
+   .. py:method:: extra_metadata(request, pk, *args, **kwargs)
+
+
+   .. py:method:: _get_request_params(request, encode=False)
+
+
+   .. py:method:: linked_resources(request, pk, *args, **kwargs)
+
+
+.. py:function:: base_linked_resources(instance, user, params)
+

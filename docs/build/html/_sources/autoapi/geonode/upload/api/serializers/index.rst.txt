@@ -1,0 +1,211 @@
+geonode.upload.api.serializers
+==============================
+
+.. py:module:: geonode.upload.api.serializers
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.upload.api.serializers.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.upload.api.serializers.UploadFileField
+   geonode.upload.api.serializers.SessionSerializer
+   geonode.upload.api.serializers.ProgressField
+   geonode.upload.api.serializers.ProgressUrlField
+   geonode.upload.api.serializers.UploadSerializer
+   geonode.upload.api.serializers.UploadSizeLimitSerializer
+   geonode.upload.api.serializers.UploadParallelismLimitSerializer
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: UploadFileField
+
+   Bases: :py:obj:`rest_framework.serializers.RelatedField`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'resource-files'
+
+
+
+
+   .. py:method:: to_representation(obj)
+
+
+.. py:class:: SessionSerializer
+
+   Bases: :py:obj:`rest_framework.serializers.Field`
+
+
+   .. py:method:: _decode_target(obj)
+      :classmethod:
+
+
+
+   .. py:method:: _decode_data(obj)
+      :classmethod:
+
+
+
+   .. py:method:: _decode_layer(obj)
+      :classmethod:
+
+
+
+   .. py:method:: _decode_layer_attributes(objs)
+      :classmethod:
+
+
+
+   .. py:method:: _decode_layer_bbox(obj)
+      :classmethod:
+
+
+
+   .. py:method:: to_internal_value(data)
+
+
+   .. py:method:: to_representation(value)
+
+
+.. py:class:: ProgressField
+
+   Bases: :py:obj:`dynamic_rest.fields.fields.DynamicComputedField`
+
+
+   .. py:method:: get_attribute(instance)
+
+
+.. py:class:: ProgressUrlField(type, **kwargs)
+
+   Bases: :py:obj:`dynamic_rest.fields.fields.DynamicComputedField`
+
+
+   .. py:attribute:: type
+
+
+   .. py:method:: get_attribute(instance)
+
+
+.. py:class:: UploadSerializer(*args, **kwargs)
+
+   Bases: :py:obj:`geonode.base.api.serializers.BaseDynamicModelSerializer`
+
+
+   .. py:attribute:: request
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'upload'
+
+
+
+      .. py:attribute:: view_name
+         :value: 'uploads-list'
+
+
+
+      .. py:attribute:: fields
+         :value: ('id', 'name', 'date', 'create_date', 'user', 'state', 'progress', 'complete', 'import_id',...
+
+
+
+
+   .. py:attribute:: progress
+
+
+   .. py:attribute:: resume_url
+
+
+   .. py:attribute:: delete_url
+
+
+   .. py:attribute:: import_url
+
+
+   .. py:attribute:: detail_url
+
+
+   .. py:attribute:: uploadfile_set
+
+
+.. py:class:: UploadSizeLimitSerializer
+
+   Bases: :py:obj:`geonode.base.api.serializers.BaseDynamicModelSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'upload-size-limit'
+
+
+
+      .. py:attribute:: view_name
+         :value: 'upload-size-limits-list'
+
+
+
+      .. py:attribute:: fields
+         :value: ('slug', 'description', 'max_size', 'max_size_label')
+
+
+
+
+.. py:class:: UploadParallelismLimitSerializer
+
+   Bases: :py:obj:`geonode.base.api.serializers.BaseDynamicModelSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'upload-parallelism-limit'
+
+
+
+      .. py:attribute:: view_name
+         :value: 'upload-parallelism-limits-list'
+
+
+
+      .. py:attribute:: fields
+         :value: ('slug', 'description', 'max_number')
+
+
+
+      .. py:attribute:: read_only_fields
+         :value: ('slug',)
+
+
+
+

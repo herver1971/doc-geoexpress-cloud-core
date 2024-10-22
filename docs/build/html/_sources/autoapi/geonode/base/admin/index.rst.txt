@@ -1,0 +1,435 @@
+geonode.base.admin
+==================
+
+.. py:module:: geonode.base.admin
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.admin.LicenseAdmin
+   geonode.base.admin.TopicCategoryAdmin
+   geonode.base.admin.RegionAdmin
+   geonode.base.admin.SpatialRepresentationTypeAdmin
+   geonode.base.admin.RestrictionCodeTypeAdmin
+   geonode.base.admin.ContactRoleAdmin
+   geonode.base.admin.LinkAdmin
+   geonode.base.admin.HierarchicalKeywordAdmin
+   geonode.base.admin.MenuPlaceholderAdmin
+   geonode.base.admin.MenuAdmin
+   geonode.base.admin.MenuItemAdmin
+   geonode.base.admin.ConfigurationAdmin
+   geonode.base.admin.ThesaurusAdmin
+   geonode.base.admin.ThesaurusLabelAdmin
+   geonode.base.admin.ThesaurusKeywordAdmin
+   geonode.base.admin.ThesaurusKeywordLabelAdmin
+   geonode.base.admin.ResourceBaseAdminForm
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.base.admin.metadata_batch_edit
+   geonode.base.admin.set_user_and_group_dataset_permission
+
+
+Module Contents
+---------------
+
+.. py:function:: metadata_batch_edit(modeladmin, request, queryset)
+
+.. py:function:: set_user_and_group_dataset_permission(modeladmin, request, queryset)
+
+.. py:class:: LicenseAdmin
+
+   Bases: :py:obj:`modeltranslation.admin.TabbedTranslationAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'name')
+
+
+
+   .. py:attribute:: list_display_links
+      :value: ('name',)
+
+
+
+.. py:class:: TopicCategoryAdmin
+
+   Bases: :py:obj:`modeltranslation.admin.TabbedTranslationAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display_links
+      :value: ('identifier',)
+
+
+
+   .. py:attribute:: list_display
+      :value: ('identifier', 'description', 'gn_description', 'fa_class', 'is_choice')
+
+
+
+   .. py:attribute:: exclude
+      :value: ('identifier', 'description')
+
+
+
+   .. py:method:: has_add_permission(request)
+
+
+   .. py:method:: has_delete_permission(request, obj=None)
+
+
+.. py:class:: RegionAdmin
+
+   Bases: :py:obj:`modeltranslation.admin.TabbedTranslationAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display_links
+      :value: ('name',)
+
+
+
+   .. py:attribute:: list_display
+      :value: ('code', 'name', 'parent')
+
+
+
+   .. py:attribute:: search_fields
+      :value: ('code', 'name')
+
+
+
+   .. py:attribute:: group_fieldsets
+      :value: True
+
+
+
+.. py:class:: SpatialRepresentationTypeAdmin
+
+   Bases: :py:obj:`modeltranslation.admin.TabbedTranslationAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display_links
+      :value: ('identifier',)
+
+
+
+   .. py:attribute:: list_display
+      :value: ('identifier', 'description', 'gn_description', 'is_choice')
+
+
+
+   .. py:method:: has_add_permission(request)
+
+
+   .. py:method:: has_delete_permission(request, obj=None)
+
+
+.. py:class:: RestrictionCodeTypeAdmin
+
+   Bases: :py:obj:`modeltranslation.admin.TabbedTranslationAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display_links
+      :value: ('identifier',)
+
+
+
+   .. py:attribute:: list_display
+      :value: ('identifier', 'description', 'gn_description', 'is_choice')
+
+
+
+   .. py:method:: has_add_permission(request)
+
+
+   .. py:method:: has_delete_permission(request, obj=None)
+
+
+.. py:class:: ContactRoleAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display_links
+      :value: ('id',)
+
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'contact', 'resource', 'role')
+
+
+
+   .. py:attribute:: list_editable
+      :value: ('contact', 'resource', 'role')
+
+
+
+   .. py:attribute:: form
+
+
+.. py:class:: LinkAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display_links
+      :value: ('id',)
+
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'resource', 'extension', 'link_type', 'name', 'mime')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('resource', 'extension', 'link_type', 'mime')
+
+
+
+   .. py:attribute:: search_fields
+      :value: ('name', 'resource__title')
+
+
+
+   .. py:attribute:: form
+
+
+.. py:class:: HierarchicalKeywordAdmin
+
+   Bases: :py:obj:`treebeard.admin.TreeAdmin`
+
+
+   .. py:attribute:: search_fields
+      :value: ('name',)
+
+
+
+   .. py:attribute:: form
+
+
+.. py:class:: MenuPlaceholderAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display
+      :value: ('name',)
+
+
+
+.. py:class:: MenuAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display
+      :value: ('title', 'placeholder', 'order')
+
+
+
+.. py:class:: MenuItemAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display
+      :value: ('title', 'menu', 'order', 'blank_target', 'url')
+
+
+
+.. py:class:: ConfigurationAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:method:: has_delete_permission(request, obj=None)
+
+
+   .. py:method:: get_form(request, obj=None, **kwargs)
+
+
+.. py:class:: ThesaurusAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: change_list_template
+      :value: 'admin/thesauri/change_list.html'
+
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'identifier')
+
+
+
+   .. py:attribute:: list_display_links
+      :value: ('id', 'identifier')
+
+
+
+   .. py:attribute:: ordering
+      :value: ('identifier',)
+
+
+
+   .. py:method:: get_urls()
+
+
+   .. py:method:: import_rdf(request)
+
+
+.. py:class:: ThesaurusLabelAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display
+      :value: ('thesaurus_id', 'lang', 'label')
+
+
+
+   .. py:attribute:: list_display_links
+      :value: ('label',)
+
+
+
+   .. py:attribute:: ordering
+      :value: ('thesaurus__identifier', 'lang')
+
+
+
+   .. py:method:: thesaurus_id(obj)
+
+
+.. py:class:: ThesaurusKeywordAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display
+      :value: ('thesaurus_id', 'about', 'alt_label')
+
+
+
+   .. py:attribute:: list_display_links
+      :value: ('about', 'alt_label')
+
+
+
+   .. py:attribute:: ordering
+      :value: ('thesaurus__identifier', 'alt_label')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('thesaurus_id',)
+
+
+
+   .. py:method:: thesaurus_id(obj)
+
+
+.. py:class:: ThesaurusKeywordLabelAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: list_display
+      :value: ('thesaurus_id', 'keyword_id', 'lang', 'label')
+
+
+
+   .. py:attribute:: list_display_links
+      :value: ('lang', 'label')
+
+
+
+   .. py:attribute:: ordering
+      :value: ('keyword__thesaurus__identifier', 'keyword__alt_label', 'lang')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('keyword__thesaurus__identifier', 'keyword_id', 'lang')
+
+
+
+   .. py:method:: thesaurus_id(obj)
+
+
+   .. py:method:: keyword_id(obj)
+
+
+.. py:class:: ResourceBaseAdminForm
+
+   Bases: :py:obj:`dal.autocomplete.FutureModelForm`
+
+
+   .. py:attribute:: keywords
+
+
+   .. py:method:: delete_queryset(request, queryset)
+
+      We need to invoke the 'ResourceBase.delete' method even when deleting
+      through the admin batch action
+
+
+
+   .. py:class:: Meta
+
+
