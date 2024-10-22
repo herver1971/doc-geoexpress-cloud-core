@@ -134,9 +134,9 @@ class UserViewSet(DynamicModelViewSet):
     pagination_class = GeoNodeApiPagination
 
     def get_queryset(self):
-        """
-        Filters and sorts users.
-        """
+    """
+    Filters and sorts users.
+    """
 
         if self.request and self.request.user:
             queryset = get_available_users(self.request.user)
