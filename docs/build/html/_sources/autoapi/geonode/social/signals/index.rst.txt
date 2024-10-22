@@ -1,0 +1,80 @@
+geonode.social.signals
+======================
+
+.. py:module:: geonode.social.signals
+
+.. autoapi-nested-parse::
+
+   Django signals connections and associated receiver functions for geonode's
+   third-party 'social' apps which include announcements, notifications,
+   relationships, actstream user_messages and potentially others
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.social.signals.logger
+   geonode.social.signals.activity
+   geonode.social.signals.ratings
+   geonode.social.signals.ratings
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.social.signals.activity_post_modify_object
+   geonode.social.signals.relationship_post_save_actstream
+   geonode.social.signals.relationship_pre_delete_actstream
+   geonode.social.signals.relationship_post_save
+   geonode.social.signals.rating_post_save
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: activity
+   :value: None
+
+
+.. py:data:: ratings
+   :value: None
+
+
+.. py:data:: ratings
+   :value: True
+
+
+.. py:function:: activity_post_modify_object(sender, instance, created=None, **kwargs)
+
+   Creates new activities after a Map, Dataset, or Document is created/updated/deleted.
+
+   action_settings:
+   actor: the user who performed the activity
+   action_object: the object that received the action
+   created_verb: a translatable verb that is used when an object is created
+   deleted_verb: a translatable verb that is used when an object is deleted
+   object_name: the title of the object that is used to keep information about the object after it is deleted
+   target: the target of an action
+   updated_verb: a translatable verb that is used when an object is updated
+
+   raw_action: a constant that describes the type of action performed (values should be: created, uploaded, deleted)
+
+
+.. py:function:: relationship_post_save_actstream(instance, sender, created, **kwargs)
+
+.. py:function:: relationship_pre_delete_actstream(instance, sender, **kwargs)
+
+.. py:function:: relationship_post_save(instance, sender, created, **kwargs)
+
+.. py:function:: rating_post_save(instance, sender, created, **kwargs)
+
+   Send a notification when rating a layer, map or document
+
+

@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.catalogue.backends.pycsw_plugin &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../catalogue.html">geonode.catalogue</a></li>
+      <li class="breadcrumb-item active">geonode.catalogue.backends.pycsw_plugin</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.catalogue.backends.pycsw_plugin</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2018 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">connection</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Max</span><span class="p">,</span> <span class="n">Min</span><span class="p">,</span> <span class="n">Count</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<span class="kn">from</span> <span class="nn">pycsw.core.repository</span> <span class="kn">import</span> <span class="n">Repository</span><span class="p">,</span> <span class="n">query_spatial</span><span class="p">,</span> <span class="n">get_geometry_area</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+
+<span class="kn">from</span> <span class="nn">pycsw.core</span> <span class="kn">import</span> <span class="n">util</span>
+
+<div class="viewcode-block" id="LOGGER">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.LOGGER">[docs]</a>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GEONODE_SERVICE_TYPES">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GEONODE_SERVICE_TYPES">[docs]</a>
+<span class="n">GEONODE_SERVICE_TYPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># &#39;GeoNode enum&#39;: &#39;CSW enum&#39;</span>
+    <span class="s2">&quot;http://www.opengis.net/cat/csw/2.0.2&quot;</span><span class="p">:</span> <span class="s2">&quot;OGC:CSW&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;http://www.opengis.net/wms&quot;</span><span class="p">:</span> <span class="s2">&quot;OGC:WMS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;http://www.opengis.net/wmts/1.0&quot;</span><span class="p">:</span> <span class="s2">&quot;OGC:WMTS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://wiki.osgeo.org/wiki/TMS&quot;</span><span class="p">:</span> <span class="s2">&quot;OSGeo:TMS&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;urn:x-esri:serviceType:ArcGIS:MapServer&quot;</span><span class="p">:</span> <span class="s2">&quot;ESRI:ArcGIS:MapServer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;urn:x-esri:serviceType:ArcGIS:ImageServer&quot;</span><span class="p">:</span> <span class="s2">&quot;ESRI:ArcGIS:ImageServer&quot;</span><span class="p">,</span>
+<span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="GeoNodeRepository">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoNodeRepository</span><span class="p">(</span><span class="n">Repository</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to interact with underlying repository</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">repo_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize repository</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GeoNodeRepository.context">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.context">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span></div>
+
+<div class="viewcode-block" id="GeoNodeRepository.filter">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.filter">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter</span> <span class="o">=</span> <span class="n">repo_filter</span></div>
+
+<div class="viewcode-block" id="GeoNodeRepository.fts">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.fts">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fts</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="GeoNodeRepository.label">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.label">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;GeoNode&quot;</span></div>
+
+<div class="viewcode-block" id="GeoNodeRepository.local_ingest">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.local_ingest">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_ingest</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeRepository.dbtype">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.dbtype">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dbtype</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;ENGINE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+        <span class="c1"># GeoNode PostgreSQL installs are PostGIS enabled</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbtype</span> <span class="o">==</span> <span class="s2">&quot;postgis&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dbtype</span> <span class="o">=</span> <span class="s2">&quot;postgresql+postgis+wkt&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbtype</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;sqlite&quot;</span><span class="p">,</span> <span class="s2">&quot;sqlite3&quot;</span><span class="p">}:</span>  <span class="c1"># load SQLite query bindings</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">create_function</span><span class="p">(</span><span class="s2">&quot;query_spatial&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">query_spatial</span><span class="p">)</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">create_function</span><span class="p">(</span><span class="s2">&quot;get_anytext&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">util</span><span class="o">.</span><span class="n">get_anytext</span><span class="p">)</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">create_function</span><span class="p">(</span><span class="s2">&quot;get_geometry_area&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">get_geometry_area</span><span class="p">)</span>
+
+        <span class="c1"># generate core queryables db and obj bindings</span>
+<div class="viewcode-block" id="GeoNodeRepository.queryables">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.queryables">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queryables</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+
+        <span class="k">for</span> <span class="n">tname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;typenames&quot;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">qname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;typenames&quot;</span><span class="p">][</span><span class="n">tname</span><span class="p">][</span><span class="s2">&quot;queryables&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">queryables</span><span class="p">[</span><span class="n">qname</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;typenames&quot;</span><span class="p">][</span><span class="n">tname</span><span class="p">][</span><span class="s2">&quot;queryables&quot;</span><span class="p">][</span><span class="n">qname</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+
+                <span class="k">for</span> <span class="n">qkey</span><span class="p">,</span> <span class="n">qvalue</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">queryables</span><span class="p">[</span><span class="n">qname</span><span class="p">][</span><span class="n">qkey</span><span class="p">]</span> <span class="o">=</span> <span class="n">qvalue</span>
+
+        <span class="c1"># flatten all queryables</span>
+        <span class="c1"># TODO smarter way of doing this</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queryables</span><span class="p">[</span><span class="s2">&quot;_all&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">qbl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queryables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">queryables</span><span class="p">[</span><span class="s2">&quot;_all&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queryables</span><span class="p">[</span><span class="n">qbl</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queryables</span><span class="p">[</span><span class="s2">&quot;_all&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">md_core_model</span><span class="p">[</span><span class="s2">&quot;mappings&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="s2">&quot;Harvest&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;operations&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="s2">&quot;Transaction&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;operations&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;operations&quot;</span><span class="p">][</span><span class="s2">&quot;Harvest&quot;</span><span class="p">][</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="s2">&quot;ResourceType&quot;</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="n">GEONODE_SERVICE_TYPES</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">)</span>  <span class="c1"># noqa</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s2">&quot;operations&quot;</span><span class="p">][</span><span class="s2">&quot;Transaction&quot;</span><span class="p">][</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="s2">&quot;TransactionSchemas&quot;</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="n">GEONODE_SERVICE_TYPES</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">)</span>  <span class="c1"># noqa</span>
+
+<div class="viewcode-block" id="GeoNodeRepository.dataset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stub to mock a pycsw dataset object for Transactions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;ResourceBase&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{})</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeRepository.query_ids">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.query_ids">[docs]</a>
+    <span class="k">def</span> <span class="nf">query_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query by list of identifiers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_repo_filter</span><span class="p">(</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">uuid__in</span><span class="o">=</span><span class="n">ids</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeRepository.query_domain">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.query_domain">[docs]</a>
+    <span class="k">def</span> <span class="nf">query_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">typenames</span><span class="p">,</span> <span class="n">domainquerytype</span><span class="o">=</span><span class="s2">&quot;list&quot;</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query by property domain values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">objects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_repo_filter</span><span class="p">(</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">domainquerytype</span> <span class="o">==</span> <span class="s2">&quot;range&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">objects</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">Min</span><span class="p">(</span><span class="n">domain</span><span class="p">),</span> <span class="n">Max</span><span class="p">(</span><span class="n">domain</span><span class="p">))</span><span class="o">.</span><span class="n">values</span><span class="p">())]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">count</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[(</span><span class="n">d</span><span class="p">[</span><span class="n">domain</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">__count&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">objects</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">Count</span><span class="p">(</span><span class="n">domain</span><span class="p">))]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="n">domain</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeRepository.query_insert">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.query_insert">[docs]</a>
+    <span class="k">def</span> <span class="nf">query_insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query to get latest (default) or earliest update to repository</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">Min</span><span class="p">(</span><span class="s2">&quot;last_updated&quot;</span><span class="p">))[</span><span class="s2">&quot;last_updated__min&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+                <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%SZ&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_repo_filter</span><span class="p">(</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">Max</span><span class="p">(</span><span class="s2">&quot;last_updated&quot;</span><span class="p">))[</span><span class="s2">&quot;last_updated__max&quot;</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%SZ&quot;</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeRepository.query_source">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.query_source">[docs]</a>
+    <span class="k">def</span> <span class="nf">query_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query by source</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_repo_filter</span><span class="p">(</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">source</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeRepository.query">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.query">[docs]</a>
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">,</span> <span class="n">sortby</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">typenames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxrecords</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">startposition</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query records from underlying repository</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># run the raw query and get total</span>
+        <span class="c1"># we want to exclude layers which are not valid, as it is done in the</span>
+        <span class="c1"># search engine</span>
+        <span class="n">pycsw_filters</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">PYCSW</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;FILTER&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;resource_type__in&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]})</span>
+
+        <span class="k">if</span> <span class="s2">&quot;where&quot;</span> <span class="ow">in</span> <span class="n">constraint</span><span class="p">:</span>  <span class="c1"># GetRecords with constraint</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_repo_filter</span><span class="p">(</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">**</span><span class="n">pycsw_filters</span><span class="p">))</span><span class="o">.</span><span class="n">extra</span><span class="p">(</span>
+                <span class="n">where</span><span class="o">=</span><span class="p">[</span><span class="n">constraint</span><span class="p">[</span><span class="s2">&quot;where&quot;</span><span class="p">]],</span> <span class="n">params</span><span class="o">=</span><span class="n">constraint</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># GetRecords sans constraint</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_repo_filter</span><span class="p">(</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">**</span><span class="n">pycsw_filters</span><span class="p">))</span>
+
+        <span class="n">total</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+        <span class="c1"># apply sorting, limit and offset</span>
+        <span class="k">if</span> <span class="n">sortby</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;spatial&quot;</span> <span class="ow">in</span> <span class="n">sortby</span> <span class="ow">and</span> <span class="n">sortby</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]:</span>  <span class="c1"># spatial sort</span>
+                <span class="n">desc</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">sortby</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;DESC&quot;</span><span class="p">:</span>
+                    <span class="n">desc</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                <span class="k">return</span> <span class="p">[</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">total</span><span class="p">),</span>
+                    <span class="nb">sorted</span><span class="p">(</span>
+                        <span class="n">query</span><span class="p">,</span>
+                        <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">util</span><span class="o">.</span><span class="n">get_geometry_area</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sortby</span><span class="p">[</span><span class="s2">&quot;propertyname&quot;</span><span class="p">]))),</span>
+                        <span class="n">reverse</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
+                    <span class="p">)[</span><span class="n">startposition</span> <span class="p">:</span> <span class="n">startposition</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">maxrecords</span><span class="p">)],</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sortby</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;DESC&quot;</span><span class="p">:</span>
+                    <span class="n">pname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">sortby</span><span class="p">[</span><span class="s1">&#39;propertyname&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">pname</span> <span class="o">=</span> <span class="n">sortby</span><span class="p">[</span><span class="s2">&quot;propertyname&quot;</span><span class="p">]</span>
+                <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">total</span><span class="p">),</span> <span class="n">query</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">pname</span><span class="p">)[</span><span class="n">startposition</span> <span class="p">:</span> <span class="n">startposition</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">maxrecords</span><span class="p">)]]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># no sort</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">total</span><span class="p">),</span> <span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="n">startposition</span> <span class="p">:</span> <span class="n">startposition</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">maxrecords</span><span class="p">)]]</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeRepository.delete">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository.delete">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">constraint</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete a record from the repository</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_repo_filter</span><span class="p">(</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">extra</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="p">[</span><span class="n">constraint</span><span class="p">[</span><span class="s2">&quot;where&quot;</span><span class="p">]],</span> <span class="n">params</span><span class="o">=</span><span class="n">constraint</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">deleted</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">deleted</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeRepository._get_repo_filter">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/pycsw_plugin/index.html#geonode.catalogue.backends.pycsw_plugin.GeoNodeRepository._get_repo_filter">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_repo_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply repository wide side filter / mask query</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">extra</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">query</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

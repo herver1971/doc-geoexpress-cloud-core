@@ -1,0 +1,577 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.templatetags.base_tags &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../base.html">geonode.base</a></li>
+      <li class="breadcrumb-item active">geonode.base.templatetags.base_tags</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.base.templatetags.base_tags</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">template</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Count</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>
+
+<span class="kn">from</span> <span class="nn">pinax.ratings.models</span> <span class="kn">import</span> <span class="n">Rating</span>
+<span class="kn">from</span> <span class="nn">guardian.shortcuts</span> <span class="kn">import</span> <span class="n">get_objects_for_user</span>
+
+<span class="kn">from</span> <span class="nn">geonode.maps.models</span> <span class="kn">import</span> <span class="n">Map</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+<span class="kn">from</span> <span class="nn">geonode.documents.models</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+<span class="kn">from</span> <span class="nn">geonode.base.bbox_utils</span> <span class="kn">import</span> <span class="n">filter_bbox</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">HierarchicalKeyword</span><span class="p">,</span> <span class="n">Menu</span><span class="p">,</span> <span class="n">MenuItem</span>
+<span class="kn">from</span> <span class="nn">geonode.security.utils</span> <span class="kn">import</span> <span class="n">get_visible_resources</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<div class="viewcode-block" id="register">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.register">[docs]</a>
+<span class="n">register</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">Library</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="FACETS">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.FACETS">[docs]</a>
+<span class="n">FACETS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;raster&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Raster Dataset&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;vector&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Vector Dataset&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;vector_time&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Vector Temporal Serie&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;remote&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Remote Dataset&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;wms&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;WMS Cascade Dataset&quot;</span><span class="p">),</span>
+<span class="p">}</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;template_trans&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="template_trans">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.template_trans">[docs]</a>
+<span class="k">def</span> <span class="nf">template_trans</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ugettext</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;get_item&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="get_item">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.get_item">[docs]</a>
+<span class="k">def</span> <span class="nf">get_item</span><span class="p">(</span><span class="n">dictionary</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a element for a dict by name&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">dictionary</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="num_ratings">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.num_ratings">[docs]</a>
+<span class="k">def</span> <span class="nf">num_ratings</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="n">ct</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">Rating</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">object_id</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">ct</span><span class="p">))</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span><span class="p">(</span><span class="n">takes_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="facets">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.facets">[docs]</a>
+<span class="k">def</span> <span class="nf">facets</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">]</span>
+    <span class="n">title_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title__icontains&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">abstract_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;abstract__icontains&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">purpose_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;purpose__icontains&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">extent_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;extent&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">keywords_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;keywords__slug__in&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">category_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;category__identifier__in&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">regions_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;regions__name__in&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">owner_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;owner__username__in&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">date_gte_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date__gte&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">date_lte_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date__lte&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">date_range_filter</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date__range&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">facet_type</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;facet_type&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
+        <span class="n">authorized</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">facet_type</span> <span class="o">==</span> <span class="s2">&quot;geoapps&quot;</span><span class="p">:</span>
+        <span class="n">facets</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="kn">from</span> <span class="nn">django.apps</span> <span class="kn">import</span> <span class="n">apps</span>
+
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">apps</span><span class="o">.</span><span class="n">app_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">app</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;GEONODE_APP&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;default_model&quot;</span><span class="p">):</span>
+                    <span class="n">geoapps</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+                        <span class="n">apps</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">default_model</span><span class="p">)</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span>
+                        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="k">if</span> <span class="n">request</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+                        <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+                        <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">category_filter</span><span class="p">:</span>
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">category__identifier__in</span><span class="o">=</span><span class="n">category_filter</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">regions_filter</span><span class="p">:</span>
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">regions__name__in</span><span class="o">=</span><span class="n">regions_filter</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">owner_filter</span><span class="p">:</span>
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">owner__username__in</span><span class="o">=</span><span class="n">owner_filter</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">date_gte_filter</span><span class="p">:</span>
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__gte</span><span class="o">=</span><span class="n">date_gte_filter</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">date_lte_filter</span><span class="p">:</span>
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__lte</span><span class="o">=</span><span class="n">date_lte_filter</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">date_range_filter</span><span class="p">:</span>
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__range</span><span class="o">=</span><span class="n">date_range_filter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+
+                    <span class="k">if</span> <span class="n">extent_filter</span><span class="p">:</span>
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">filter_bbox</span><span class="p">(</span><span class="n">geoapps</span><span class="p">,</span> <span class="n">extent_filter</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">keywords_filter</span><span class="p">:</span>
+                        <span class="n">treeqs</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+                        <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords_filter</span><span class="p">:</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">kws</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__iexact</span><span class="o">=</span><span class="n">keyword</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kws</span><span class="p">:</span>
+                                    <span class="n">treeqs</span> <span class="o">=</span> <span class="n">treeqs</span> <span class="o">|</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">get_tree</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                                <span class="c1"># Ignore keywords not actually used?</span>
+                                <span class="k">pass</span>
+
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">keywords__in</span><span class="o">=</span><span class="n">treeqs</span><span class="p">))</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
+                        <span class="n">geoapps</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">authorized</span><span class="p">)</span>
+
+                    <span class="n">facets</span><span class="p">[</span><span class="n">app</span><span class="o">.</span><span class="n">default_model</span><span class="p">]</span> <span class="o">=</span> <span class="n">geoapps</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">facets</span>
+    <span class="k">elif</span> <span class="n">facet_type</span> <span class="o">==</span> <span class="s2">&quot;documents&quot;</span><span class="p">:</span>
+        <span class="n">documents</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">title_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">category_filter</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">category__identifier__in</span><span class="o">=</span><span class="n">category_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">regions_filter</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">regions__name__in</span><span class="o">=</span><span class="n">regions_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">owner_filter</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">owner__username__in</span><span class="o">=</span><span class="n">owner_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_gte_filter</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__gte</span><span class="o">=</span><span class="n">date_gte_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_lte_filter</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__lte</span><span class="o">=</span><span class="n">date_lte_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_range_filter</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__range</span><span class="o">=</span><span class="n">date_range_filter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+
+        <span class="n">documents</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+            <span class="n">documents</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="k">if</span> <span class="n">request</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+            <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+            <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">keywords_filter</span><span class="p">:</span>
+            <span class="n">treeqs</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords_filter</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">kws</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__iexact</span><span class="o">=</span><span class="n">keyword</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kws</span><span class="p">:</span>
+                        <span class="n">treeqs</span> <span class="o">=</span> <span class="n">treeqs</span> <span class="o">|</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">get_tree</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="c1"># Ignore keywords not actually used?</span>
+                    <span class="k">pass</span>
+
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">keywords__in</span><span class="o">=</span><span class="n">treeqs</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">authorized</span><span class="p">)</span>
+
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;subtype&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="s2">&quot;subtype&quot;</span><span class="p">))</span>
+        <span class="n">facets</span> <span class="o">=</span> <span class="p">{</span><span class="n">count</span><span class="p">[</span><span class="s2">&quot;subtype&quot;</span><span class="p">]:</span> <span class="n">count</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">facets</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">Q</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">title_filter</span><span class="p">)</span>
+            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">abstract__icontains</span><span class="o">=</span><span class="n">abstract_filter</span><span class="p">)</span>
+            <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">purpose__icontains</span><span class="o">=</span><span class="n">purpose_filter</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">category_filter</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">category__identifier__in</span><span class="o">=</span><span class="n">category_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">regions_filter</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">regions__name__in</span><span class="o">=</span><span class="n">regions_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">owner_filter</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">owner__username__in</span><span class="o">=</span><span class="n">owner_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_gte_filter</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__gte</span><span class="o">=</span><span class="n">date_gte_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_lte_filter</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__lte</span><span class="o">=</span><span class="n">date_lte_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_range_filter</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__range</span><span class="o">=</span><span class="n">date_range_filter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+            <span class="n">layers</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="k">if</span> <span class="n">request</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+            <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+            <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">extent_filter</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">filter_bbox</span><span class="p">(</span><span class="n">layers</span><span class="p">,</span> <span class="n">extent_filter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">keywords_filter</span><span class="p">:</span>
+            <span class="n">treeqs</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords_filter</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">kws</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__iexact</span><span class="o">=</span><span class="n">keyword</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kws</span><span class="p">:</span>
+                        <span class="n">treeqs</span> <span class="o">=</span> <span class="n">treeqs</span> <span class="o">|</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">get_tree</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="c1"># Ignore keywords not actually used?</span>
+                    <span class="k">pass</span>
+
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">keywords__in</span><span class="o">=</span><span class="n">treeqs</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">authorized</span><span class="p">)</span>
+
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;subtype&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="s2">&quot;subtype&quot;</span><span class="p">))</span>
+
+        <span class="n">counts_array</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">counts</span><span class="p">:</span>
+                <span class="n">counts_array</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">count</span><span class="p">[</span><span class="s2">&quot;subtype&quot;</span><span class="p">],</span> <span class="n">count</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">count_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">counts_array</span><span class="p">)</span>
+
+        <span class="n">vector_time_series</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">has_time</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">subtype</span><span class="o">=</span><span class="s2">&quot;vector&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;subtype&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="s2">&quot;subtype&quot;</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">vector_time_series</span><span class="p">:</span>
+            <span class="n">count_dict</span><span class="p">[</span><span class="s2">&quot;vectorTimeSeries&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vector_time_series</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+
+        <span class="n">facets</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;raster&quot;</span><span class="p">:</span> <span class="n">count_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;raster&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s2">&quot;vector&quot;</span><span class="p">:</span> <span class="n">count_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;vector&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s2">&quot;vector_time&quot;</span><span class="p">:</span> <span class="n">count_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;vectorTimeSeries&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s2">&quot;remote&quot;</span><span class="p">:</span> <span class="n">count_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remote&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="s2">&quot;wms&quot;</span><span class="p">:</span> <span class="n">count_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wmsStore&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Break early if only_datasets is set.</span>
+        <span class="k">if</span> <span class="n">facet_type</span> <span class="o">==</span> <span class="s2">&quot;datasets&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">facets</span>
+
+        <span class="n">maps</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">title_filter</span><span class="p">)</span>
+        <span class="n">documents</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">title_filter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">category_filter</span><span class="p">:</span>
+            <span class="n">maps</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">category__identifier__in</span><span class="o">=</span><span class="n">category_filter</span><span class="p">)</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">category__identifier__in</span><span class="o">=</span><span class="n">category_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">regions_filter</span><span class="p">:</span>
+            <span class="n">maps</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">regions__name__in</span><span class="o">=</span><span class="n">regions_filter</span><span class="p">)</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">regions__name__in</span><span class="o">=</span><span class="n">regions_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">owner_filter</span><span class="p">:</span>
+            <span class="n">maps</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">owner__username__in</span><span class="o">=</span><span class="n">owner_filter</span><span class="p">)</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">owner__username__in</span><span class="o">=</span><span class="n">owner_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_gte_filter</span><span class="p">:</span>
+            <span class="n">maps</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__gte</span><span class="o">=</span><span class="n">date_gte_filter</span><span class="p">)</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__gte</span><span class="o">=</span><span class="n">date_gte_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_lte_filter</span><span class="p">:</span>
+            <span class="n">maps</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__lte</span><span class="o">=</span><span class="n">date_lte_filter</span><span class="p">)</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__lte</span><span class="o">=</span><span class="n">date_lte_filter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">date_range_filter</span><span class="p">:</span>
+            <span class="n">maps</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__range</span><span class="o">=</span><span class="n">date_range_filter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">date__range</span><span class="o">=</span><span class="n">date_range_filter</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+
+        <span class="n">maps</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+            <span class="n">maps</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="k">if</span> <span class="n">request</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+            <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+            <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">documents</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+            <span class="n">documents</span><span class="p">,</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="k">if</span> <span class="n">request</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+            <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+            <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">extent_filter</span><span class="p">:</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">filter_bbox</span><span class="p">(</span><span class="n">documents</span><span class="p">,</span> <span class="n">extent_filter</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">keywords_filter</span><span class="p">:</span>
+            <span class="n">treeqs</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords_filter</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">kws</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__iexact</span><span class="o">=</span><span class="n">keyword</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kws</span><span class="p">:</span>
+                        <span class="n">treeqs</span> <span class="o">=</span> <span class="n">treeqs</span> <span class="o">|</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">get_tree</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="c1"># Ignore keywords not actually used?</span>
+                    <span class="k">pass</span>
+
+            <span class="n">maps</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">keywords__in</span><span class="o">=</span><span class="n">treeqs</span><span class="p">))</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">keywords__in</span><span class="o">=</span><span class="n">treeqs</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
+            <span class="n">maps</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">authorized</span><span class="p">)</span>
+            <span class="n">documents</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">authorized</span><span class="p">)</span>
+
+        <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">maps</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;document&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">documents</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">facet_type</span> <span class="o">==</span> <span class="s2">&quot;home&quot;</span><span class="p">:</span>
+            <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+            <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+            <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;raster&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;vector&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;remote&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">facets</span><span class="p">[</span><span class="s2">&quot;wms&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">facets</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span><span class="p">(</span><span class="n">takes_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="get_current_path">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.get_current_path">[docs]</a>
+<span class="k">def</span> <span class="nf">get_current_path</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get_full_path</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span><span class="p">(</span><span class="n">takes_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="get_context_resourcetype">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.get_context_resourcetype">[docs]</a>
+<span class="k">def</span> <span class="nf">get_context_resourcetype</span><span class="p">(</span><span class="n">context</span><span class="p">):</span>
+    <span class="n">c_path</span> <span class="o">=</span> <span class="n">get_current_path</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="n">resource_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;datasets&quot;</span><span class="p">,</span> <span class="s2">&quot;maps&quot;</span><span class="p">,</span> <span class="s2">&quot;geoapps&quot;</span><span class="p">,</span> <span class="s2">&quot;documents&quot;</span><span class="p">,</span> <span class="s2">&quot;search&quot;</span><span class="p">,</span> <span class="s2">&quot;people&quot;</span><span class="p">,</span> <span class="s2">&quot;groups/categories&quot;</span><span class="p">,</span> <span class="s2">&quot;groups&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">resource_type</span> <span class="ow">in</span> <span class="n">resource_types</span><span class="p">:</span>
+        <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">resource_type</span><span class="si">}</span><span class="s2">/&quot;</span> <span class="ow">in</span> <span class="n">c_path</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resource_type</span>
+    <span class="k">return</span> <span class="s2">&quot;error&quot;</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span><span class="p">(</span><span class="n">takes_context</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="fullurl">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.fullurl">[docs]</a>
+<span class="k">def</span> <span class="nf">fullurl</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s2">&quot;request&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">build_absolute_uri</span><span class="p">(</span><span class="n">url</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="get_menu">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.get_menu">[docs]</a>
+<span class="k">def</span> <span class="nf">get_menu</span><span class="p">(</span><span class="n">placeholder_name</span><span class="p">):</span>
+    <span class="n">menus</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">m</span><span class="p">:</span> <span class="n">MenuItem</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">menu</span><span class="o">=</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">Menu</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">placeholder__name</span><span class="o">=</span><span class="n">placeholder_name</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">menus</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">inclusion_tag</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;base/menu.html&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="render_nav_menu">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.render_nav_menu">[docs]</a>
+<span class="k">def</span> <span class="nf">render_nav_menu</span><span class="p">(</span><span class="n">placeholder_name</span><span class="p">):</span>
+    <span class="n">menus</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">menus</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">m</span><span class="p">:</span> <span class="n">MenuItem</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">menu</span><span class="o">=</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">Menu</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">placeholder__name</span><span class="o">=</span><span class="n">placeholder_name</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;menus&quot;</span><span class="p">:</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">menus</span><span class="o">.</span><span class="n">items</span><span class="p">())}</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">inclusion_tag</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;base/iso_categories.html&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="get_visibile_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.get_visibile_resources">[docs]</a>
+<span class="k">def</span> <span class="nf">get_visibile_resources</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="n">categories</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">get_objects_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;view_resourcebase&quot;</span><span class="p">,</span> <span class="n">klass</span><span class="o">=</span><span class="n">ResourceBase</span><span class="p">,</span> <span class="n">any_perm</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">category__isnull</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;category__gn_description&quot;</span><span class="p">,</span> <span class="s2">&quot;category__fa_class&quot;</span><span class="p">,</span> <span class="s2">&quot;category__description&quot;</span><span class="p">,</span> <span class="s2">&quot;category__identifier&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="n">Count</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">))</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;iso_formats&quot;</span><span class="p">:</span> <span class="n">categories</span><span class="p">}</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="display_edit_request_button">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.display_edit_request_button">[docs]</a>
+<span class="k">def</span> <span class="nf">display_edit_request_button</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">perms</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_has_owner_his_permissions</span><span class="p">():</span>
+        <span class="n">_owner_perms</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="n">resource</span><span class="o">.</span><span class="n">BASE_PERMISSIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;owner&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">resource</span><span class="o">.</span><span class="n">BASE_PERMISSIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;read&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">resource</span><span class="o">.</span><span class="n">BASE_PERMISSIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;write&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">resource</span><span class="o">.</span><span class="n">resource_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">,</span> <span class="s2">&quot;document&quot;</span><span class="p">]:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            The download resource permission should be available only</span>
+<span class="sd">            if the resource is a datasets or Documents. You cant download maps</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">_owner_perms</span> <span class="o">=</span> <span class="n">_owner_perms</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">BASE_PERMISSIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">)))</span>
+
+        <span class="n">_owner_set</span> <span class="o">=</span> <span class="n">_owner_perms</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">perms</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">_owner_set</span> <span class="o">==</span> <span class="nb">set</span><span class="p">()</span> <span class="ow">or</span> <span class="n">_owner_set</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;change_resourcebase_permissions&quot;</span><span class="p">,</span> <span class="s2">&quot;publish_resourcebase&quot;</span><span class="p">}</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_has_owner_his_permissions</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span> <span class="ow">or</span> <span class="n">resource</span><span class="o">.</span><span class="n">owner</span><span class="o">.</span><span class="n">pk</span> <span class="o">==</span> <span class="n">user</span><span class="o">.</span><span class="n">pk</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="display_change_perms_button">
+<a class="viewcode-back" href="../../../../autoapi/geonode/base/templatetags/base_tags/index.html#geonode.base.templatetags.base_tags.display_change_perms_button">[docs]</a>
+<span class="k">def</span> <span class="nf">display_change_perms_button</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">perms</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">ogc_server_settings</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ogc_server_settings</span><span class="p">,</span> <span class="s2">&quot;GEONODE_SECURITY_ENABLED&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">elif</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span> <span class="ow">or</span> <span class="s2">&quot;change_resourcebase_permissions&quot;</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">perms</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;ADMIN_MODERATE_UPLOADS&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

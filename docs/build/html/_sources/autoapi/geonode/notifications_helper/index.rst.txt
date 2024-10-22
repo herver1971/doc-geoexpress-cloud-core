@@ -1,0 +1,101 @@
+geonode.notifications_helper
+============================
+
+.. py:module:: geonode.notifications_helper
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.notifications_helper.logger
+   geonode.notifications_helper.E
+   geonode.notifications_helper.M
+   geonode.notifications_helper.notifications
+   geonode.notifications_helper.has_notifications
+   geonode.notifications_helper.notifications
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.notifications_helper.NotificationsAppConfigBase
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.notifications_helper.call_celery
+   geonode.notifications_helper.send_now_notification
+   geonode.notifications_helper.send_notification
+   geonode.notifications_helper.queue_notification
+   geonode.notifications_helper.get_notification_recipients
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: E
+
+.. py:data:: M
+
+.. py:data:: notifications
+   :value: None
+
+
+.. py:data:: has_notifications
+
+.. py:data:: notifications
+
+.. py:class:: NotificationsAppConfigBase
+
+   Bases: :py:obj:`django.apps.AppConfig`
+
+
+   Base class for AppConfig notifications setup
+
+   You should subclass it and provide list of notifications
+   in NOTIFICATIONS attribute to automatically register to
+   post_migrate signal.
+
+
+   .. py:attribute:: NOTIFICATIONS
+
+
+   .. py:method:: _get_logger()
+
+
+   .. py:method:: _register_notifications(*args, **kwargs)
+
+
+   .. py:method:: ready()
+
+
+.. py:function:: call_celery(func)
+
+.. py:function:: send_now_notification(*args, **kwargs)
+
+   Simple wrapper around notifications.model send().
+   This can be called safely if notifications are not installed.
+
+
+.. py:function:: send_notification(*args, **kwargs)
+
+   Simple wrapper around notifications.model send().
+   This can be called safely if notifications are not installed.
+
+
+.. py:function:: queue_notification(*args, **kwargs)
+
+.. py:function:: get_notification_recipients(notice_type_label, exclude_user=None, resource=None)
+
+   Get notification recipients
+
+

@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.documents.tasks &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../documents.html">geonode.documents</a></li>
+      <li class="breadcrumb-item active">geonode.documents.tasks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.documents.tasks</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2017 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">io</span>
+
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">fitz</span>
+
+<span class="kn">from</span> <span class="nn">celery.utils.log</span> <span class="kn">import</span> <span class="n">get_task_logger</span>
+
+<span class="kn">from</span> <span class="nn">geonode.celery_app</span> <span class="kn">import</span> <span class="n">app</span>
+<span class="kn">from</span> <span class="nn">geonode.storage.manager</span> <span class="kn">import</span> <span class="n">StorageManager</span>
+
+<span class="kn">from</span> <span class="nn">..base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Document</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_task_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DocumentRenderer">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.DocumentRenderer">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentRenderer</span><span class="p">:</span>
+<div class="viewcode-block" id="DocumentRenderer.FILETYPES">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.DocumentRenderer.FILETYPES">[docs]</a>
+    <span class="n">FILETYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;pdf&quot;</span><span class="p">]</span></div>
+
+    <span class="c1"># See https://pillow.readthedocs.io/en/stable/reference/ImageOps.html#PIL.ImageOps.fit</span>
+<div class="viewcode-block" id="DocumentRenderer.CROP_CENTERING">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.DocumentRenderer.CROP_CENTERING">[docs]</a>
+    <span class="n">CROP_CENTERING</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;pdf&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)}</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="DocumentRenderer.supports">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.DocumentRenderer.supports">[docs]</a>
+    <span class="k">def</span> <span class="nf">supports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_filetype</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">FILETYPES</span></div>
+
+
+<div class="viewcode-block" id="DocumentRenderer.render">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.DocumentRenderer.render">[docs]</a>
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">supports</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="n">filetype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_filetype</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">render</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;render_</span><span class="si">{</span><span class="n">filetype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">render</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">content</span></div>
+
+
+<div class="viewcode-block" id="DocumentRenderer.render_pdf">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.DocumentRenderer.render_pdf">[docs]</a>
+    <span class="k">def</span> <span class="nf">render_pdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="n">fitz</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">pix</span> <span class="o">=</span> <span class="n">doc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_pixmap</span><span class="p">(</span><span class="n">matrix</span><span class="o">=</span><span class="n">fitz</span><span class="o">.</span><span class="n">Matrix</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">pix</span><span class="o">.</span><span class="n">pil_tobytes</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cound not generate thumbnail for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="DocumentRenderer.preferred_crop_centering">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.DocumentRenderer.preferred_crop_centering">[docs]</a>
+    <span class="k">def</span> <span class="nf">preferred_crop_centering</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">CROP_CENTERING</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_filetype</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DocumentRenderer._get_filetype">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.DocumentRenderer._get_filetype">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_filetype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filname</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filname</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="doc_renderer">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.doc_renderer">[docs]</a>
+<span class="n">doc_renderer</span> <span class="o">=</span> <span class="n">DocumentRenderer</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;geonode.documents.tasks.create_document_thumbnail&quot;</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;geonode&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">autoretry_for</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
+    <span class="n">retry_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_retries&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="n">retry_backoff</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">retry_backoff_max</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">retry_jitter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="create_document_thumbnail">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.create_document_thumbnail">[docs]</a>
+<span class="k">def</span> <span class="nf">create_document_thumbnail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create thumbnail for a document.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating thumbnail for document #</span><span class="si">{</span><span class="n">object_id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="n">storage_manager</span> <span class="o">=</span> <span class="n">StorageManager</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">document</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">object_id</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">Document</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Document #</span><span class="si">{</span><span class="n">object_id</span><span class="si">}</span><span class="s2"> does not exist.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+    <span class="n">image_file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">thumbnail_content</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">remove_tmp_file</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">centering</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="n">doc_path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+        <span class="n">doc_path</span> <span class="o">=</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">document</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">document</span><span class="o">.</span><span class="n">doc_url</span><span class="p">:</span>
+        <span class="n">doc_path</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">doc_url</span>
+        <span class="n">remove_tmp_file</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">is_image</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">image_file</span> <span class="o">=</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not generate thumbnail from remote document </span><span class="si">{</span><span class="n">document</span><span class="o">.</span><span class="n">doc_url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">image_file</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_file</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+                    <span class="n">image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;PNG&quot;</span><span class="p">)</span>
+                    <span class="n">thumbnail_content</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+                    <span class="n">output</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not generate thumbnail: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">image_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">image_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">remove_tmp_file</span><span class="p">:</span>
+                        <span class="n">storage_manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">doc_renderer</span><span class="o">.</span><span class="n">supports</span><span class="p">(</span><span class="n">doc_path</span><span class="p">):</span>
+        <span class="c1"># in case it&#39;s a remote document we want to retrieve it first</span>
+        <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">doc_url</span><span class="p">:</span>
+            <span class="n">doc_path</span> <span class="o">=</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">remove_tmp_file</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">thumbnail_content</span> <span class="o">=</span> <span class="n">doc_renderer</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span>
+            <span class="n">preferred_centering</span> <span class="o">=</span> <span class="n">doc_renderer</span><span class="o">.</span><span class="n">preferred_crop_centering</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">preferred_centering</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">centering</span> <span class="o">=</span> <span class="n">preferred_centering</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">remove_tmp_file</span><span class="p">:</span>
+                <span class="n">storage_manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">doc_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">thumbnail_content</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thumbnail for document #</span><span class="si">{</span><span class="n">object_id</span><span class="si">}</span><span class="s2"> empty.&quot;</span><span class="p">)</span>
+        <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">document</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">thumbnail_url</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;document-</span><span class="si">{</span><span class="n">document</span><span class="o">.</span><span class="n">uuid</span><span class="si">}</span><span class="s2">-thumb.jpg&quot;</span>
+        <span class="n">document</span><span class="o">.</span><span class="n">save_thumbnail</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">thumbnail_content</span><span class="p">,</span> <span class="n">centering</span><span class="o">=</span><span class="n">centering</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thumbnail for document #</span><span class="si">{</span><span class="n">object_id</span><span class="si">}</span><span class="s2"> created.&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;geonode.documents.tasks.delete_orphaned_document_files&quot;</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;cleanup&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">autoretry_for</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
+    <span class="n">retry_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_retries&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="n">retry_backoff</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">retry_backoff_max</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">retry_jitter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="delete_orphaned_document_files">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.delete_orphaned_document_files">[docs]</a>
+<span class="k">def</span> <span class="nf">delete_orphaned_document_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">geonode.documents.utils</span> <span class="kn">import</span> <span class="n">delete_orphaned_document_files</span>
+
+    <span class="n">delete_orphaned_document_files</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">task</span><span class="p">(</span>
+    <span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;geonode.documents.tasks.delete_orphaned_thumbnails&quot;</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;cleanup&quot;</span><span class="p">,</span>
+    <span class="n">expires</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">time_limit</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">acks_late</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">autoretry_for</span><span class="o">=</span><span class="p">(</span><span class="ne">Exception</span><span class="p">,),</span>
+    <span class="n">retry_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;max_retries&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="n">retry_backoff</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">retry_backoff_max</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">retry_jitter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="delete_orphaned_thumbnails">
+<a class="viewcode-back" href="../../../autoapi/geonode/documents/tasks/index.html#geonode.documents.tasks.delete_orphaned_thumbnails">[docs]</a>
+<span class="k">def</span> <span class="nf">delete_orphaned_thumbnails</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">geonode.base.utils</span> <span class="kn">import</span> <span class="n">delete_orphaned_thumbs</span>
+
+    <span class="n">delete_orphaned_thumbs</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
