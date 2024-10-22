@@ -1,0 +1,566 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.storage.manager &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../storage.html">geonode.storage</a></li>
+      <li class="breadcrumb-item active">geonode.storage.manager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.storage.manager</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid1</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<span class="kn">from</span> <span class="nn">django.utils.deconstruct</span> <span class="kn">import</span> <span class="n">deconstructible</span>
+<span class="kn">from</span> <span class="nn">django.utils.module_loading</span> <span class="kn">import</span> <span class="n">import_string</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">SuspiciousFileOperation</span>
+
+<span class="kn">from</span> <span class="nn">geonode.storage.data_retriever</span> <span class="kn">import</span> <span class="n">DataItemRetriever</span><span class="p">,</span> <span class="n">DataRetriever</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">settings</span> <span class="k">as</span> <span class="n">sm_settings</span>
+
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">django.core.files.storage</span> <span class="kn">import</span> <span class="n">FileSystemStorage</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="StorageManagerInterface">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface">[docs]</a>
+<span class="k">class</span> <span class="nc">StorageManagerInterface</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.delete">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.delete">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.exists">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.exists">[docs]</a>
+    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.listdir">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.listdir">[docs]</a>
+    <span class="k">def</span> <span class="nf">listdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="StorageManagerInterface.rmtree">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.rmtree">[docs]</a>
+    <span class="k">def</span> <span class="nf">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">_dirs</span><span class="p">,</span> <span class="n">_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_entry</span> <span class="ow">in</span> <span class="n">_files</span><span class="p">:</span>
+                <span class="n">_entry_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">_entry</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">_entry_path</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">_entry_path</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">ignore_errors</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span>
+            <span class="k">for</span> <span class="n">_entry</span> <span class="ow">in</span> <span class="n">_dirs</span><span class="p">:</span>
+                <span class="n">_entry_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">_entry</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">_entry_path</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">_entry_path</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">ignore_errors</span><span class="p">:</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ignore_errors</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.open">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.open">[docs]</a>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.path">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.path">[docs]</a>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.save">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.save">[docs]</a>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.url">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.url">[docs]</a>
+    <span class="k">def</span> <span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.size">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.size">[docs]</a>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageManagerInterface.generate_filename">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.generate_filename">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="StorageManagerInterface.replace">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.replace">[docs]</a>
+    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">files</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">BinaryIO</span><span class="p">]):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="StorageManagerInterface.copy">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManagerInterface.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<span class="nd">@deconstructible</span>
+<div class="viewcode-block" id="StorageManager">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager">[docs]</a>
+<span class="k">class</span> <span class="nc">StorageManager</span><span class="p">(</span><span class="n">StorageManagerInterface</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Manage the files with different filestorages configured by default is the Filesystem one.</span>
+<span class="sd">    If the file is not in the FileSystem, we try to transfer it on the local filesystem and then</span>
+<span class="sd">    treat as a file_system file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_files</span><span class="p">:</span> <span class="n">Mapping</span> <span class="o">=</span> <span class="p">{}):</span>
+<div class="viewcode-block" id="StorageManager._concrete_storage_manager">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager._concrete_storage_manager">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_concrete_manager</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="StorageManager.data_retriever">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.data_retriever">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_retriever</span> <span class="o">=</span> <span class="n">DataRetriever</span><span class="p">(</span><span class="n">remote_files</span><span class="p">,</span> <span class="n">tranfer_at_creation</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager._get_concrete_manager">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager._get_concrete_manager">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_concrete_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">import_string</span><span class="p">(</span><span class="n">sm_settings</span><span class="o">.</span><span class="n">STORAGE_MANAGER_CONCRETE_CLASS</span><span class="p">)()</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.delete">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.delete">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.exists">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.exists">[docs]</a>
+    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.listdir">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.listdir">[docs]</a>
+    <span class="k">def</span> <span class="nf">listdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.rmtree">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.rmtree">[docs]</a>
+    <span class="k">def</span> <span class="nf">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="n">ignore_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.open">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.open">[docs]</a>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            If is not possible to retrieve the path with the normal manager</span>
+<span class="sd">            we try to transfer it and open it</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">files_path</span> <span class="o">=</span> <span class="n">DataItemRetriever</span><span class="p">(</span><span class="n">_file</span><span class="o">=</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">transfer_remote_file</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">files_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.path">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.path">[docs]</a>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.save">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.save">[docs]</a>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.size">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.size">[docs]</a>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.url">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.url">[docs]</a>
+    <span class="k">def</span> <span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.replace">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.replace">[docs]</a>
+    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">files</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">BinaryIO</span><span class="p">]):</span>
+        <span class="n">updated_files</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">updated_files</span><span class="p">[</span><span class="s2">&quot;files&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">replace_files_list</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">files</span><span class="p">,</span> <span class="n">files</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">files</span><span class="p">):</span>
+            <span class="n">updated_files</span><span class="p">[</span><span class="s2">&quot;files&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">replace_single_file</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">files</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">updated_files</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.copy">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="n">updated_files</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">files</span><span class="p">):</span>
+            <span class="n">updated_files</span><span class="p">[</span><span class="s2">&quot;files&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy_files_list</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">files</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">updated_files</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.copy_files_list">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.copy_files_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy_files_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+        <span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">mkdtemp</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">random_suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid1</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">new_path</span> <span class="o">=</span> <span class="n">mkdtemp</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">FILE_UPLOAD_DIRECTORY_PERMISSIONS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># value is always set by default as None</span>
+            <span class="c1"># https://docs.djangoproject.com/en/3.2/ref/settings/#file-upload-directory-permissions</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">new_path</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">FILE_UPLOAD_DIRECTORY_PERMISSIONS</span><span class="p">)</span>
+        <span class="n">_new_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;rb+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">open_file</span><span class="p">:</span>
+                <span class="n">old_file_name</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">open_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="c1"># path = os.path.join(old_path, random_suffix)</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.*_\w</span><span class="si">{7}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">old_file_name</span><span class="p">):</span>
+                    <span class="n">suffixed_name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;_\w</span><span class="si">{7}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">random_suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">old_file_name</span><span class="p">)</span>
+                    <span class="n">new_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">suffixed_name</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">new_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">old_file_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">random_suffix</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">_new_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy_single_file</span><span class="p">(</span><span class="n">open_file</span><span class="p">,</span> <span class="n">new_file</span><span class="p">)</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_new_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">_new_path</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">_new_path</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">FILE_UPLOAD_PERMISSIONS</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.copy_single_file">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.copy_single_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy_single_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_file</span><span class="p">:</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">new_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">new_file</span><span class="p">,</span> <span class="n">old_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.replace_files_list">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.replace_files_list">[docs]</a>
+    <span class="k">def</span> <span class="nf">replace_files_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">new_files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">random_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid1</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_files</span><span class="p">)</span> <span class="ow">and</span> <span class="n">old_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">new_files</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s2">&quot;rb+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">open_file</span><span class="p">:</span>
+                    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">replace_single_file</span><span class="p">(</span><span class="n">old_files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">open_file</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">random_prefix</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># if it comes from the DataRetriver, the list is made with Path objects and not strings</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">new_files</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.replace_single_file">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.replace_single_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">replace_single_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new_file</span><span class="p">:</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">old_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">old_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()))</span>
+        <span class="n">old_file_name</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">old_file</span><span class="p">))</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">new_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">old_path</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span> <span class="k">if</span> <span class="n">prefix</span> <span class="k">else</span> <span class="n">old_path</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">old_file_name</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">new_file</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SuspiciousFileOperation</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            If the previous file was in another localtion (due a different storage)</span>
+<span class="sd">            We will save the file to the new location</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">MEDIA_ROOT</span><span class="si">}{</span><span class="n">path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">old_file_name</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">new_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.generate_filename">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.generate_filename">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_concrete_storage_manager</span><span class="o">.</span><span class="n">generate_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.clone_remote_files">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.clone_remote_files">[docs]</a>
+    <span class="k">def</span> <span class="nf">clone_remote_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Using the data retriever object clone the remote path into a local temporary storage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_retriever</span><span class="o">.</span><span class="n">get_paths</span><span class="p">(</span><span class="n">allow_transfer</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.get_retrieved_paths">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.get_retrieved_paths">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_retrieved_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the path of the local objects in the temporary folder.</span>
+<span class="sd">        We convert them as string instead of PosixPath</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_retriever</span><span class="o">.</span><span class="n">get_paths</span><span class="p">(</span><span class="n">allow_transfer</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">_ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">_file</span><span class="p">)</span> <span class="k">for</span> <span class="n">_ext</span><span class="p">,</span> <span class="n">_file</span> <span class="ow">in</span> <span class="n">_files</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
+
+
+<div class="viewcode-block" id="StorageManager.delete_retrieved_paths">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.StorageManager.delete_retrieved_paths">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete_retrieved_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete cloned object from the temporary folder.</span>
+<span class="sd">        By default if the folder is under the MEDIA_ROOT the file is not deleted.</span>
+<span class="sd">        In case should be deleted, the force=True is required</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_retriever</span><span class="o">.</span><span class="n">delete_files</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DefaultStorageManager">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager">[docs]</a>
+<span class="k">class</span> <span class="nc">DefaultStorageManager</span><span class="p">(</span><span class="n">StorageManagerInterface</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DefaultStorageManager._fsm">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager._fsm">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span> <span class="o">=</span> <span class="n">FileSystemStorage</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager._get_concrete_manager">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager._get_concrete_manager">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_concrete_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DefaultStorageManager</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.delete">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.delete">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.exists">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.exists">[docs]</a>
+    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.listdir">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.listdir">[docs]</a>
+    <span class="k">def</span> <span class="nf">listdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.rmtree">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.rmtree">[docs]</a>
+    <span class="k">def</span> <span class="nf">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="n">ignore_errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.open">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.open">[docs]</a>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SuspiciousFileOperation</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.path">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.path">[docs]</a>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.save">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.save">[docs]</a>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.size">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.size">[docs]</a>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.url">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.url">[docs]</a>
+    <span class="k">def</span> <span class="nf">url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">url</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DefaultStorageManager.generate_filename">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.DefaultStorageManager.generate_filename">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fsm</span><span class="o">.</span><span class="n">generate_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="storage_manager">
+<a class="viewcode-back" href="../../../autoapi/geonode/storage/manager/index.html#geonode.storage.manager.storage_manager">[docs]</a>
+<span class="n">storage_manager</span> <span class="o">=</span> <span class="n">StorageManager</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

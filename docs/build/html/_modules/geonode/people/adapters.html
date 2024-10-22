@@ -1,0 +1,518 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.people.adapters &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../people.html">geonode.people</a></li>
+      <li class="breadcrumb-item active">geonode.people.adapters</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.people.adapters</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2017 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;Custom account adapters for django-allauth.</span>
+
+<span class="sd">These are used in order to extend the default authorization provided by</span>
+<span class="sd">django-allauth.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">jwt</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">from</span> <span class="nn">allauth.account.adapter</span> <span class="kn">import</span> <span class="n">DefaultAccountAdapter</span>
+<span class="kn">from</span> <span class="nn">allauth.account.utils</span> <span class="kn">import</span> <span class="n">user_field</span>
+<span class="kn">from</span> <span class="nn">allauth.account.utils</span> <span class="kn">import</span> <span class="n">user_email</span>
+<span class="kn">from</span> <span class="nn">allauth.account.utils</span> <span class="kn">import</span> <span class="n">user_username</span>
+<span class="kn">from</span> <span class="nn">allauth.socialaccount.adapter</span> <span class="kn">import</span> <span class="n">DefaultSocialAccountAdapter</span>
+<span class="kn">from</span> <span class="nn">allauth.socialaccount.providers.oauth2.views</span> <span class="kn">import</span> <span class="n">OAuth2Adapter</span><span class="p">,</span> <span class="n">OAuth2Error</span>
+
+<span class="kn">from</span> <span class="nn">invitations.adapters</span> <span class="kn">import</span> <span class="n">BaseInvitationsAdapter</span>
+
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">django.utils.module_loading</span> <span class="kn">import</span> <span class="n">import_string</span>
+
+<span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_data_extractor">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.get_data_extractor">[docs]</a>
+<span class="k">def</span> <span class="nf">get_data_extractor</span><span class="p">(</span><span class="n">provider_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the relevant profile extractor instance for the provider</span>
+
+<span class="sd">    Retrieve the data extractor instance to use for getting profile</span>
+<span class="sd">    information from social account providers.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">extractors</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROFILE_EXTRACTORS&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">extractor_path</span> <span class="o">=</span> <span class="n">extractors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">provider_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">extractor_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">extractor_class</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">extractor_path</span><span class="p">)</span>
+        <span class="n">extractor</span> <span class="o">=</span> <span class="n">extractor_class</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">extractor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">extractor</span></div>
+
+
+
+<div class="viewcode-block" id="get_group_role_mapper">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.get_group_role_mapper">[docs]</a>
+<span class="k">def</span> <span class="nf">get_group_role_mapper</span><span class="p">(</span><span class="n">provider_id</span><span class="p">):</span>
+    <span class="n">group_role_mapper_class</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;GROUP_ROLE_MAPPER_CLASS&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;geonode.people.profileextractors.OpenIDGroupRoleMapper&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">group_role_mapper_class</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="update_profile">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.update_profile">[docs]</a>
+<span class="k">def</span> <span class="nf">update_profile</span><span class="p">(</span><span class="n">sociallogin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Update a people.models.Profile object with info from the sociallogin&quot;&quot;&quot;</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">sociallogin</span><span class="o">.</span><span class="n">user</span>
+    <span class="n">extractor</span> <span class="o">=</span> <span class="n">get_data_extractor</span><span class="p">(</span><span class="n">sociallogin</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">provider</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">extractor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">profile_fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;username&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;area&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;city&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;country&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;delivery&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;fax&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;first_name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;last_name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;organization&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;position&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;profile&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;voice&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;zipcode&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">profile_fields</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">extractor_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">extractor</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;extract_</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">extractor_method</span><span class="p">(</span><span class="n">sociallogin</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">extra_data</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">user_field</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+                    <span class="n">user_field</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+                <span class="k">pass</span>  <span class="c1"># extractor doesn&#39;t define a method for extracting field</span>
+    <span class="k">return</span> <span class="n">user</span></div>
+
+
+
+<div class="viewcode-block" id="LocalAccountAdapter">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter">[docs]</a>
+<span class="k">class</span> <span class="nc">LocalAccountAdapter</span><span class="p">(</span><span class="n">DefaultAccountAdapter</span><span class="p">,</span> <span class="n">BaseInvitationsAdapter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Customizations for local accounts</span>
+
+<span class="sd">    Check `django-allauth&#39;s documentation`_ for more details on this class.</span>
+
+<span class="sd">    .. _django-allauth&#39;s documentation:</span>
+<span class="sd">       http://django-allauth.readthedocs.io/en/latest/advanced.html#creating-and-populating-user-instances</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LocalAccountAdapter.is_open_for_signup">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter.is_open_for_signup">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_open_for_signup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_site_allows_signup</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LocalAccountAdapter.get_login_redirect_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter.get_login_redirect_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_login_redirect_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">profile_path</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;profile_detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">profile_path</span></div>
+
+
+<div class="viewcode-block" id="LocalAccountAdapter.populate_username">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter.populate_username">[docs]</a>
+    <span class="k">def</span> <span class="nf">populate_username</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="c1"># validate the already generated username with django validation</span>
+        <span class="c1"># if it passes use that, otherwise use django-allauth&#39;s way of</span>
+        <span class="c1"># generating a unique username</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">full_clean</span><span class="p">()</span>
+            <span class="n">safe_username</span> <span class="o">=</span> <span class="n">user_username</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
+            <span class="n">safe_username</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_unique_username</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">user_field</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;first_name&quot;</span><span class="p">),</span> <span class="n">user_field</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">),</span> <span class="n">user_email</span><span class="p">(</span><span class="n">user</span><span class="p">),</span> <span class="n">user_username</span><span class="p">(</span><span class="n">user</span><span class="p">)]</span>
+            <span class="p">)</span>
+        <span class="n">user_username</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">safe_username</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LocalAccountAdapter.send_invitation_email">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter.send_invitation_email">[docs]</a>
+    <span class="k">def</span> <span class="nf">send_invitation_email</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">email_template</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_mail</span><span class="p">(</span><span class="n">email_template</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LocalAccountAdapter.send_mail">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter.send_mail">[docs]</a>
+    <span class="k">def</span> <span class="nf">send_mail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_prefix</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">enh_context</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">enhanced_invitation_context</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_mail</span><span class="p">(</span><span class="n">template_prefix</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">enh_context</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">send</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;request&quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;An error occurred while trying to send the email: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LocalAccountAdapter.enhanced_invitation_context">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter.enhanced_invitation_context">[docs]</a>
+    <span class="k">def</span> <span class="nf">enhanced_invitation_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inviter&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inviter&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">context</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">)</span>
+        <span class="n">enhanced_context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">enhanced_context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;MEDIA_URL&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">MEDIA_URL</span><span class="p">,</span> <span class="s2">&quot;SITEURL&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="p">,</span> <span class="s2">&quot;STATIC_URL&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">STATIC_URL</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+            <span class="n">full_name</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">user</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">last_name</span><span class="p">))</span> <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">first_name</span> <span class="ow">or</span> <span class="n">user</span><span class="o">.</span><span class="n">last_name</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">user_groups</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">slug__in</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">groupmember_set</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;group__slug&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">enhanced_context</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">enhanced_context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">,</span>
+                    <span class="s2">&quot;inviter_name&quot;</span><span class="p">:</span> <span class="n">full_name</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">user</span><span class="p">),</span>
+                    <span class="s2">&quot;inviter_first_name&quot;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">first_name</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">user</span><span class="p">),</span>
+                    <span class="s2">&quot;inviter_id&quot;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                    <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="n">user_groups</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">enhanced_context</span></div>
+
+
+<div class="viewcode-block" id="LocalAccountAdapter.save_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter.save_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="n">commit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">ACCOUNT_APPROVAL_REQUIRED</span><span class="p">:</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">user</span></div>
+
+
+<div class="viewcode-block" id="LocalAccountAdapter.respond_user_inactive">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.LocalAccountAdapter.respond_user_inactive">[docs]</a>
+    <span class="k">def</span> <span class="nf">respond_user_inactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_respond_inactive_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SocialAccountAdapter">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.SocialAccountAdapter">[docs]</a>
+<span class="k">class</span> <span class="nc">SocialAccountAdapter</span><span class="p">(</span><span class="n">DefaultSocialAccountAdapter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Customizations for social accounts</span>
+
+<span class="sd">    Check `django-allauth&#39;s documentation`_ for more details on this class.</span>
+
+<span class="sd">    .. _django-allauth&#39;s documentation:</span>
+<span class="sd">         http //django-allauth.readthedocs.io/en/latest/advanced.html#creating-and-populating-user-instances</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SocialAccountAdapter.is_open_for_signup">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.SocialAccountAdapter.is_open_for_signup">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_open_for_signup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">sociallogin</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_site_allows_signup</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SocialAccountAdapter.populate_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.SocialAccountAdapter.populate_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">populate_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">sociallogin</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method is called when a new sociallogin is created&quot;&quot;&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">populate_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">sociallogin</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">update_profile</span><span class="p">(</span><span class="n">sociallogin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">user</span></div>
+
+
+<div class="viewcode-block" id="SocialAccountAdapter.save_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.SocialAccountAdapter.save_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">sociallogin</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">sociallogin</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+        <span class="n">extractor</span> <span class="o">=</span> <span class="n">get_data_extractor</span><span class="p">(</span><span class="n">sociallogin</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">provider</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keywords</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract_keywords</span><span class="p">(</span><span class="n">sociallogin</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">extra_data</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_kw</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+                <span class="n">user</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">_kw</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+            <span class="k">pass</span>  <span class="c1"># extractor doesn&#39;t define a method for extracting field</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">ACCOUNT_APPROVAL_REQUIRED</span><span class="p">:</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">is_active</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">user</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">user</span></div>
+
+
+<div class="viewcode-block" id="SocialAccountAdapter.respond_user_inactive">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.SocialAccountAdapter.respond_user_inactive">[docs]</a>
+    <span class="k">def</span> <span class="nf">respond_user_inactive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_respond_inactive_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="_site_allows_signup">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters._site_allows_signup">[docs]</a>
+<span class="k">def</span> <span class="nf">_site_allows_signup</span><span class="p">(</span><span class="n">django_request</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;ACCOUNT_OPEN_SIGNUP&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">django_request</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;account_verified_email&quot;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="_respond_inactive_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters._respond_inactive_user">[docs]</a>
+<span class="k">def</span> <span class="nf">_respond_inactive_user</span><span class="p">(</span><span class="n">user</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;moderator_contacted&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;inactive_user&quot;</span><span class="p">:</span> <span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">}))</span></div>
+
+
+
+<div class="viewcode-block" id="PROVIDER_ID">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.PROVIDER_ID">[docs]</a>
+<span class="n">PROVIDER_ID</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_OIDC_PROVIDER&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode_openid_connect&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ACCESS_TOKEN_URL">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.ACCESS_TOKEN_URL">[docs]</a>
+<span class="n">ACCESS_TOKEN_URL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ACCESS_TOKEN_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AUTHORIZE_URL">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.AUTHORIZE_URL">[docs]</a>
+<span class="n">AUTHORIZE_URL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AUTHORIZE_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PROFILE_URL">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.PROFILE_URL">[docs]</a>
+<span class="n">PROFILE_URL</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;PROFILE_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ID_TOKEN_ISSUER">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.ID_TOKEN_ISSUER">[docs]</a>
+<span class="n">ID_TOKEN_ISSUER</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ID_TOKEN_ISSUER&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectAdapter">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.GenericOpenIDConnectAdapter">[docs]</a>
+<span class="k">class</span> <span class="nc">GenericOpenIDConnectAdapter</span><span class="p">(</span><span class="n">OAuth2Adapter</span><span class="p">,</span> <span class="n">SocialAccountAdapter</span><span class="p">):</span>
+<div class="viewcode-block" id="GenericOpenIDConnectAdapter.provider_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.GenericOpenIDConnectAdapter.provider_id">[docs]</a>
+    <span class="n">provider_id</span> <span class="o">=</span> <span class="n">PROVIDER_ID</span></div>
+
+<div class="viewcode-block" id="GenericOpenIDConnectAdapter.access_token_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.GenericOpenIDConnectAdapter.access_token_url">[docs]</a>
+    <span class="n">access_token_url</span> <span class="o">=</span> <span class="n">ACCESS_TOKEN_URL</span></div>
+
+<div class="viewcode-block" id="GenericOpenIDConnectAdapter.authorize_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.GenericOpenIDConnectAdapter.authorize_url">[docs]</a>
+    <span class="n">authorize_url</span> <span class="o">=</span> <span class="n">AUTHORIZE_URL</span></div>
+
+<div class="viewcode-block" id="GenericOpenIDConnectAdapter.profile_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.GenericOpenIDConnectAdapter.profile_url">[docs]</a>
+    <span class="n">profile_url</span> <span class="o">=</span> <span class="n">PROFILE_URL</span></div>
+
+<div class="viewcode-block" id="GenericOpenIDConnectAdapter.id_token_issuer">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.GenericOpenIDConnectAdapter.id_token_issuer">[docs]</a>
+    <span class="n">id_token_issuer</span> <span class="o">=</span> <span class="n">ID_TOKEN_ISSUER</span></div>
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectAdapter.complete_login">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.GenericOpenIDConnectAdapter.complete_login">[docs]</a>
+    <span class="k">def</span> <span class="nf">complete_login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">extra_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">profile_url</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="n">token</span><span class="o">.</span><span class="n">token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">profile_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+                <span class="n">profile_data</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+                <span class="n">extra_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">profile_data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">OAuth2Error</span><span class="p">(</span><span class="s2">&quot;Invalid profile_url, falling back to id_token checks...&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">extra_data</span> <span class="ow">and</span> <span class="s2">&quot;id_token&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">extra_data</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span>
+                    <span class="n">response</span><span class="p">[</span><span class="s2">&quot;id_token&quot;</span><span class="p">],</span>
+                    <span class="c1"># Since the token was received by direct communication</span>
+                    <span class="c1"># protected by TLS between this library and Google, we</span>
+                    <span class="c1"># are allowed to skip checking the token signature</span>
+                    <span class="c1"># according to the OpenID Connect Core 1.0</span>
+                    <span class="c1"># specification.</span>
+                    <span class="c1"># https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation</span>
+                    <span class="n">options</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;verify_signature&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s2">&quot;verify_iss&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s2">&quot;verify_aud&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s2">&quot;verify_exp&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="p">},</span>
+                    <span class="n">issuer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id_token_issuer</span><span class="p">,</span>
+                    <span class="n">audience</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">jwt</span><span class="o">.</span><span class="n">PyJWTError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">OAuth2Error</span><span class="p">(</span><span class="s2">&quot;Invalid id_token&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+        <span class="n">login</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_provider</span><span class="p">()</span><span class="o">.</span><span class="n">sociallogin_from_response</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">extra_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">login</span></div>
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectAdapter.save_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/adapters/index.html#geonode.people.adapters.GenericOpenIDConnectAdapter.save_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">sociallogin</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SocialAccountAdapter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">save_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">sociallogin</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+        <span class="n">extractor</span> <span class="o">=</span> <span class="n">get_data_extractor</span><span class="p">(</span><span class="n">sociallogin</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">provider</span><span class="p">)</span>
+        <span class="n">group_role_mapper</span> <span class="o">=</span> <span class="n">get_group_role_mapper</span><span class="p">(</span><span class="n">sociallogin</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">provider</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">groups</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract_groups</span><span class="p">(</span><span class="n">sociallogin</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">extra_data</span><span class="p">)</span> <span class="ow">or</span> <span class="n">extractor</span><span class="o">.</span><span class="n">extract_roles</span><span class="p">(</span>
+                <span class="n">sociallogin</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">extra_data</span>
+            <span class="p">)</span>
+
+            <span class="c1"># check here if user is member already of other groups and remove it form the ones that are not declared here...</span>
+            <span class="k">for</span> <span class="n">groupprofile</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">group_list_all</span><span class="p">():</span>
+                <span class="n">groupprofile</span><span class="o">.</span><span class="n">leave</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">group_role_name</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+                <span class="n">group_name</span><span class="p">,</span> <span class="n">role_name</span> <span class="o">=</span> <span class="n">group_role_mapper</span><span class="o">.</span><span class="n">parse_group_and_role</span><span class="p">(</span><span class="n">group_role_name</span><span class="p">)</span>
+                <span class="n">groupprofile</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">group_name</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">groupprofile</span><span class="p">:</span>
+                    <span class="n">groupprofile</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">group_role_mapper</span><span class="o">.</span><span class="n">is_manager</span><span class="p">(</span><span class="n">role_name</span><span class="p">):</span>
+                        <span class="n">groupprofile</span><span class="o">.</span><span class="n">promote</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">NotImplementedError</span><span class="p">):</span>
+            <span class="k">pass</span>  <span class="c1"># extractor doesn&#39;t define a method for extracting field</span>
+        <span class="k">return</span> <span class="n">user</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

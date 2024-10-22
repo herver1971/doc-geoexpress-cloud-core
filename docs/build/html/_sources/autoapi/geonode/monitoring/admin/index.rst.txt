@@ -1,0 +1,242 @@
+geonode.monitoring.admin
+========================
+
+.. py:module:: geonode.monitoring.admin
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.monitoring.admin.HostAdmin
+   geonode.monitoring.admin.EventTypeAdmin
+   geonode.monitoring.admin.ServiceTypeAdmin
+   geonode.monitoring.admin.ServiceAdmin
+   geonode.monitoring.admin.ServiceTypeMetricAdmin
+   geonode.monitoring.admin.MetricAdmin
+   geonode.monitoring.admin.RequestEvent
+   geonode.monitoring.admin.MetricLabelAdmin
+   geonode.monitoring.admin.MetricValueAdmin
+   geonode.monitoring.admin.MonitoredResourceAdmin
+   geonode.monitoring.admin.ExceptionEventAdmin
+   geonode.monitoring.admin.NotificationCheckAdmin
+   geonode.monitoring.admin.MetricNotificationCheckAdmin
+   geonode.monitoring.admin.NotificationCheckDefinitionAdmin
+   geonode.monitoring.admin.NotificationReceiverAdmin
+
+
+Module Contents
+---------------
+
+.. py:class:: HostAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('name', 'active')
+
+
+
+.. py:class:: EventTypeAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('name',)
+
+
+
+.. py:class:: ServiceTypeAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('name',)
+
+
+
+.. py:class:: ServiceAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('name', 'active', 'host_name', 'service_type', 'last_check', 'url')
+
+
+
+   .. py:method:: host_name(obj)
+
+
+   .. py:method:: service_type(obj)
+
+
+   .. py:attribute:: list_select_related
+      :value: True
+
+
+
+.. py:class:: ServiceTypeMetricAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('service_type', 'metric')
+
+
+
+   .. py:attribute:: list_select_related
+      :value: True
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('service_type', 'metric')
+
+
+
+.. py:class:: MetricAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('name', 'type')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('type',)
+
+
+
+.. py:class:: RequestEvent
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('service', 'created', 'received', 'request_method', 'response_status', 'event_type',...
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('host', 'service', 'request_method', 'response_status', 'event_type')
+
+
+
+.. py:class:: MetricLabelAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('name',)
+
+
+
+.. py:class:: MetricValueAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('service_metric', 'service', 'event_type', 'resource', 'label', 'value', 'value_num',...
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('service_metric', 'service', 'event_type')
+
+
+
+.. py:class:: MonitoredResourceAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'name', 'type')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('type',)
+
+
+
+.. py:class:: ExceptionEventAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('created', 'service', 'error_type')
+
+
+
+.. py:class:: NotificationCheckAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('name', 'active')
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('active',)
+
+
+
+.. py:class:: MetricNotificationCheckAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('id', 'notification_check', 'metric', 'min_value', 'max_value', 'max_timeout')
+
+
+
+   .. py:attribute:: raw_id_fields
+      :value: ('notification_check', 'resource', 'label')
+
+
+
+.. py:class:: NotificationCheckDefinitionAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('notification_check', 'metric', 'field_option', 'min_value', 'max_value', 'steps')
+
+
+
+   .. py:attribute:: raw_id_fields
+      :value: ('notification_check', 'metric')
+
+
+
+.. py:class:: NotificationReceiverAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('notification_check', 'user', 'email')
+
+
+
+   .. py:attribute:: raw_id_fields
+      :value: ('notification_check', 'user')
+
+
+
