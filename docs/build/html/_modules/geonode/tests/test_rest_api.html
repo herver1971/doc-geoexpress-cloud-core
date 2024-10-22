@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.tests.test_rest_api &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+      <li class="breadcrumb-item active">geonode.tests.test_rest_api</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.tests.test_rest_api</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">patch</span><span class="p">,</span> <span class="n">MagicMock</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">AnonymousUser</span><span class="p">,</span> <span class="n">Group</span>
+
+<span class="kn">from</span> <span class="nn">geonode.api.authorization</span> <span class="kn">import</span> <span class="n">GroupAuthorization</span><span class="p">,</span> <span class="n">GroupProfileAuthorization</span>
+<span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+<span class="kn">from</span> <span class="nn">geonode.people.models</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">geonode.tests.base</span> <span class="kn">import</span> <span class="n">GeoNodeBaseTestSupport</span>
+
+
+<div class="viewcode-block" id="TestGroupResAuthorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupResAuthorization">[docs]</a>
+<span class="k">class</span> <span class="nc">TestGroupResAuthorization</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+    <span class="c1"># Group fixture is loaded in base class</span>
+
+    <span class="nd">@patch</span><span class="p">(</span>
+        <span class="s2">&quot;geonode.api.authorization.ApiLockdownAuthorization.read_list&quot;</span><span class="p">,</span>
+        <span class="n">return_value</span><span class="o">=</span><span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+<div class="viewcode-block" id="TestGroupResAuthorization.test_super_admin_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupResAuthorization.test_super_admin_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_super_admin_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">super_mock</span><span class="p">):</span>
+        <span class="n">mock_bundle</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">request_mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">r_attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">Profile</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">is_staff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_superuser</span><span class="o">=</span><span class="kc">True</span><span class="p">)}</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request_mock</span><span class="p">}</span>
+        <span class="n">request_mock</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">r_attr</span><span class="p">)</span>
+        <span class="n">mock_bundle</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupAuthorization</span><span class="p">()</span><span class="o">.</span><span class="n">read_list</span><span class="p">([],</span> <span class="n">mock_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="n">groups</span><span class="o">.</span><span class="n">count</span><span class="p">())</span></div>
+
+
+    <span class="nd">@patch</span><span class="p">(</span>
+        <span class="s2">&quot;geonode.api.authorization.ApiLockdownAuthorization.read_list&quot;</span><span class="p">,</span>
+        <span class="n">return_value</span><span class="o">=</span><span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.people.models.Profile.group_list_all&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<div class="viewcode-block" id="TestGroupResAuthorization.test_regular_user_hide_private">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupResAuthorization.test_regular_user_hide_private">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_regular_user_hide_private</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">super_mock</span><span class="p">,</span> <span class="n">mocked_profile</span><span class="p">):</span>
+        <span class="n">mock_bundle</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">request_mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">r_attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">Profile</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)}</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request_mock</span><span class="p">}</span>
+        <span class="n">request_mock</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">r_attr</span><span class="p">)</span>
+        <span class="n">mock_bundle</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupAuthorization</span><span class="p">()</span><span class="o">.</span><span class="n">read_list</span><span class="p">([</span><span class="s2">&quot;not_empty_but_fake&quot;</span><span class="p">],</span> <span class="n">mock_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">.</span><span class="n">count</span><span class="p">())</span></div>
+
+
+    <span class="nd">@patch</span><span class="p">(</span>
+        <span class="s2">&quot;geonode.api.authorization.ApiLockdownAuthorization.read_list&quot;</span><span class="p">,</span>
+        <span class="n">return_value</span><span class="o">=</span><span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.people.models.Profile.group_list_all&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<div class="viewcode-block" id="TestGroupResAuthorization.test_regular_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupResAuthorization.test_regular_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_regular_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">super_mock</span><span class="p">,</span> <span class="n">mocked_profile</span><span class="p">):</span>
+        <span class="n">mock_bundle</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">request_mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">r_attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">Profile</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)}</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request_mock</span><span class="p">}</span>
+        <span class="n">request_mock</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">r_attr</span><span class="p">)</span>
+        <span class="n">mock_bundle</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupAuthorization</span><span class="p">()</span><span class="o">.</span><span class="n">read_list</span><span class="p">([</span><span class="s2">&quot;not_empty_but_fake&quot;</span><span class="p">],</span> <span class="n">mock_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">.</span><span class="n">count</span><span class="p">())</span></div>
+
+
+    <span class="nd">@patch</span><span class="p">(</span>
+        <span class="s2">&quot;geonode.api.authorization.ApiLockdownAuthorization.read_list&quot;</span><span class="p">,</span>
+        <span class="n">return_value</span><span class="o">=</span><span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.people.models.Profile.group_list_all&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<div class="viewcode-block" id="TestGroupResAuthorization.test_anonymous_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupResAuthorization.test_anonymous_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_anonymous_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">super_mock</span><span class="p">,</span> <span class="n">mocked_profile</span><span class="p">):</span>
+        <span class="n">mock_bundle</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">request_mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">r_attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">AnonymousUser</span><span class="p">()}</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request_mock</span><span class="p">}</span>
+        <span class="n">request_mock</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">r_attr</span><span class="p">)</span>
+        <span class="n">mock_bundle</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupAuthorization</span><span class="p">()</span><span class="o">.</span><span class="n">read_list</span><span class="p">([</span><span class="s2">&quot;not_empty_but_fake&quot;</span><span class="p">],</span> <span class="n">mock_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">.</span><span class="n">count</span><span class="p">())</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TestGroupProfileResAuthorization">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupProfileResAuthorization">[docs]</a>
+<span class="k">class</span> <span class="nc">TestGroupProfileResAuthorization</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+    <span class="c1"># Group fixture is loaded in base class</span>
+
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.api.authorization.ApiLockdownAuthorization.read_list&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+<div class="viewcode-block" id="TestGroupProfileResAuthorization.test_super_admin_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupProfileResAuthorization.test_super_admin_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_super_admin_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">super_mock</span><span class="p">):</span>
+        <span class="n">mock_bundle</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">request_mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">r_attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">Profile</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">is_staff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_superuser</span><span class="o">=</span><span class="kc">True</span><span class="p">)}</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request_mock</span><span class="p">}</span>
+        <span class="n">request_mock</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">r_attr</span><span class="p">)</span>
+        <span class="n">mock_bundle</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupProfileAuthorization</span><span class="p">()</span><span class="o">.</span><span class="n">read_list</span><span class="p">([],</span> <span class="n">mock_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="n">groups</span><span class="o">.</span><span class="n">count</span><span class="p">())</span></div>
+
+
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.api.authorization.ApiLockdownAuthorization.read_list&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.people.models.Profile.group_list_all&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<div class="viewcode-block" id="TestGroupProfileResAuthorization.test_regular_user_hide_private">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupProfileResAuthorization.test_regular_user_hide_private">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_regular_user_hide_private</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">super_mock</span><span class="p">,</span> <span class="n">mocked_profile</span><span class="p">):</span>
+        <span class="n">mock_bundle</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">request_mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">r_attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">Profile</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)}</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request_mock</span><span class="p">}</span>
+        <span class="n">request_mock</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">r_attr</span><span class="p">)</span>
+        <span class="n">mock_bundle</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupProfileAuthorization</span><span class="p">()</span><span class="o">.</span><span class="n">read_list</span><span class="p">([</span><span class="s2">&quot;not_empty_but_fake&quot;</span><span class="p">],</span> <span class="n">mock_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">.</span><span class="n">count</span><span class="p">())</span></div>
+
+
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.api.authorization.ApiLockdownAuthorization.read_list&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.people.models.Profile.group_list_all&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<div class="viewcode-block" id="TestGroupProfileResAuthorization.test_regular_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupProfileResAuthorization.test_regular_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_regular_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">super_mock</span><span class="p">,</span> <span class="n">mocked_profile</span><span class="p">):</span>
+        <span class="n">mock_bundle</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">request_mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">r_attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">Profile</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)}</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request_mock</span><span class="p">}</span>
+        <span class="n">request_mock</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">r_attr</span><span class="p">)</span>
+        <span class="n">mock_bundle</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupProfileAuthorization</span><span class="p">()</span><span class="o">.</span><span class="n">read_list</span><span class="p">([</span><span class="s2">&quot;not_empty_but_fake&quot;</span><span class="p">],</span> <span class="n">mock_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">.</span><span class="n">count</span><span class="p">())</span></div>
+
+
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.api.authorization.ApiLockdownAuthorization.read_list&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.people.models.Profile.group_list_all&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<div class="viewcode-block" id="TestGroupProfileResAuthorization.test_anonymous_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/tests/test_rest_api/index.html#geonode.tests.test_rest_api.TestGroupProfileResAuthorization.test_anonymous_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_anonymous_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">super_mock</span><span class="p">,</span> <span class="n">mocked_profile</span><span class="p">):</span>
+        <span class="n">mock_bundle</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">request_mock</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">r_attr</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">AnonymousUser</span><span class="p">()}</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request_mock</span><span class="p">}</span>
+        <span class="n">request_mock</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">r_attr</span><span class="p">)</span>
+        <span class="n">mock_bundle</span><span class="o">.</span><span class="n">configure_mock</span><span class="p">(</span><span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="n">groups</span> <span class="o">=</span> <span class="n">GroupProfileAuthorization</span><span class="p">()</span><span class="o">.</span><span class="n">read_list</span><span class="p">([</span><span class="s2">&quot;not_empty_but_fake&quot;</span><span class="p">],</span> <span class="n">mock_bundle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">.</span><span class="n">count</span><span class="p">())</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

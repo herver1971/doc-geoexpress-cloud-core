@@ -1,0 +1,65 @@
+geonode.base.management.commands.load_thesaurus
+===============================================
+
+.. py:module:: geonode.base.management.commands.load_thesaurus
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.management.commands.load_thesaurus.Command
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.base.management.commands.load_thesaurus.value_for_language
+   geonode.base.management.commands.load_thesaurus.preferredLabel
+
+
+Module Contents
+---------------
+
+.. py:class:: Command
+
+   Bases: :py:obj:`django.core.management.base.BaseCommand`
+
+
+   .. py:attribute:: help
+      :value: 'Load a thesaurus in RDF format into DB'
+
+
+
+   .. py:method:: add_arguments(parser)
+
+
+   .. py:method:: handle(**options)
+
+
+   .. py:method:: load_thesaurus(input_file, name, store)
+
+
+   .. py:method:: create_fake_thesaurus(name)
+
+
+.. py:function:: value_for_language(available: List[rdflib.Literal], default_lang: str) -> str
+
+.. py:function:: preferredLabel(g, subject, lang=None, default=None, label_properties=(SKOS.prefLabel, RDFS.label))
+
+   Find the preferred label for subject.
+
+   By default prefers skos:prefLabels over rdfs:labels. In case at least
+   one prefLabel is found returns those, else returns labels. In case a
+   language string (e.g., "en", "de" or even "" for no lang-tagged
+   literals) is given, only such labels will be considered.
+
+   Return a list of (labelProp, label) pairs, where labelProp is either
+   skos:prefLabel or rdfs:label.
+
+   Copied from rdflib 6.1.1
+
+
