@@ -1,0 +1,372 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.facets.views &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../facets.html">geonode.facets</a></li>
+      <li class="breadcrumb-item active">geonode.facets.views</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.facets.views</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2023 Open Source Geospatial Foundation - all rights reserved</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlencode</span>
+
+<span class="kn">from</span> <span class="nn">rest_framework.authentication</span> <span class="kn">import</span> <span class="n">SessionAuthentication</span><span class="p">,</span> <span class="n">BasicAuthentication</span>
+<span class="kn">from</span> <span class="nn">rest_framework.views</span> <span class="kn">import</span> <span class="n">APIView</span>
+
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseNotFound</span><span class="p">,</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.api.views</span> <span class="kn">import</span> <span class="n">ResourceBaseViewSet</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+<span class="kn">from</span> <span class="nn">geonode.facets.models</span> <span class="kn">import</span> <span class="n">FacetProvider</span><span class="p">,</span> <span class="n">DEFAULT_FACET_PAGE_SIZE</span><span class="p">,</span> <span class="n">facet_registry</span>
+<span class="kn">from</span> <span class="nn">geonode.security.utils</span> <span class="kn">import</span> <span class="n">get_visible_resources</span>
+
+<div class="viewcode-block" id="PARAM_PAGE">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.PARAM_PAGE">[docs]</a>
+<span class="n">PARAM_PAGE</span> <span class="o">=</span> <span class="s2">&quot;page&quot;</span></div>
+
+<div class="viewcode-block" id="PARAM_PAGE_SIZE">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.PARAM_PAGE_SIZE">[docs]</a>
+<span class="n">PARAM_PAGE_SIZE</span> <span class="o">=</span> <span class="s2">&quot;page_size&quot;</span></div>
+
+<div class="viewcode-block" id="PARAM_LANG">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.PARAM_LANG">[docs]</a>
+<span class="n">PARAM_LANG</span> <span class="o">=</span> <span class="s2">&quot;lang&quot;</span></div>
+
+<div class="viewcode-block" id="PARAM_ADD_LINKS">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.PARAM_ADD_LINKS">[docs]</a>
+<span class="n">PARAM_ADD_LINKS</span> <span class="o">=</span> <span class="s2">&quot;add_links&quot;</span></div>
+
+<div class="viewcode-block" id="PARAM_INCLUDE_TOPICS">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.PARAM_INCLUDE_TOPICS">[docs]</a>
+<span class="n">PARAM_INCLUDE_TOPICS</span> <span class="o">=</span> <span class="s2">&quot;include_topics&quot;</span></div>
+
+<div class="viewcode-block" id="PARAM_INCLUDE_CONFIG">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.PARAM_INCLUDE_CONFIG">[docs]</a>
+<span class="n">PARAM_INCLUDE_CONFIG</span> <span class="o">=</span> <span class="s2">&quot;include_config&quot;</span></div>
+
+<div class="viewcode-block" id="PARAM_TOPIC_CONTAINS">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.PARAM_TOPIC_CONTAINS">[docs]</a>
+<span class="n">PARAM_TOPIC_CONTAINS</span> <span class="o">=</span> <span class="s2">&quot;topic_contains&quot;</span></div>
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="BaseFacetingView">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.BaseFacetingView">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseFacetingView</span><span class="p">(</span><span class="n">APIView</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseFacetingView.authentication_classes">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.BaseFacetingView.authentication_classes">[docs]</a>
+    <span class="n">authentication_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">SessionAuthentication</span><span class="p">,</span> <span class="n">BasicAuthentication</span><span class="p">]</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseFacetingView._get_topics">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.BaseFacetingView._get_topics">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_topics</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">provider</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="p">,</span>
+        <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_FACET_PAGE_SIZE</span><span class="p">,</span>
+        <span class="n">lang</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span>
+        <span class="n">topic_contains</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">keys</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">page</span> <span class="o">*</span> <span class="n">page_size</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">page_size</span>
+
+        <span class="n">cnt</span><span class="p">,</span> <span class="n">items</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">get_facet_items</span><span class="p">(</span>
+            <span class="n">queryset</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">topic_contains</span><span class="o">=</span><span class="n">topic_contains</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">keys</span><span class="o">.</span><span class="n">difference_update</span><span class="p">({</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">items</span><span class="p">})</span>
+            <span class="k">if</span> <span class="n">keys</span><span class="p">:</span>
+                <span class="n">ext</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">get_topics</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+                <span class="n">items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+                <span class="n">cnt</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Extending facets to </span><span class="si">%d</span><span class="s2"> for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">cnt</span><span class="p">,</span> <span class="n">provider</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span> <span class="s2">&quot;page_size&quot;</span><span class="p">:</span> <span class="n">page_size</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="n">cnt</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="n">items</span><span class="p">}</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseFacetingView._prefilter_topics">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.BaseFacetingView._prefilter_topics">[docs]</a>
+    <span class="k">def</span> <span class="nf">_prefilter_topics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform some prefiltering on resources, such as</span>
+<span class="sd">          - auth visibility</span>
+<span class="sd">          - filtering by other facets already applied</span>
+<span class="sd">        :param request:</span>
+<span class="sd">        :return: a QuerySet on ResourceBase</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Filtering by user &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">vlist</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">vlist</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">lists</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;filter{&quot;</span><span class="p">)}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FILTERING BY </span><span class="si">{</span><span class="n">filters</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filters</span><span class="p">:</span>
+            <span class="n">viewset</span> <span class="o">=</span> <span class="n">ResourceBaseViewSet</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span> <span class="n">format_kwarg</span><span class="o">=</span><span class="p">{},</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+            <span class="n">viewset</span><span class="o">.</span><span class="n">initial</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">get_visible_resources</span><span class="p">(</span><span class="n">queryset</span><span class="o">=</span><span class="n">viewset</span><span class="o">.</span><span class="n">filter_queryset</span><span class="p">(</span><span class="n">viewset</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">()),</span> <span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># return ResourceBase.objects</span>
+            <span class="k">return</span> <span class="n">get_visible_resources</span><span class="p">(</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseFacetingView._resolve_language">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.BaseFacetingView._resolve_language">[docs]</a>
+    <span class="k">def</span> <span class="nf">_resolve_language</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: the resolved language, a boolean telling if the language was requested</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># first try with an explicit request using params</span>
+        <span class="k">if</span> <span class="n">lang</span> <span class="o">:=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PARAM_LANG</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">lang</span><span class="p">,</span> <span class="kc">True</span>
+        <span class="c1"># 2nd try: use LANGUAGE_CODE</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">LANGUAGE_CODE</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">LANGUAGE_CODE</span><span class="p">,</span> <span class="kc">False</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseFacetingView._resolve_boolean">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.BaseFacetingView._resolve_boolean">[docs]</a>
+    <span class="k">def</span> <span class="nf">_resolve_boolean</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse boolean query params</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fallback</span>
+
+        <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">val</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">val</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">val</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">val</span> <span class="o">==</span> <span class="s2">&quot;0&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">fallback</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ListFacetsView">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.ListFacetsView">[docs]</a>
+<span class="k">class</span> <span class="nc">ListFacetsView</span><span class="p">(</span><span class="n">BaseFacetingView</span><span class="p">):</span>
+<div class="viewcode-block" id="ListFacetsView.get">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.ListFacetsView.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">lang</span><span class="p">,</span> <span class="n">lang_requested</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_language</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">add_links</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_boolean</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">PARAM_ADD_LINKS</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">include_topics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_boolean</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">PARAM_INCLUDE_TOPICS</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">include_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_boolean</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">PARAM_INCLUDE_CONFIG</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">facets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">prefiltered</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">provider</span> <span class="ow">in</span> <span class="n">facet_registry</span><span class="o">.</span><span class="n">get_providers</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Fetching data from provider </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">provider</span><span class="p">)</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">include_config</span><span class="p">:</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">config</span>
+
+            <span class="k">if</span> <span class="n">add_links</span><span class="p">:</span>
+                <span class="n">link_args</span> <span class="o">=</span> <span class="p">{</span><span class="n">PARAM_ADD_LINKS</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+                <span class="k">if</span> <span class="n">lang_requested</span><span class="p">:</span>  <span class="c1"># only add lang param if specified in current call</span>
+                    <span class="n">link_args</span><span class="p">[</span><span class="n">PARAM_LANG</span><span class="p">]</span> <span class="o">=</span> <span class="n">lang</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">&quot;link&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;get_facet&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]])</span><span class="si">}</span><span class="s2">?</span><span class="si">{</span><span class="n">urlencode</span><span class="p">(</span><span class="n">link_args</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="k">if</span> <span class="n">include_topics</span><span class="p">:</span>
+                <span class="n">prefiltered</span> <span class="o">=</span> <span class="n">prefiltered</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefilter_topics</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+                <span class="n">info</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_topics</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="n">prefiltered</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">)</span>
+
+            <span class="n">facets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Returning facets </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">facets</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s2">&quot;facets&quot;</span><span class="p">:</span> <span class="n">facets</span><span class="p">})</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GetFacetView">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.GetFacetView">[docs]</a>
+<span class="k">class</span> <span class="nc">GetFacetView</span><span class="p">(</span><span class="n">BaseFacetingView</span><span class="p">):</span>
+<div class="viewcode-block" id="GetFacetView.get">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/views/index.html#geonode.facets.views.GetFacetView.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">facet</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;get_facet -&gt; </span><span class="si">%r</span><span class="s2"> for user &#39;</span><span class="si">%r</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">facet</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+
+        <span class="c1"># retrieve provider for the requested facet</span>
+        <span class="n">provider</span><span class="p">:</span> <span class="n">FacetProvider</span> <span class="o">=</span> <span class="n">facet_registry</span><span class="o">.</span><span class="n">get_provider</span><span class="p">(</span><span class="n">facet</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">provider</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">HttpResponseNotFound</span><span class="p">()</span>
+
+        <span class="c1"># parse some query params</span>
+        <span class="n">lang</span><span class="p">,</span> <span class="n">lang_requested</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_language</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">add_link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_boolean</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">PARAM_ADD_LINKS</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">include_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_boolean</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">PARAM_INCLUDE_CONFIG</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">topic_contains</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PARAM_TOPIC_CONTAINS</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">))</span>
+
+        <span class="n">page</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PARAM_PAGE</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">page_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PARAM_PAGE_SIZE</span><span class="p">,</span> <span class="n">DEFAULT_FACET_PAGE_SIZE</span><span class="p">))</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">get_info</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">include_config</span><span class="p">:</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">provider</span><span class="o">.</span><span class="n">config</span>
+
+        <span class="n">qs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefilter_topics</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">topics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_topics</span><span class="p">(</span>
+            <span class="n">provider</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span> <span class="n">page</span><span class="o">=</span><span class="n">page</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="n">page_size</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">topic_contains</span><span class="o">=</span><span class="n">topic_contains</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">keys</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">add_link</span><span class="p">:</span>
+            <span class="n">exist_prev</span> <span class="o">=</span> <span class="n">page</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="n">exist_next</span> <span class="o">=</span> <span class="n">topics</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">page</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">page_size</span>
+            <span class="n">link</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;get_facet&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]])</span>
+            <span class="k">for</span> <span class="n">exist</span><span class="p">,</span> <span class="n">link_name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">exist_prev</span><span class="p">,</span> <span class="s2">&quot;prev&quot;</span><span class="p">,</span> <span class="n">page</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">exist_next</span><span class="p">,</span> <span class="s2">&quot;next&quot;</span><span class="p">,</span> <span class="n">page</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="p">):</span>
+                <span class="n">link_param</span> <span class="o">=</span> <span class="p">{</span><span class="n">PARAM_PAGE</span><span class="p">:</span> <span class="n">p</span><span class="p">,</span> <span class="n">PARAM_PAGE_SIZE</span><span class="p">:</span> <span class="n">page_size</span><span class="p">,</span> <span class="n">PARAM_LANG</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span> <span class="n">PARAM_ADD_LINKS</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+                <span class="k">if</span> <span class="n">lang_requested</span><span class="p">:</span>  <span class="c1"># only add lang param if specified in current call</span>
+                    <span class="n">link_param</span><span class="p">[</span><span class="n">PARAM_LANG</span><span class="p">]</span> <span class="o">=</span> <span class="n">lang</span>
+                <span class="k">if</span> <span class="n">topic_contains</span><span class="p">:</span>
+                    <span class="n">link_param</span><span class="p">[</span><span class="n">PARAM_TOPIC_CONTAINS</span><span class="p">]</span> <span class="o">=</span> <span class="n">topic_contains</span>
+                <span class="n">info</span><span class="p">[</span><span class="n">link_name</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">link</span><span class="si">}</span><span class="s2">?</span><span class="si">{</span><span class="n">urlencode</span><span class="p">(</span><span class="n">link_param</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">exist</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">topic_contains</span><span class="p">:</span>
+            <span class="c1"># in the payload let&#39;s rmb this is a filtered output</span>
+            <span class="n">info</span><span class="p">[</span><span class="s2">&quot;topic_contains&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">topic_contains</span>
+
+        <span class="n">info</span><span class="p">[</span><span class="s2">&quot;topics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">topics</span>
+
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span><span class="n">info</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

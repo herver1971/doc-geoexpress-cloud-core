@@ -1,0 +1,107 @@
+geonode.layers.api.views
+========================
+
+.. py:module:: geonode.layers.api.views
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.layers.api.views.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.layers.api.views.DatasetViewSet
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: DatasetViewSet
+
+   Bases: :py:obj:`dynamic_rest.viewsets.DynamicModelViewSet`
+
+
+   API endpoint that allows layers to be viewed or edited.
+
+
+   .. py:attribute:: http_method_names
+      :value: ['get', 'patch', 'put']
+
+
+
+   .. py:attribute:: authentication_classes
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: queryset
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+   .. py:method:: get_serializer_class()
+
+
+   .. py:method:: metadata(request, pk=None, *args, **kwargs)
+
+      Endpoint to upload ISO metadata
+      Usage Example:
+
+      import requests
+
+      dataset_id = 1
+      url = f"http://localhost:8080/api/v2/datasets/{dataset_id}/metadata"
+      files=[
+          ('metadata_file',('metadata.xml',open('/home/user/metadata.xml','rb'),'text/xml'))
+      ]
+      headers = {
+          'Authorization': 'Basic dXNlcjpwYXNzd29yZA=='
+      }
+      response = requests.request("PUT", url, payload={}, files=files)
+
+      cURL example:
+      curl --location --request PUT 'http://localhost:8000/api/v2/datasets/{dataset_id}/metadata'         --form 'metadata_file=@/home/user/metadata.xml'
+
+
+
+   .. py:method:: maplayers(request, pk=None, *args, **kwargs)
+
+
+   .. py:method:: maps(request, pk=None, *args, **kwargs)
+
+
+   .. py:method:: replace(request, dataset_id=None, *args, **kwargs)
+
+      Edpoint for replace data to an existing layer
+
+
+
+   .. py:method:: append(request, dataset_id=None, *args, **kwargs)
+
+      Edpoint for replace data to an existing layer
+
+
+
+   .. py:method:: _replace_or_append(request: urllib.request.Request, dataset_id: int, action: str) -> rest_framework.response.Response
+
+      Raise error if the datasets does not exists
+
+
+

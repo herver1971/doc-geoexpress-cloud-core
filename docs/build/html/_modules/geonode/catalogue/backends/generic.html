@@ -1,0 +1,523 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.catalogue.backends.generic &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../catalogue.html">geonode.catalogue</a></li>
+      <li class="breadcrumb-item active">geonode.catalogue.backends.generic</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.catalogue.backends.generic</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">urlencode</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.template.loader</span> <span class="kn">import</span> <span class="n">get_template</span>
+<span class="kn">from</span> <span class="nn">owslib.catalogue.csw2</span> <span class="kn">import</span> <span class="n">CatalogueServiceWeb</span><span class="p">,</span> <span class="n">namespaces</span>
+<span class="kn">from</span> <span class="nn">owslib.util</span> <span class="kn">import</span> <span class="n">http_post</span>
+<span class="kn">from</span> <span class="nn">owslib.etree</span> <span class="kn">import</span> <span class="n">etree</span> <span class="k">as</span> <span class="n">dlxml</span>
+<span class="kn">from</span> <span class="nn">owslib.fes</span> <span class="kn">import</span> <span class="n">PropertyIsLike</span><span class="p">,</span> <span class="n">BBox</span>
+<span class="kn">from</span> <span class="nn">geonode.catalogue.backends.base</span> <span class="kn">import</span> <span class="n">BaseCatalogueBackend</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TIMEOUT">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.TIMEOUT">[docs]</a>
+<span class="n">TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span></div>
+
+<div class="viewcode-block" id="METADATA_FORMATS">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.METADATA_FORMATS">[docs]</a>
+<span class="n">METADATA_FORMATS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Atom&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;atom:entry&quot;</span><span class="p">,</span> <span class="s2">&quot;http://www.w3.org/2005/Atom&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;DIF&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;dif:DIF&quot;</span><span class="p">,</span> <span class="s2">&quot;http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;Dublin Core&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;csw:Record&quot;</span><span class="p">,</span> <span class="s2">&quot;http://www.opengis.net/cat/csw/2.0.2&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;ebRIM&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;rim:RegistryObject&quot;</span><span class="p">,</span> <span class="s2">&quot;urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;FGDC&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;fgdc:metadata&quot;</span><span class="p">,</span> <span class="s2">&quot;http://www.opengis.net/cat/csw/csdgm&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;ISO&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;gmd:MD_Metadata&quot;</span><span class="p">,</span> <span class="s2">&quot;http://www.isotc211.org/2005/gmd&quot;</span><span class="p">),</span>
+<span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="Catalogue">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue">[docs]</a>
+<span class="k">class</span> <span class="nc">Catalogue</span><span class="p">(</span><span class="n">CatalogueServiceWeb</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Catalogue.url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.url">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;URL&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Catalogue.user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.user">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Catalogue.password">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.password">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Catalogue.type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.type">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ENGINE&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Catalogue.local">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.local">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Catalogue._group_ids">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue._group_ids">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_group_ids</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="Catalogue._operation_ids">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue._operation_ids">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_operation_ids</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="Catalogue.connected">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.connected">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Catalogue.skip_caps">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.skip_caps">[docs]</a>
+        <span class="n">skip_caps</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;skip_caps&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+        <span class="n">CatalogueServiceWeb</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">skip_caps</span><span class="o">=</span><span class="n">skip_caps</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Catalogue.upurl">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.upurl">[docs]</a>
+        <span class="n">upurl</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.base">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.base">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">upurl</span><span class="o">.</span><span class="n">scheme</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="n">upurl</span><span class="o">.</span><span class="n">netloc</span><span class="si">}</span><span class="s2">/&quot;</span></div>
+
+
+        <span class="c1"># User and Password are optional</span>
+        <span class="k">if</span> <span class="s2">&quot;USER&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;USER&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;PASSWORD&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">password</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;PASSWORD&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Catalogue.__enter__">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.__enter__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.__exit__">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.__exit__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logout</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.login">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.login">[docs]</a>
+    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.logout">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.logout">[docs]</a>
+    <span class="k">def</span> <span class="nf">logout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">NotImplemented</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.get_by_uuid">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.get_by_uuid">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_by_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getrecordbyid</span><span class="p">([</span><span class="n">uuid</span><span class="p">],</span> <span class="n">outputschema</span><span class="o">=</span><span class="n">namespaces</span><span class="p">[</span><span class="s2">&quot;gmd&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;records&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">record</span><span class="o">.</span><span class="n">keywords</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">hasattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">&quot;identification&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">identification</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;keywords&quot;</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keywords</span><span class="p">:</span>
+                    <span class="n">record</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">kw</span><span class="o">.</span><span class="n">keywords</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">record</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.url_for_uuid">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.url_for_uuid">[docs]</a>
+    <span class="k">def</span> <span class="nf">url_for_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">outputschema</span><span class="p">):</span>
+        <span class="n">_query_string</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;GetRecordById&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="s2">&quot;CSW&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;2.0.2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">,</span>
+                <span class="s2">&quot;outputschema&quot;</span><span class="p">:</span> <span class="n">outputschema</span><span class="p">,</span>
+                <span class="s2">&quot;elementsetname&quot;</span><span class="p">:</span> <span class="s2">&quot;full&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">?</span><span class="si">{</span><span class="n">_query_string</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.urls_for_uuid">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.urls_for_uuid">[docs]</a>
+    <span class="k">def</span> <span class="nf">urls_for_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;returns list of valid GetRecordById URLs for a given record&quot;&quot;&quot;</span>
+        <span class="n">urls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">mformat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">formats</span><span class="p">:</span>
+            <span class="n">urls</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;text/xml&quot;</span><span class="p">,</span> <span class="n">mformat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_for_uuid</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">METADATA_FORMATS</span><span class="p">[</span><span class="n">mformat</span><span class="p">][</span><span class="mi">1</span><span class="p">])))</span>
+        <span class="k">return</span> <span class="n">urls</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.csw_gen_xml">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.csw_gen_xml">[docs]</a>
+    <span class="k">def</span> <span class="nf">csw_gen_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+        <span class="n">id_pname</span> <span class="o">=</span> <span class="s2">&quot;dc:identifier&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;deegree&quot;</span><span class="p">:</span>
+            <span class="n">id_pname</span> <span class="o">=</span> <span class="s2">&quot;apiso:Identifier&quot;</span>
+        <span class="n">site_url</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span>
+        <span class="n">tpl</span> <span class="o">=</span> <span class="n">get_template</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;CATALOG_METADATA_TEMPLATE&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">CATALOG_METADATA_TEMPLATE</span><span class="p">,</span>
+            <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="n">layer</span><span class="p">,</span>
+            <span class="s2">&quot;SITEURL&quot;</span><span class="p">:</span> <span class="n">site_url</span><span class="p">,</span>
+            <span class="s2">&quot;id_pname&quot;</span><span class="p">:</span> <span class="n">id_pname</span><span class="p">,</span>
+            <span class="s2">&quot;LICENSES_METADATA&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;LICENSES&quot;</span><span class="p">,</span> <span class="nb">dict</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;METADATA&quot;</span><span class="p">,</span> <span class="s2">&quot;never&quot;</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">md_doc</span> <span class="o">=</span> <span class="n">tpl</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">md_doc</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.csw_gen_anytext">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.csw_gen_anytext">[docs]</a>
+    <span class="k">def</span> <span class="nf">csw_gen_anytext</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;get all element data from an XML document&quot;&quot;&quot;</span>
+        <span class="n">xml</span> <span class="o">=</span> <span class="n">dlxml</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">xml</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s2">&quot;//text()&quot;</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.csw_request">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.csw_request">[docs]</a>
+    <span class="k">def</span> <span class="nf">csw_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">template</span><span class="p">):</span>
+        <span class="n">md_doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csw_gen_xml</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">template</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">http_post</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">md_doc</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">TIMEOUT</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.create_from_dataset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.create_from_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_from_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csw_request</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;catalogue/transaction_insert.xml&quot;</span><span class="p">)</span>  <span class="c1"># noqa</span>
+        <span class="c1"># TODO: Parse response, check for error report</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_for_uuid</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">namespaces</span><span class="p">[</span><span class="s2">&quot;gmd&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.delete_dataset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.delete_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csw_request</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;catalogue/transaction_delete.xml&quot;</span><span class="p">)</span>  <span class="c1"># noqa</span></div>
+
+        <span class="c1"># TODO: Parse response, check for error report</span>
+
+<div class="viewcode-block" id="Catalogue.update_dataset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.update_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">update_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="n">tmpl</span> <span class="o">=</span> <span class="s2">&quot;catalogue/transaction_update.xml&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">csw_request</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">tmpl</span><span class="p">)</span>  <span class="c1"># noqa</span></div>
+
+        <span class="c1"># TODO: Parse response, check for error report</span>
+
+<div class="viewcode-block" id="Catalogue.search">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.search">[docs]</a>
+    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keywords</span><span class="p">,</span> <span class="n">startposition</span><span class="p">,</span> <span class="n">maxrecords</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;CSW search wrapper&quot;&quot;&quot;</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">formats</span><span class="p">:</span>
+            <span class="n">formats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">METADATA_FORMATS</span><span class="p">[</span><span class="n">f</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">dataset_query_like</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">keywords</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_kw</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+                <span class="n">dataset_query_like</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PropertyIsLike</span><span class="p">(</span><span class="s2">&quot;csw:AnyText&quot;</span><span class="p">,</span> <span class="n">_kw</span><span class="p">))</span>
+        <span class="n">bbox_query</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">bbox</span><span class="p">:</span>
+            <span class="n">bbox_query</span> <span class="o">=</span> <span class="n">BBox</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getrecords2</span><span class="p">(</span>
+            <span class="n">typenames</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">formats</span><span class="p">),</span>
+            <span class="n">constraints</span><span class="o">=</span><span class="n">dataset_query_like</span> <span class="o">+</span> <span class="n">bbox_query</span><span class="p">,</span>
+            <span class="n">startposition</span><span class="o">=</span><span class="n">startposition</span><span class="p">,</span>
+            <span class="n">maxrecords</span><span class="o">=</span><span class="n">maxrecords</span><span class="p">,</span>
+            <span class="n">outputschema</span><span class="o">=</span><span class="s2">&quot;http://www.isotc211.org/2005/gmd&quot;</span><span class="p">,</span>
+            <span class="n">esn</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.normalize_bbox">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.normalize_bbox">[docs]</a>
+    <span class="k">def</span> <span class="nf">normalize_bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.metadatarecord2dict">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.metadatarecord2dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">metadatarecord2dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        accepts a node representing a catalogue result</span>
+<span class="sd">        record and builds a POD structure representing</span>
+<span class="sd">        the search result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">rec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1"># Let owslib do some parsing for us...</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rec</span><span class="o">.</span><span class="n">identifier</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rec</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">title</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;abstract&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rec</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">abstract</span>
+
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">rec</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keywords</span><span class="p">:</span>
+            <span class="n">keywords</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">kw</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">])</span>
+
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">keywords</span>
+
+        <span class="c1"># XXX needs indexing ? how</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;attribution&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;href&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">}</span>
+
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span>
+
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;minx&quot;</span><span class="p">:</span> <span class="n">rec</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">minx</span><span class="p">,</span>
+            <span class="s2">&quot;maxx&quot;</span><span class="p">:</span> <span class="n">rec</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">maxx</span><span class="p">,</span>
+            <span class="s2">&quot;miny&quot;</span><span class="p">:</span> <span class="n">rec</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">miny</span><span class="p">,</span>
+            <span class="s2">&quot;maxy&quot;</span><span class="p">:</span> <span class="n">rec</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">maxy</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># locate all distribution links</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;download_links&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract_links</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+
+        <span class="c1"># construct the link to the Catalogue metadata record (not</span>
+        <span class="c1"># self-indexed)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;metadata_links&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;text/xml&quot;</span><span class="p">,</span> <span class="s2">&quot;ISO&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_for_uuid</span><span class="p">(</span><span class="n">rec</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="s2">&quot;http://www.isotc211.org/2005/gmd&quot;</span><span class="p">))</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="Catalogue.extract_links">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.Catalogue.extract_links">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_links</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rec</span><span class="p">):</span>
+        <span class="c1"># fetch all distribution links</span>
+
+        <span class="n">links</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># extract subset of description value for user-friendly display</span>
+        <span class="n">format_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.*\((.*)(\s*Format*\s*)\).*?&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rec</span><span class="p">,</span> <span class="s2">&quot;distribution&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">rec</span><span class="o">.</span><span class="n">distribution</span><span class="p">,</span> <span class="s2">&quot;online&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">link_el</span> <span class="ow">in</span> <span class="n">rec</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">online</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;WWW:DOWNLOAD&quot;</span> <span class="ow">in</span> <span class="n">link_el</span><span class="o">.</span><span class="n">protocol</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">extension</span> <span class="o">=</span> <span class="n">link_el</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="nb">format</span> <span class="o">=</span> <span class="n">format_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">link_el</span><span class="o">.</span><span class="n">description</span><span class="p">)</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">href</span> <span class="o">=</span> <span class="n">link_el</span><span class="o">.</span><span class="n">url</span>
+                    <span class="n">links</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">extension</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">href</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">links</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CatalogueBackend">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.CatalogueBackend">[docs]</a>
+<span class="k">class</span> <span class="nc">CatalogueBackend</span><span class="p">(</span><span class="n">BaseCatalogueBackend</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CatalogueBackend.catalogue">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.CatalogueBackend.catalogue">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span> <span class="o">=</span> <span class="n">Catalogue</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CatalogueBackend.get_record">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.CatalogueBackend.get_record">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="p">:</span>
+            <span class="n">rec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">get_by_uuid</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rec</span><span class="o">.</span><span class="n">links</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="n">rec</span><span class="o">.</span><span class="n">links</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">urls_for_uuid</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+                <span class="n">rec</span><span class="o">.</span><span class="n">links</span><span class="p">[</span><span class="s2">&quot;download&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">extract_links</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rec</span></div>
+
+
+<div class="viewcode-block" id="CatalogueBackend.search_records">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.CatalogueBackend.search_records">[docs]</a>
+    <span class="k">def</span> <span class="nf">search_records</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keywords</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="p">:</span>
+            <span class="n">bbox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">normalize_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">limit</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span>
+
+            <span class="c1"># build results into JSON for API</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">metadatarecord2dict</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;rows&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">,</span>
+                <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;matches&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;next_page&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nextrecord&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="CatalogueBackend.remove_record">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.CatalogueBackend.remove_record">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="p">:</span>
+            <span class="n">catalogue_record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">get_by_uuid</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">catalogue_record</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># this is a bit hacky, delete_dataset expects an instance of the layer</span>
+                <span class="c1"># model but it just passes it to a Django template so a dict works</span>
+                <span class="c1"># too.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">delete_dataset</span><span class="p">({</span><span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">})</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t delete Catalogue record during cleanup()&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CatalogueBackend.create_record">
+<a class="viewcode-back" href="../../../../autoapi/geonode/catalogue/backends/generic/index.html#geonode.catalogue.backends.generic.CatalogueBackend.create_record">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="p">:</span>
+            <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">get_by_uuid</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">record</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">md_link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">create_from_dataset</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">metadata_links</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;text/xml&quot;</span><span class="p">,</span> <span class="s2">&quot;ISO&quot;</span><span class="p">,</span> <span class="n">md_link</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">catalogue</span><span class="o">.</span><span class="n">update_dataset</span><span class="p">(</span><span class="n">item</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

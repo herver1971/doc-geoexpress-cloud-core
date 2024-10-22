@@ -1,0 +1,730 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.harvesting.harvesters.wms &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../harvesting.html">geonode.harvesting</a></li>
+      <li class="breadcrumb-item active">geonode.harvesting.harvesters.wms</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.harvesting.harvesters.wms</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">unquote</span><span class="p">,</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">urlencode</span><span class="p">,</span> <span class="n">parse_qsl</span><span class="p">,</span> <span class="n">ParseResult</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
+
+<span class="kn">from</span> <span class="nn">owslib.map</span> <span class="kn">import</span> <span class="n">wms111</span><span class="p">,</span> <span class="n">wms130</span>
+<span class="kn">from</span> <span class="nn">owslib.util</span> <span class="kn">import</span> <span class="n">clean_ows_url</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.gis</span> <span class="kn">import</span> <span class="n">geos</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">slugify</span>
+
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.enumerations</span> <span class="kn">import</span> <span class="n">GXP_PTYPES</span>
+<span class="kn">from</span> <span class="nn">geonode.thumbs.thumbnails</span> <span class="kn">import</span> <span class="n">create_thumbnail</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">XML_PARSER</span><span class="p">,</span>
+    <span class="n">get_xpath_value</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">resourcedescriptor</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">base</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@lru_cache</span><span class="p">()</span>
+<div class="viewcode-block" id="WebMapService">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.WebMapService">[docs]</a>
+<span class="k">def</span> <span class="nf">WebMapService</span><span class="p">(</span>
+    <span class="n">url</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.3.0&quot;</span><span class="p">,</span> <span class="n">xml</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parse_remote_metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    API for Web Map Service (WMS) methods and metadata.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;wms factory function, returns a version specific WebMapService object</span>
+
+<span class="sd">    @type url: string</span>
+<span class="sd">    @param url: url of WFS capabilities document</span>
+<span class="sd">    @type xml: string</span>
+<span class="sd">    @param xml: elementtree object</span>
+<span class="sd">    @type parse_remote_metadata: boolean</span>
+<span class="sd">    @param parse_remote_metadata: whether to fully process MetadataURL elements</span>
+<span class="sd">    @param timeout: time (in seconds) after which requests should timeout</span>
+<span class="sd">    @return: initialized WebFeatureService_2_0_0 object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">clean_url</span> <span class="o">=</span> <span class="n">clean_ows_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">base_ows_url</span> <span class="o">=</span> <span class="n">clean_url</span>
+
+    <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;1.1.1&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">base_ows_url</span><span class="p">,</span>
+            <span class="n">wms111</span><span class="o">.</span><span class="n">WebMapService_1_1_1</span><span class="p">(</span>
+                <span class="n">clean_url</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+                <span class="n">xml</span><span class="o">=</span><span class="n">xml</span><span class="p">,</span>
+                <span class="n">parse_remote_metadata</span><span class="o">=</span><span class="n">parse_remote_metadata</span><span class="p">,</span>
+                <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span>
+                <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">version</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;1.3.0&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">base_ows_url</span><span class="p">,</span>
+            <span class="n">wms130</span><span class="o">.</span><span class="n">WebMapService_1_3_0</span><span class="p">(</span>
+                <span class="n">clean_url</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+                <span class="n">xml</span><span class="o">=</span><span class="n">xml</span><span class="p">,</span>
+                <span class="n">parse_remote_metadata</span><span class="o">=</span><span class="n">parse_remote_metadata</span><span class="p">,</span>
+                <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span>
+                <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;The WMS version (</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">) you requested is not implemented. Please use 1.1.1 or 1.3.0.&quot;</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="OgcWmsHarvester">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester">[docs]</a>
+<span class="k">class</span> <span class="nc">OgcWmsHarvester</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">BaseHarvesterWorker</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Harvester for resources coming from OGC WMS web services&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OgcWmsHarvester.dataset_title_filter">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.dataset_title_filter">[docs]</a>
+    <span class="n">dataset_title_filter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="OgcWmsHarvester._base_wms_parameters">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester._base_wms_parameters">[docs]</a>
+    <span class="n">_base_wms_parameters</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="s2">&quot;WMS&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;1.3.0&quot;</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">dataset_title_filter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="viewcode-block" id="OgcWmsHarvester.http_session">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.http_session">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">http_session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OgcWmsHarvester.headers">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.headers">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">http_session</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/xml&quot;</span><span class="p">}</span></div>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_title_filter</span> <span class="o">=</span> <span class="n">dataset_title_filter</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="OgcWmsHarvester.allows_copying_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.allows_copying_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">allows_copying_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="OgcWmsHarvester.from_django_record">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.from_django_record">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_django_record</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">record</span><span class="o">.</span><span class="n">remote_url</span><span class="p">,</span>
+            <span class="n">record</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">dataset_title_filter</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">harvester_type_specific_configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset_title_filter&quot;</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="OgcWmsHarvester.get_extra_config_schema">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.get_extra_config_schema">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_extra_config_schema</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;$schema&quot;</span><span class="p">:</span> <span class="s2">&quot;https://json-schema.org/draft/2020-12/schema&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;$id&quot;</span><span class="p">:</span> <span class="s2">&quot;https://geonode.org/harvesting/ogc-wms-harvester.schema.json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;OGC WMS harvester config&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;A jsonschema for validating configuration option for GeoNode&#39;s &quot;</span> <span class="s2">&quot;remote OGC WMS harvester&quot;</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;dataset_title_filter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="OgcWmsHarvester.get_wms_operations">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.get_wms_operations">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_wms_operations</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="n">operations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_url</span><span class="p">,</span> <span class="n">_parsed_service</span> <span class="o">=</span> <span class="n">WebMapService</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_op</span> <span class="ow">in</span> <span class="n">_parsed_service</span><span class="o">.</span><span class="n">operations</span><span class="p">:</span>
+                <span class="n">_methods</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">_op_method</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_op</span><span class="p">,</span> <span class="s2">&quot;methods&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">_op</span><span class="p">,</span> <span class="s2">&quot;methods&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">_op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;methods&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+                    <span class="n">_methods</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">_op_method</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">_op_method</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)})</span>
+
+                <span class="n">_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_op</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">_op</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">_op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">_formatOptions</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">_op</span><span class="p">,</span> <span class="s2">&quot;formatOptions&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">_op</span><span class="p">,</span> <span class="s2">&quot;formatOptions&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">_op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;formatOptions&quot;</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">_name</span><span class="p">:</span>
+                    <span class="n">operations</span><span class="p">[</span><span class="n">_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">_name</span><span class="p">,</span> <span class="s2">&quot;methods&quot;</span><span class="p">:</span> <span class="n">_methods</span><span class="p">,</span> <span class="s2">&quot;formatOptions&quot;</span><span class="p">:</span> <span class="n">_formatOptions</span><span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">operations</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.get_ogc_wms_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.get_ogc_wms_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_ogc_wms_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wms_url</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">ogc_wms_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">wms_url</span><span class="o">.</span><span class="n">scheme</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="n">wms_url</span><span class="o">.</span><span class="n">netloc</span><span class="si">}{</span><span class="n">wms_url</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">operations</span> <span class="o">=</span> <span class="n">OgcWmsHarvester</span><span class="o">.</span><span class="n">get_wms_operations</span><span class="p">(</span><span class="n">wms_url</span><span class="o">.</span><span class="n">geturl</span><span class="p">(),</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">)</span>
+            <span class="n">ogc_wms_get_capabilities</span> <span class="o">=</span> <span class="n">operations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;GetCapabilities&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ogc_wms_get_capabilities</span> <span class="ow">and</span> <span class="n">ogc_wms_get_capabilities</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;methods&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">_op_method</span> <span class="ow">in</span> <span class="n">ogc_wms_get_capabilities</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;methods&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">_op_method</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span> <span class="ow">and</span> <span class="n">_op_method</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                        <span class="n">ogc_wms_url</span> <span class="o">=</span> <span class="n">_op_method</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ogc_wms_url</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.get_capabilities">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.get_capabilities">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_capabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_wms_parameters</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;GetCapabilities&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="p">(</span><span class="n">wms_url</span><span class="p">,</span> <span class="n">_service</span><span class="p">,</span> <span class="n">_version</span><span class="p">,</span> <span class="n">_request</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cleaned_url_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_service</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;service&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_service</span>
+        <span class="k">if</span> <span class="n">_version</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_version</span>
+        <span class="k">if</span> <span class="n">wms_url</span><span class="o">.</span><span class="n">query</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_param</span> <span class="ow">in</span> <span class="n">parse_qsl</span><span class="p">(</span><span class="n">wms_url</span><span class="o">.</span><span class="n">query</span><span class="p">):</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">_param</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_param</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">get_capabilities_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_ogc_wms_url</span><span class="p">(</span><span class="n">wms_url</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">_version</span><span class="p">),</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span>
+        <span class="p">)</span>
+        <span class="n">get_capabilities_response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">get_capabilities_response</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.get_num_available_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.get_num_available_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_available_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;layers&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.list_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.list_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">]:</span>
+        <span class="c1"># look at `tasks.update_harvestable_resources()` in order to understand the purpose of the</span>
+        <span class="c1"># `offset` parameter. Briefly, we try to retrieve resources in batches and we use `offset` to</span>
+        <span class="c1"># control the pagination of the remote service. Unfortunately WMS does not really have the</span>
+        <span class="c1"># concept of pagination and dumps all available layers in a single `GetCapabilities` response.</span>
+        <span class="c1"># With this in mind, we only handle the case where `offset == 0`, which returns all available resources</span>
+        <span class="c1"># and simply return an empty list when `offset != 0`</span>
+        <span class="k">if</span> <span class="n">offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">resources</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_data</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;layers&quot;</span><span class="p">]:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">resources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">(</span>
+                    <span class="n">unique_identifier</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                    <span class="n">abstract</span><span class="o">=</span><span class="n">layer</span><span class="p">[</span><span class="s2">&quot;abstract&quot;</span><span class="p">],</span>
+                    <span class="n">resource_type</span><span class="o">=</span><span class="s2">&quot;layers&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">resources</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.check_availability">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.check_availability">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_availability</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout_seconds</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_capabilities</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">,</span> <span class="n">requests</span><span class="o">.</span><span class="n">ConnectionError</span><span class="p">):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">XML_PARSER</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">etree</span><span class="o">.</span><span class="n">XMLSyntaxError</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;WMS_Capabilities&quot;</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">tag</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.get_geonode_resource_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.get_geonode_resource_type">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_geonode_resource_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_resource_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResourceBase</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return resource type class from resource type string.&quot;&quot;&quot;</span>
+        <span class="c1"># WMS just have Layer type on it&#39;s resource.</span>
+        <span class="c1"># So whatever remote_resource_type it is, it always return Layer.</span>
+        <span class="k">return</span> <span class="n">Dataset</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.get_geonode_resource_defaults">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.get_geonode_resource_defaults">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_geonode_resource_defaults</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">harvested_info</span><span class="p">:</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">,</span>
+        <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="p">,</span>  <span class="c1"># noqa</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">:</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_geonode_resource_defaults</span><span class="p">(</span><span class="n">harvested_info</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">)</span>
+        <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">harvested_info</span><span class="o">.</span><span class="n">resource_descriptor</span><span class="o">.</span><span class="n">identification</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">harvested_info</span><span class="o">.</span><span class="n">resource_descriptor</span><span class="o">.</span><span class="n">additional_parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">defaults</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.get_resource">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.get_resource">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_resource</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">]:</span>
+        <span class="n">resource_unique_identifier</span> <span class="o">=</span> <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_data</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">relevant_layer</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;layers&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">layer</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">resource_unique_identifier</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find resource </span><span class="si">{</span><span class="n">resource_unique_identifier</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># WMS does not provide uuid, so needs to generated on the first time</span>
+            <span class="c1"># for update, use uuid from geonode resource</span>
+            <span class="n">resource_uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">geonode_resource</span><span class="p">:</span>
+                <span class="n">resource_uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">geonode_resource</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="c1"># WMS does not provide the date of the resource.</span>
+            <span class="c1"># Use current time for the date stamp and resource time.</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="n">service_name</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="p">)[:</span><span class="mi">255</span><span class="p">]</span>
+            <span class="n">contact</span> <span class="o">=</span> <span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDescriptionContact</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;contact&quot;</span><span class="p">])</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">(</span>
+                <span class="n">resource_descriptor</span><span class="o">=</span><span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDescription</span><span class="p">(</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="n">resource_uuid</span><span class="p">,</span>
+                    <span class="n">point_of_contact</span><span class="o">=</span><span class="n">contact</span><span class="p">,</span>
+                    <span class="n">author</span><span class="o">=</span><span class="n">contact</span><span class="p">,</span>
+                    <span class="n">date_stamp</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+                    <span class="n">identification</span><span class="o">=</span><span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordIdentification</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+                        <span class="n">title</span><span class="o">=</span><span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span>
+                        <span class="n">date</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+                        <span class="n">date_type</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                        <span class="n">originator</span><span class="o">=</span><span class="n">contact</span><span class="p">,</span>
+                        <span class="n">place_keywords</span><span class="o">=</span><span class="p">[],</span>
+                        <span class="n">other_keywords</span><span class="o">=</span><span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">],</span>
+                        <span class="n">license</span><span class="o">=</span><span class="p">[],</span>
+                        <span class="n">abstract</span><span class="o">=</span><span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;abstract&quot;</span><span class="p">],</span>
+                        <span class="n">spatial_extent</span><span class="o">=</span><span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;spatial_extent&quot;</span><span class="p">],</span>
+                    <span class="p">),</span>
+                    <span class="n">distribution</span><span class="o">=</span><span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDistribution</span><span class="p">(</span>
+                        <span class="n">wms_url</span><span class="o">=</span><span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;wms_url&quot;</span><span class="p">],</span>
+                    <span class="p">),</span>
+                    <span class="n">reference_systems</span><span class="o">=</span><span class="p">[</span><span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;crs&quot;</span><span class="p">]],</span>
+                    <span class="n">additional_parameters</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;alternate&quot;</span><span class="p">:</span> <span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;store&quot;</span><span class="p">:</span> <span class="n">service_name</span><span class="p">,</span>
+                        <span class="s2">&quot;workspace&quot;</span><span class="p">:</span> <span class="s2">&quot;remoteWorkspace&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;ows_url&quot;</span><span class="p">:</span> <span class="n">relevant_layer</span><span class="p">[</span><span class="s2">&quot;wms_url&quot;</span><span class="p">],</span>
+                        <span class="s2">&quot;ptype&quot;</span><span class="p">:</span> <span class="n">GXP_PTYPES</span><span class="p">[</span><span class="s2">&quot;WMS&quot;</span><span class="p">],</span>
+                    <span class="p">},</span>
+                <span class="p">),</span>
+                <span class="n">additional_information</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester._get_data">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester._get_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return data from the harvester URL in JSON format.&quot;&quot;&quot;</span>
+        <span class="n">get_capabilities_response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_capabilities</span><span class="p">()</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">get_capabilities_response</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">parser</span><span class="o">=</span><span class="n">XML_PARSER</span><span class="p">)</span>
+        <span class="n">nsmap</span> <span class="o">=</span> <span class="n">_get_nsmap</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">nsmap</span><span class="p">)</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">leaf_layers</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s2">&quot;//wms:Layer[not(.//wms:Layer)]&quot;</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">nsmap</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">layer_element</span> <span class="ow">in</span> <span class="n">leaf_layers</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layer_element_to_json</span><span class="p">(</span><span class="n">layer_element</span><span class="p">)</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_title_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_title_filter</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">title</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="k">continue</span>
+                <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;contact&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_contact</span><span class="p">(</span><span class="n">root</span><span class="p">),</span> <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="n">layers</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester._get_contact">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester._get_contact">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_contact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return contact from element&quot;&quot;&quot;</span>
+        <span class="n">nsmap</span> <span class="o">=</span> <span class="n">_get_nsmap</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">nsmap</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactPersonPrimary/wms:ContactPerson&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;organization&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactPersonPrimary/wms:ContactOrganization&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactPosition&quot;</span><span class="p">,</span> <span class="n">nsmap</span><span class="p">),</span>
+            <span class="s2">&quot;phone_voice&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactVoiceTelephone&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;phone_facsimile&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactFacsimileTelephone&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;address_delivery_point&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;address_city&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactAddress/wms:City&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;address_administrative_area&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactAddress/wms:StateOrProvince&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;address_postal_code&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactAddress/wms:PostCode&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;address_country&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactAddress/wms:Country&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;address_email&quot;</span><span class="p">:</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                <span class="n">element</span><span class="p">,</span> <span class="s2">&quot;wms:Service/wms:ContactInformation/wms:ContactElectronicMailAddress&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+            <span class="p">),</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester._get_cleaned_url_params">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester._get_cleaned_url_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_cleaned_url_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="c1"># Unquoting URL first so we don&#39;t loose existing args</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">unquote</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="c1"># Extracting url info</span>
+        <span class="n">parsed_url</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="c1"># Extracting URL arguments from parsed URL</span>
+        <span class="n">get_args</span> <span class="o">=</span> <span class="n">parsed_url</span><span class="o">.</span><span class="n">query</span>
+        <span class="c1"># Converting URL arguments to dict</span>
+        <span class="n">parsed_get_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">parse_qsl</span><span class="p">(</span><span class="n">get_args</span><span class="p">))</span>
+        <span class="c1"># Strip out redoundant args</span>
+        <span class="n">_version</span> <span class="o">=</span> <span class="n">parsed_get_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;1.3.0&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;version&quot;</span> <span class="ow">in</span> <span class="n">parsed_get_args</span> <span class="k">else</span> <span class="s2">&quot;1.3.0&quot;</span>
+        <span class="n">_service</span> <span class="o">=</span> <span class="n">parsed_get_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;service&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;service&quot;</span> <span class="ow">in</span> <span class="n">parsed_get_args</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">_request</span> <span class="o">=</span> <span class="n">parsed_get_args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;request&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;request&quot;</span> <span class="ow">in</span> <span class="n">parsed_get_args</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="c1"># Converting URL argument to proper query string</span>
+        <span class="n">encoded_get_args</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">parsed_get_args</span><span class="p">,</span> <span class="n">doseq</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Creating new parsed result object based on provided with new</span>
+        <span class="c1"># URL arguments. Same thing happens inside of urlparse.</span>
+        <span class="n">new_url</span> <span class="o">=</span> <span class="n">ParseResult</span><span class="p">(</span>
+            <span class="n">parsed_url</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span>
+            <span class="n">parsed_url</span><span class="o">.</span><span class="n">netloc</span><span class="p">,</span>
+            <span class="n">parsed_url</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+            <span class="n">parsed_url</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">encoded_get_args</span><span class="p">,</span>
+            <span class="n">parsed_url</span><span class="o">.</span><span class="n">fragment</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">new_url</span><span class="p">,</span> <span class="n">_service</span><span class="p">,</span> <span class="n">_version</span><span class="p">,</span> <span class="n">_request</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester._layer_element_to_json">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester._layer_element_to_json">[docs]</a>
+    <span class="k">def</span> <span class="nf">_layer_element_to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_element</span><span class="p">:</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return json of layer from xml element&quot;&quot;&quot;</span>
+        <span class="n">nsmap</span> <span class="o">=</span> <span class="n">_get_nsmap</span><span class="p">(</span><span class="n">layer_element</span><span class="o">.</span><span class="n">nsmap</span><span class="p">)</span>
+        <span class="n">nsmap</span><span class="p">[</span><span class="s2">&quot;xlink&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;http://www.w3.org/1999/xlink&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">get_xpath_value</span><span class="p">(</span><span class="n">layer_element</span><span class="p">,</span> <span class="s2">&quot;wms:Name&quot;</span><span class="p">,</span> <span class="n">nsmap</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">get_xpath_value</span><span class="p">(</span><span class="n">layer_element</span><span class="p">,</span> <span class="s2">&quot;wms:Title&quot;</span><span class="p">,</span> <span class="n">nsmap</span><span class="p">)</span>
+        <span class="n">abstract</span> <span class="o">=</span> <span class="n">get_xpath_value</span><span class="p">(</span><span class="n">layer_element</span><span class="p">,</span> <span class="s2">&quot;wms:Abstract&quot;</span><span class="p">,</span> <span class="n">nsmap</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">keywords</span> <span class="o">=</span> <span class="n">layer_element</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s2">&quot;wms:KeywordList/wms:Keyword/text()&quot;</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">nsmap</span><span class="p">)</span>
+            <span class="n">keywords</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">keyword</span><span class="p">)</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">keywords</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">legend_url</span> <span class="o">=</span> <span class="n">layer_element</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s2">&quot;wms:Style/wms:LegendURL/wms:OnlineResource&quot;</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">nsmap</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="si">{</span><span class="n">nsmap</span><span class="p">[</span><span class="s1">&#39;xlink&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">}}</span><span class="s2">href&quot;</span>
+            <span class="p">]</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">legend_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="p">(</span><span class="n">wms_url</span><span class="p">,</span> <span class="n">_service</span><span class="p">,</span> <span class="n">_version</span><span class="p">,</span> <span class="n">_request</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cleaned_url_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_service</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;service&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_service</span>
+        <span class="k">if</span> <span class="n">_version</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_version</span>
+        <span class="k">if</span> <span class="n">wms_url</span><span class="o">.</span><span class="n">query</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_param</span> <span class="ow">in</span> <span class="n">parse_qsl</span><span class="p">(</span><span class="n">wms_url</span><span class="o">.</span><span class="n">query</span><span class="p">):</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">_param</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_param</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">wms_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ogc_wms_url</span><span class="p">(</span><span class="n">wms_url</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">urlencode</span><span class="p">(</span><span class="n">params</span><span class="p">)),</span> <span class="n">version</span><span class="o">=</span><span class="n">_version</span><span class="p">)</span>
+
+        <span class="n">crs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">spatial_extent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">layer_element</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s2">&quot;wms:BoundingBox&quot;</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">nsmap</span><span class="p">):</span>
+                <span class="n">crs</span> <span class="o">=</span> <span class="n">bbox</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CRS&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">&quot;EPSG:&quot;</span> <span class="ow">in</span> <span class="n">crs</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">or</span> <span class="n">crs</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;CRS:84&quot;</span><span class="p">:</span>
+                    <span class="n">crs</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span> <span class="k">if</span> <span class="n">crs</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;CRS:84&quot;</span> <span class="k">else</span> <span class="n">crs</span>
+                    <span class="n">left_x</span> <span class="o">=</span> <span class="n">bbox</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;minx&quot;</span><span class="p">)</span>
+                    <span class="n">right_x</span> <span class="o">=</span> <span class="n">bbox</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;maxx&quot;</span><span class="p">)</span>
+                    <span class="n">lower_y</span> <span class="o">=</span> <span class="n">bbox</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;miny&quot;</span><span class="p">)</span>
+                    <span class="n">upper_y</span> <span class="o">=</span> <span class="n">bbox</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;maxy&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Preventing if it returns comma as the decimal separator</span>
+                    <span class="n">spatial_extent</span> <span class="o">=</span> <span class="n">geos</span><span class="o">.</span><span class="n">Polygon</span><span class="o">.</span><span class="n">from_bbox</span><span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="n">left_x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="n">lower_y</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="n">right_x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span>
+                            <span class="nb">float</span><span class="p">(</span><span class="n">upper_y</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">break</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">spatial_extent</span><span class="p">:</span>
+                <span class="n">crs</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No suitable wms:BoundingBox element found!&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">crs</span> <span class="ow">in</span> <span class="n">layer_element</span><span class="o">.</span><span class="n">xpath</span><span class="p">(</span><span class="s2">&quot;wms:CRS//text()&quot;</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">nsmap</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="s2">&quot;EPSG:&quot;</span> <span class="ow">in</span> <span class="n">crs</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">or</span> <span class="n">crs</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;CRS:84&quot;</span><span class="p">:</span>
+                        <span class="n">crs</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span> <span class="k">if</span> <span class="n">crs</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;CRS:84&quot;</span> <span class="k">else</span> <span class="n">crs</span>
+                        <span class="n">left_x</span> <span class="o">=</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                            <span class="n">layer_element</span><span class="p">,</span> <span class="s2">&quot;wms:EX_GeographicBoundingBox/wms:westBoundLongitude&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+                        <span class="p">)</span>
+                        <span class="n">right_x</span> <span class="o">=</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                            <span class="n">layer_element</span><span class="p">,</span> <span class="s2">&quot;wms:EX_GeographicBoundingBox/wms:eastBoundLongitude&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+                        <span class="p">)</span>
+                        <span class="n">lower_y</span> <span class="o">=</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                            <span class="n">layer_element</span><span class="p">,</span> <span class="s2">&quot;wms:EX_GeographicBoundingBox/wms:southBoundLatitude&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+                        <span class="p">)</span>
+                        <span class="n">upper_y</span> <span class="o">=</span> <span class="n">get_xpath_value</span><span class="p">(</span>
+                            <span class="n">layer_element</span><span class="p">,</span> <span class="s2">&quot;wms:EX_GeographicBoundingBox/wms:northBoundLatitude&quot;</span><span class="p">,</span> <span class="n">nsmap</span>
+                        <span class="p">)</span>
+
+                        <span class="c1"># Preventing if it returns comma as the decimal separator</span>
+                        <span class="n">spatial_extent</span> <span class="o">=</span> <span class="n">geos</span><span class="o">.</span><span class="n">Polygon</span><span class="o">.</span><span class="n">from_bbox</span><span class="p">(</span>
+                            <span class="p">(</span>
+                                <span class="nb">float</span><span class="p">(</span><span class="n">left_x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span>
+                                <span class="nb">float</span><span class="p">(</span><span class="n">lower_y</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span>
+                                <span class="nb">float</span><span class="p">(</span><span class="n">right_x</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span>
+                                <span class="nb">float</span><span class="p">(</span><span class="n">upper_y</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)),</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">spatial_extent</span><span class="p">:</span>
+                    <span class="n">crs</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No suitable wms:CRS element found!&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">spatial_extent</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">spatial_extent</span><span class="p">:</span>
+                <span class="n">crs</span> <span class="o">=</span> <span class="s2">&quot;EPSG:4326&quot;</span>
+                <span class="n">spatial_extent</span> <span class="o">=</span> <span class="n">geos</span><span class="o">.</span><span class="n">Polygon</span><span class="o">.</span><span class="n">from_bbox</span><span class="p">((</span><span class="o">-</span><span class="mf">180.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">180.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title</span><span class="p">,</span>
+            <span class="s2">&quot;abstract&quot;</span><span class="p">:</span> <span class="n">abstract</span><span class="p">,</span>
+            <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="n">crs</span><span class="p">,</span>
+            <span class="s2">&quot;keywords&quot;</span><span class="p">:</span> <span class="n">keywords</span><span class="p">,</span>
+            <span class="s2">&quot;spatial_extent&quot;</span><span class="p">:</span> <span class="n">spatial_extent</span><span class="p">,</span>
+            <span class="s2">&quot;wms_url&quot;</span><span class="p">:</span> <span class="n">wms_url</span><span class="p">,</span>
+            <span class="s2">&quot;legend_url&quot;</span><span class="p">:</span> <span class="n">legend_url</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="OgcWmsHarvester.finalize_resource_update">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms.OgcWmsHarvester.finalize_resource_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">finalize_resource_update</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">geonode_resource</span><span class="p">:</span> <span class="n">ResourceBase</span><span class="p">,</span>
+        <span class="n">harvested_info</span><span class="p">:</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">,</span>
+        <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResourceBase</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a thumbnail with a WMS request.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">geonode_resource</span><span class="o">.</span><span class="n">srid</span><span class="p">:</span>
+            <span class="n">target_crs</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEFAULT_MAP_CRS</span>
+        <span class="k">elif</span> <span class="s2">&quot;EPSG:&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">geonode_resource</span><span class="o">.</span><span class="n">srid</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;CRS:&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">geonode_resource</span><span class="o">.</span><span class="n">srid</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+            <span class="n">target_crs</span> <span class="o">=</span> <span class="n">geonode_resource</span><span class="o">.</span><span class="n">srid</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target_crs</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;EPSG:</span><span class="si">{</span><span class="n">geonode_resource</span><span class="o">.</span><span class="n">srid</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">create_thumbnail</span><span class="p">(</span>
+            <span class="n">instance</span><span class="o">=</span><span class="n">geonode_resource</span><span class="p">,</span>
+            <span class="c1"># wms_version=harvested_info.resource_descriptor,</span>
+            <span class="n">bbox</span><span class="o">=</span><span class="n">geonode_resource</span><span class="o">.</span><span class="n">bbox</span><span class="p">,</span>
+            <span class="n">forced_crs</span><span class="o">=</span><span class="n">target_crs</span><span class="p">,</span>
+            <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="_get_nsmap">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/wms/index.html#geonode.harvesting.harvesters.wms._get_nsmap">[docs]</a>
+<span class="k">def</span> <span class="nf">_get_nsmap</span><span class="p">(</span><span class="n">original</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare namespaces dict for running xpath queries.</span>
+
+<span class="sd">    lxml complains when a namespaces dict has an entry with None as a key.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;wms&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">original</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">result</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

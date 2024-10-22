@@ -1,0 +1,80 @@
+geonode.upload.upload_validators
+================================
+
+.. py:module:: geonode.upload.upload_validators
+
+.. autoapi-nested-parse::
+
+   Tools for performing validation of uploaded spatial files.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.upload.upload_validators.logger
+   geonode.upload.upload_validators.ShapefileAux
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.upload.upload_validators._supported_type
+   geonode.upload.upload_validators.validate_uploaded_files
+   geonode.upload.upload_validators._validate_shapefile_components
+   geonode.upload.upload_validators._validate_kml_bytes
+   geonode.upload.upload_validators.validate_kml
+   geonode.upload.upload_validators.validate_kml_zip
+   geonode.upload.upload_validators.validate_kmz
+   geonode.upload.upload_validators.validate_shapefile
+   geonode.upload.upload_validators.validate_raster
+   geonode.upload.upload_validators.validate_raster_zip
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: ShapefileAux
+
+.. py:function:: _supported_type(ext, supported_types)
+
+.. py:function:: validate_uploaded_files(cleaned, uploaded_files, field_spatial_types, base_file_path)
+
+.. py:function:: _validate_shapefile_components(possible_filenames)
+
+   Validates that a shapefile can be loaded from the input file paths
+
+   :arg possible_files: Remaining form upload contents
+   :type possible_files: list
+   :raises: forms.ValidationError
+
+
+
+.. py:function:: _validate_kml_bytes(kml_bytes, other_files)
+
+.. py:function:: validate_kml(possible_files)
+
+   Validate uploaded KML file and a possible image companion file
+
+   KML files that specify vectorial data typers are uploaded standalone.
+   However, if the KML specifies a GroundOverlay type (raster) they are
+   uploaded together with a raster file.
+
+
+
+.. py:function:: validate_kml_zip(kmz_django_file)
+
+.. py:function:: validate_kmz(kmz_django_file)
+
+.. py:function:: validate_shapefile(zip_django_file)
+
+.. py:function:: validate_raster(contents, allow_multiple=False)
+
+.. py:function:: validate_raster_zip(zip_django_file)
+
