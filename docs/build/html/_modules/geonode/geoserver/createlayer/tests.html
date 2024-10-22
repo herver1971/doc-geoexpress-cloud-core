@@ -1,0 +1,265 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.geoserver.createlayer.tests &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../geoserver.html">geonode.geoserver</a></li>
+          <li class="breadcrumb-item"><a href="../createlayer.html">geonode.geoserver.createlayer</a></li>
+      <li class="breadcrumb-item active">geonode.geoserver.createlayer.tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.geoserver.createlayer.tests</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2017 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+
+<span class="kn">from</span> <span class="nn">geonode.tests.base</span> <span class="kn">import</span> <span class="n">GeoNodeBaseTestSupport</span>
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">geoserver</span>
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">GeoNodeException</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.decorators</span> <span class="kn">import</span> <span class="n">on_ogc_backend</span>
+<span class="kn">from</span> <span class="nn">geonode.geoserver.signals</span> <span class="kn">import</span> <span class="n">gs_catalog</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_dataset</span>
+
+
+<div class="viewcode-block" id="CreateLayerCoreTest">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/tests/index.html#geonode.geoserver.createlayer.tests.CreateLayerCoreTest">[docs]</a>
+<span class="k">class</span> <span class="nc">CreateLayerCoreTest</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test createlayer application.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CreateLayerCoreTest.fixtures">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/tests/index.html#geonode.geoserver.createlayer.tests.CreateLayerCoreTest.fixtures">[docs]</a>
+    <span class="n">fixtures</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;initial_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;bobby&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CreateLayerCoreTest.setUp">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/tests/index.html#geonode.geoserver.createlayer.tests.CreateLayerCoreTest.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span></div>
+
+        <span class="c1"># createlayer must use postgis as a datastore</span>
+        <span class="c1"># set temporary settings to use a postgis datastore</span>
+        <span class="c1"># DATASTORE_URL = &#39;postgis://geonode:geonode@localhost:5432/datastore&#39;</span>
+        <span class="c1"># postgis_db = dj_database_url.parse(DATASTORE_URL, conn_max_age=0)</span>
+        <span class="c1"># settings.DATABASES[&#39;datastore&#39;] = postgis_db</span>
+        <span class="c1"># settings.OGC_SERVER[&#39;default&#39;][&#39;DATASTORE&#39;] = &#39;datastore&#39;</span>
+
+<div class="viewcode-block" id="CreateLayerCoreTest.tearDown">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/tests/index.html#geonode.geoserver.createlayer.tests.CreateLayerCoreTest.tearDown">[docs]</a>
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">tearDown</span><span class="p">()</span></div>
+
+        <span class="c1"># move to original settings</span>
+        <span class="c1"># settings.OGC_SERVER[&#39;default&#39;][&#39;DATASTORE&#39;] = &#39;&#39;</span>
+        <span class="c1"># del settings.DATABASES[&#39;datastore&#39;]</span>
+        <span class="c1"># TODO remove stuff from django and geoserver catalog</span>
+
+    <span class="nd">@on_ogc_backend</span><span class="p">(</span><span class="n">geoserver</span><span class="o">.</span><span class="n">BACKEND_PACKAGE</span><span class="p">)</span>
+<div class="viewcode-block" id="CreateLayerCoreTest.test_dataset_creation">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/tests/index.html#geonode.geoserver.createlayer.tests.CreateLayerCoreTest.test_dataset_creation">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_dataset_creation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try creating a layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">internal_apps_tests</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TEST_RUN_INTERNAL_APPS&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">internal_apps_tests</span><span class="p">:</span>
+            <span class="n">internal_apps_tests</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">internal_apps_tests</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dataset_name</span> <span class="o">=</span> <span class="s2">&quot;point_dataset&quot;</span>
+            <span class="n">dataset_title</span> <span class="o">=</span> <span class="s2">&quot;A layer for points&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s2">&quot;datastore&quot;</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#######&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;DATASTORE&quot;</span><span class="p">])</span>
+
+            <span class="n">create_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">dataset_title</span><span class="p">,</span> <span class="s2">&quot;bobby&quot;</span><span class="p">,</span> <span class="s2">&quot;Point&quot;</span><span class="p">)</span>
+
+            <span class="n">cat</span> <span class="o">=</span> <span class="n">gs_catalog</span>
+
+            <span class="c1"># Check the layer is in the Django database</span>
+            <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">dataset_name</span><span class="p">)</span>
+
+            <span class="c1"># check if it is in geoserver</span>
+            <span class="n">gs_dataset</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">gs_dataset</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">gs_dataset</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">)</span>
+
+                <span class="n">resource</span> <span class="o">=</span> <span class="n">gs_dataset</span><span class="o">.</span><span class="n">resource</span>
+                <span class="c1"># we must have only one attibute (&#39;the_geom&#39;)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">attributes</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># check layer corrispondence between django and geoserver</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">dataset_title</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">projection</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">srid</span><span class="p">)</span>
+
+                <span class="c1"># check if layer detail page is accessible with client</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;dataset_embed&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;geonode:</span><span class="si">{</span><span class="n">dataset_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,)))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">cat</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">gs_dataset</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CreateLayerCoreTest.test_dataset_creation_with_wrong_geometry_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/tests/index.html#geonode.geoserver.createlayer.tests.CreateLayerCoreTest.test_dataset_creation_with_wrong_geometry_type">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_dataset_creation_with_wrong_geometry_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try creating a layer with uncorrect geometry type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">GeoNodeException</span><span class="p">):</span>
+            <span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;wrong_geom_dataset&quot;</span><span class="p">,</span> <span class="s2">&quot;A layer with wrong geometry&quot;</span><span class="p">,</span> <span class="s2">&quot;bobby&quot;</span><span class="p">,</span> <span class="s2">&quot;wrong_geometry&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@on_ogc_backend</span><span class="p">(</span><span class="n">geoserver</span><span class="o">.</span><span class="n">BACKEND_PACKAGE</span><span class="p">)</span>
+<div class="viewcode-block" id="CreateLayerCoreTest.test_dataset_creation_with_attributes">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/tests/index.html#geonode.geoserver.createlayer.tests.CreateLayerCoreTest.test_dataset_creation_with_attributes">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_dataset_creation_with_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try creating a layer with attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">internal_apps_tests</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TEST_RUN_INTERNAL_APPS&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">internal_apps_tests</span><span class="p">:</span>
+            <span class="n">internal_apps_tests</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">internal_apps_tests</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attributes</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            {</span>
+<span class="s2">              &quot;field_str&quot;: &quot;string&quot;,</span>
+<span class="s2">              &quot;field_int&quot;: &quot;integer&quot;,</span>
+<span class="s2">              &quot;field_date&quot;: &quot;date&quot;,</span>
+<span class="s2">              &quot;field_float&quot;: &quot;float&quot;</span>
+<span class="s2">            }</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+
+            <span class="n">dataset_name</span> <span class="o">=</span> <span class="s2">&quot;attributes_dataset&quot;</span>
+            <span class="n">dataset_title</span> <span class="o">=</span> <span class="s2">&quot;A layer with attributes&quot;</span>
+
+            <span class="n">create_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">dataset_title</span><span class="p">,</span> <span class="s2">&quot;bobby&quot;</span><span class="p">,</span> <span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+
+            <span class="n">cat</span> <span class="o">=</span> <span class="n">gs_catalog</span>
+            <span class="n">gs_dataset</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">resource</span> <span class="o">=</span> <span class="n">gs_dataset</span><span class="o">.</span><span class="n">resource</span>
+
+                <span class="c1"># we must have one attibute for the geometry, and 4 other ones</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">attributes</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">cat</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">gs_dataset</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

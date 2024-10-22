@@ -1,0 +1,111 @@
+geonode.base.bbox_utils
+=======================
+
+.. py:module:: geonode.base.bbox_utils
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.bbox_utils.BBOXHelper
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.base.bbox_utils.normalize_x_value
+   geonode.base.bbox_utils.polygon_from_bbox
+   geonode.base.bbox_utils.filter_bbox
+   geonode.base.bbox_utils.check_crossing
+   geonode.base.bbox_utils.translate_polygons
+   geonode.base.bbox_utils.split_polygon
+
+
+Module Contents
+---------------
+
+.. py:class:: BBOXHelper(minmaxform)
+
+   A bounding box representation to avoid use of list indices when
+   dealing with bounding boxes.
+
+
+   .. py:method:: from_xy(xy)
+      :classmethod:
+
+
+      Constructs a `BBOXHelper` instance from coordinates in "xy" format.
+
+      :param xy: collection of coordinates as [xmin, xmax, ymin, ymax]
+
+
+
+   .. py:method:: as_polygon()
+
+
+.. py:function:: normalize_x_value(value)
+
+   Normalise x-axis value/longtitude to fall within [-180, 180]
+
+
+.. py:function:: polygon_from_bbox(bbox, srid=4326)
+
+   Constructs a Polygon object with srid from a provided bbox.
+
+
+.. py:function:: filter_bbox(queryset, bbox)
+
+   Filters a queryset by a provided bounding box.
+
+   :param bbox: Comma-separated coordinates as "xmin,ymin,xmax,ymax"
+
+
+.. py:function:: check_crossing(lon1: float, lon2: float, validate: bool = False, dlon_threshold: float = 180.0)
+
+   ref.: https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513
+   Assuming a minimum travel distance between two provided longitude coordinates,
+   checks if the 180th meridian (antimeridian) is crossed.
+
+
+.. py:function:: translate_polygons(geometry_collection: shapely.geometry.GeometryCollection, output_format: str = 'geojson') -> Generator[Union[List[dict], List[shapely.geometry.Polygon]], None, None]
+
+   ref.: https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513
+
+
+.. py:function:: split_polygon(geojson: dict, output_format: str = 'geojson', validate: bool = False) -> Union[List[dict], List[shapely.geometry.Polygon], shapely.geometry.GeometryCollection]
+
+   ref.: https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513
+   Given a GeoJSON representation of a Polygon, returns a collection of
+   'antimeridian-safe' constituent polygons split at the 180th meridian,
+   ensuring compliance with GeoJSON standards (https://tools.ietf.org/html/rfc7946#section-3.1.9)
+   Assumptions:
+     - Any two consecutive points with over 180 degrees difference in
+       longitude are assumed to cross the antimeridian
+     - The polygon spans less than 360 degrees in longitude (i.e. does not wrap around the globe)
+     - However, the polygon may cross the antimeridian on multiple occasions
+   :param geojson: GeoJSON of input polygon to be split. For example:
+                   {
+                   "type": "Polygon",
+                   "coordinates": [
+                     [
+                       [179.0, 0.0], [-179.0, 0.0], [-179.0, 1.0],
+                       [179.0, 1.0], [179.0, 0.0]
+                     ]
+                   ]
+                   }
+   :type geojson: dict
+   :param output_format: Available options: "geojson", "polygons", "geometrycollection"
+                         If "geometrycollection" returns a Shapely GeometryCollection.
+                         Otherwise, returns a list of either GeoJSONs or Shapely Polygons
+   :type output_format: str
+   :param validate: Checks if all longitudes are within [-180.0, 180.0]
+   :type validate: bool
+
+   :returns: antimeridian-safe polygon(s)
+   :rtype: List[dict]/List[Polygon]/GeometryCollection
+
+

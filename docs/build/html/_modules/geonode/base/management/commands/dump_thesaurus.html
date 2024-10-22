@@ -1,0 +1,250 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.management.commands.dump_thesaurus &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../../base.html">geonode.base</a></li>
+      <li class="breadcrumb-item active">geonode.base.management.commands.dump_thesaurus</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.base.management.commands.dump_thesaurus</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 OSGeo</span>
+<span class="c1"># Copyright (C) 2022 King&#39;s College London</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">BaseCommand</span><span class="p">,</span> <span class="n">CommandError</span>
+<span class="kn">from</span> <span class="nn">rdflib</span> <span class="kn">import</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">URIRef</span><span class="p">,</span> <span class="n">Literal</span>
+<span class="kn">from</span> <span class="nn">rdflib.namespace</span> <span class="kn">import</span> <span class="n">DC</span><span class="p">,</span> <span class="n">DCTERMS</span><span class="p">,</span> <span class="n">RDF</span><span class="p">,</span> <span class="n">SKOS</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">Thesaurus</span><span class="p">,</span> <span class="n">ThesaurusKeyword</span><span class="p">,</span> <span class="n">ThesaurusKeywordLabel</span><span class="p">,</span> <span class="n">ThesaurusLabel</span>
+
+
+<div class="viewcode-block" id="Command">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/dump_thesaurus/index.html#geonode.base.management.commands.dump_thesaurus.Command">[docs]</a>
+<span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Command.help">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/dump_thesaurus/index.html#geonode.base.management.commands.dump_thesaurus.Command.help">[docs]</a>
+    <span class="n">help</span> <span class="o">=</span> <span class="s1">&#39;Dump a thesaurus in RDF format&#39;</span></div>
+
+<div class="viewcode-block" id="Command.formats">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/dump_thesaurus/index.html#geonode.base.management.commands.dump_thesaurus.Command.formats">[docs]</a>
+    <span class="n">formats</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="s1">&#39;ttl&#39;</span><span class="p">,</span> <span class="s1">&#39;xml&#39;</span><span class="p">,</span> <span class="s1">&#39;pretty-xml&#39;</span><span class="p">,</span> <span class="s1">&#39;json-ld&#39;</span><span class="p">,</span> <span class="s1">&#39;nt&#39;</span><span class="p">,</span> <span class="s1">&#39;n3&#39;</span><span class="p">,</span> <span class="s1">&#39;trig&#39;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="Command.add_arguments">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/dump_thesaurus/index.html#geonode.base.management.commands.dump_thesaurus.Command.add_arguments">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+
+        <span class="c1"># Named (optional) arguments</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;-n&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--name&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Dump the thesaurus with the given name&#39;</span><span class="p">)</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;-f&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--format&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;format&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="s1">&#39;pretty-xml&#39;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Format string supported by rdflib, e.g.: pretty-xml (default), </span><span class="si">{</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formats</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;--default-lang&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;lang&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s1">&#39;THESAURUS_DEFAULT_LANG&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Default language code for untagged string literals&#39;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Named (optional) arguments</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s1">&#39;-l&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;--list&#39;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">,</span>
+            <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s1">&#39;List available thesauri&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Command.handle">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/dump_thesaurus/index.html#geonode.base.management.commands.dump_thesaurus.Command.handle">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="nb">list</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="s2">&quot;Missing identifier name for the thesaurus (--name)&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;format&#39;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">formats</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid output format: supported formats are </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">formats</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">list_thesauri</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dump_thesaurus</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;format&#39;</span><span class="p">),</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;lang&#39;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Command.list_thesauri">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/dump_thesaurus/index.html#geonode.base.management.commands.dump_thesaurus.Command.list_thesauri">[docs]</a>
+    <span class="k">def</span> <span class="nf">list_thesauri</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">(</span><span class="s1">&#39;LISTING THESAURI&#39;</span><span class="p">))</span>
+
+        <span class="n">thesaurus_entries</span> <span class="o">=</span> <span class="n">Thesaurus</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s1">&#39;identifier&#39;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">thesaurus_entries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">WARNING</span><span class="p">(</span><span class="s1">&#39;NO ENTRIES FOUND ...&#39;</span><span class="p">))</span>
+            <span class="k">return</span>
+        <span class="n">max_id_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">thesaurus_entries</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">Thesaurus</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;order&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">card_max</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">card</span> <span class="o">=</span> <span class="s1">&#39;DISABLED&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># DISABLED</span>
+                <span class="c1"># [0..n]</span>
+                <span class="n">card</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;[</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">card_min</span><span class="si">}</span><span class="s1">..</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">card_max</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">t</span><span class="o">.</span><span class="n">card_max</span><span class="o">!=-</span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;N&quot;</span><span class="si">}</span><span class="s1">]  &#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;id:</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">id</span><span class="si">:</span><span class="s1">2</span><span class="si">}</span><span class="s1"> sort:</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">order</span><span class="si">:</span><span class="s1">3</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">card</span><span class="si">}</span><span class="s1"> name=</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">identifier</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">max_id_len</span><span class="p">)</span><span class="si">}</span><span class="s1"> title=&quot;</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s1">&quot; URI:</span><span class="si">{</span><span class="n">t</span><span class="o">.</span><span class="n">about</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Command.dump_thesaurus">
+<a class="viewcode-back" href="../../../../../autoapi/geonode/base/management/commands/dump_thesaurus/index.html#geonode.base.management.commands.dump_thesaurus.Command.dump_thesaurus">[docs]</a>
+    <span class="k">def</span> <span class="nf">dump_thesaurus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default_lang</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="n">g</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">()</span>
+        <span class="n">thesaurus</span> <span class="o">=</span> <span class="n">Thesaurus</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">scheme</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">about</span><span class="p">)</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">scheme</span><span class="p">,</span> <span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">SKOS</span><span class="o">.</span><span class="n">ConceptScheme</span><span class="p">))</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">scheme</span><span class="p">,</span> <span class="n">DC</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">Literal</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">default_lang</span><span class="p">)))</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">scheme</span><span class="p">,</span> <span class="n">DC</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">Literal</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">default_lang</span><span class="p">)))</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">scheme</span><span class="p">,</span> <span class="n">DCTERMS</span><span class="o">.</span><span class="n">issued</span><span class="p">,</span> <span class="n">Literal</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">date</span><span class="p">)))</span>
+
+        <span class="k">for</span> <span class="n">title_label</span> <span class="ow">in</span> <span class="n">ThesaurusLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">=</span><span class="n">thesaurus</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">scheme</span><span class="p">,</span> <span class="n">DC</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">Literal</span><span class="p">(</span><span class="n">title_label</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">title_label</span><span class="o">.</span><span class="n">lang</span><span class="p">)))</span>
+
+        <span class="c1"># Concepts</span>
+        <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">ThesaurusKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">=</span><span class="n">thesaurus</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">concept</span> <span class="o">=</span> <span class="n">URIRef</span><span class="p">(</span><span class="n">keyword</span><span class="o">.</span><span class="n">about</span><span class="p">)</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">concept</span><span class="p">,</span> <span class="n">RDF</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">SKOS</span><span class="o">.</span><span class="n">Concept</span><span class="p">))</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">concept</span><span class="p">,</span> <span class="n">SKOS</span><span class="o">.</span><span class="n">inScheme</span><span class="p">,</span> <span class="n">scheme</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">keyword</span><span class="o">.</span><span class="n">alt_label</span><span class="p">:</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">concept</span><span class="p">,</span> <span class="n">SKOS</span><span class="o">.</span><span class="n">altLabel</span><span class="p">,</span> <span class="n">Literal</span><span class="p">(</span><span class="n">keyword</span><span class="o">.</span><span class="n">alt_label</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">default_lang</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">ThesaurusKeywordLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">keyword</span><span class="o">=</span><span class="n">keyword</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">concept</span><span class="p">,</span> <span class="n">SKOS</span><span class="o">.</span><span class="n">prefLabel</span><span class="p">,</span> <span class="n">Literal</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="n">label</span><span class="o">.</span><span class="n">lang</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="n">fmt</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

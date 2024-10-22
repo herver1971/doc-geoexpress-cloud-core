@@ -1,0 +1,146 @@
+geonode.api.authorization
+=========================
+
+.. py:module:: geonode.api.authorization
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.api.authorization.GeoNodeAuthorization
+   geonode.api.authorization.GeonodeApiKeyAuthentication
+   geonode.api.authorization.GeoNodeStyleAuthorization
+   geonode.api.authorization.ApiLockdownAuthorization
+   geonode.api.authorization.GeoNodePeopleAuthorization
+   geonode.api.authorization.GroupAuthorization
+   geonode.api.authorization.GroupProfileAuthorization
+
+
+Module Contents
+---------------
+
+.. py:class:: GeoNodeAuthorization
+
+   Bases: :py:obj:`tastypie.authorization.DjangoAuthorization`
+
+
+   Object level API authorization based on GeoNode granular
+   permission system
+
+
+   .. py:method:: read_list(object_list, bundle)
+
+
+   .. py:method:: read_detail(object_list, bundle)
+
+
+   .. py:method:: create_list(object_list, bundle)
+
+
+   .. py:method:: create_detail(object_list, bundle)
+
+
+   .. py:method:: update_list(object_list, bundle)
+
+
+   .. py:method:: update_detail(object_list, bundle)
+
+
+   .. py:method:: delete_list(object_list, bundle)
+
+
+   .. py:method:: delete_detail(object_list, bundle)
+
+
+.. py:class:: GeonodeApiKeyAuthentication
+
+   Bases: :py:obj:`tastypie.authentication.ApiKeyAuthentication`
+
+
+   Override ApiKeyAuthentication to prevent 401 response when no api key is provided.
+
+
+   .. py:method:: is_authenticated(request, **kwargs)
+
+      Finds the user and checks their API key.
+
+      Should return either ``True`` if allowed, ``False`` if not or an
+      ``HttpResponse`` if you need something custom.
+
+
+
+.. py:class:: GeoNodeStyleAuthorization
+
+   Bases: :py:obj:`GeoNodeAuthorization`
+
+
+   Object level API authorization based on GeoNode granular
+   permission system
+
+   Style object permissions should follow it's layer permissions
+
+
+   .. py:method:: filter_by_resource_ids(object_list, permitted_ids)
+
+      Filter Style queryset by permitted resource ids.
+
+
+
+   .. py:method:: read_list(object_list, bundle)
+
+
+   .. py:method:: delete_detail(object_list, bundle)
+
+
+.. py:class:: ApiLockdownAuthorization
+
+   Bases: :py:obj:`tastypie.authorization.DjangoAuthorization`
+
+
+   API authorization for all resources which are not protected  by others authentication/authorization mechanism.
+   If setting "API_LOCKDOWN" is set to True, resource can only be accessed by authenticated users. For anonymous
+   requests, empty lists are returned.
+
+
+   .. py:method:: read_list(object_list, bundle)
+
+
+.. py:class:: GeoNodePeopleAuthorization
+
+   Bases: :py:obj:`tastypie.authorization.DjangoAuthorization`
+
+
+   API authorization that allows only authenticated users to view list of users
+
+
+   .. py:method:: read_list(object_list, bundle)
+
+
+.. py:class:: GroupAuthorization
+
+   Bases: :py:obj:`ApiLockdownAuthorization`
+
+
+   API authorization for all resources which are not protected  by others authentication/authorization mechanism.
+   If setting "API_LOCKDOWN" is set to True, resource can only be accessed by authenticated users. For anonymous
+   requests, empty lists are returned.
+
+
+   .. py:method:: read_list(object_list, bundle)
+
+
+.. py:class:: GroupProfileAuthorization
+
+   Bases: :py:obj:`ApiLockdownAuthorization`
+
+
+   API authorization for all resources which are not protected  by others authentication/authorization mechanism.
+   If setting "API_LOCKDOWN" is set to True, resource can only be accessed by authenticated users. For anonymous
+   requests, empty lists are returned.
+
+
+   .. py:method:: read_list(object_list, bundle)
+
+
