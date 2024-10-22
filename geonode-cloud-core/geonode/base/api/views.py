@@ -137,6 +137,7 @@ class UserViewSet(DynamicModelViewSet):
         """
         Filters and sorts users.
         """
+
         if self.request and self.request.user:
             queryset = get_available_users(self.request.user)
         else:
@@ -202,6 +203,7 @@ class GroupViewSet(DynamicModelViewSet):
         """
         Filters the public groups and private ones the current user is member of.
         """
+
         metadata_author_groups = get_user_visible_groups(self.request.user, include_public_invite=True)
         if not isinstance(metadata_author_groups, list):
             metadata_author_groups = list(metadata_author_groups.all())
