@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fabfile &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fabfile</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fabfile</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This is a fabric script file that allows for remote deployment of</span>
+<span class="sd">GeoNode and a downstream GeoNode project via ssh.</span>
+
+<span class="sd">To deploy a default GeoNode:</span>
+<span class="sd">    fab -H user@hostname deploy_default_geonode</span>
+
+<span class="sd">To deploy a GeoNode project from current directory:</span>
+<span class="sd">    fab -H user@hostname deploy:&#39;project&#39;</span>
+<span class="sd">       project - name of project (name of site directory in current dir)</span>
+
+<span class="sd">This file currently gets GeoNode from GitHub, eventually will install</span>
+<span class="sd">from repo or debian package (once release candidate phase or later)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Usage:</span>
+<span class="c1">#     fab -H user@hostname</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">sudo</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">cd</span><span class="p">,</span> <span class="n">put</span><span class="p">,</span> <span class="n">prefix</span>
+<span class="kn">from</span> <span class="nn">fabric.api</span> <span class="kn">import</span> <span class="n">settings</span> <span class="k">as</span> <span class="n">fab_settings</span>
+<span class="kn">from</span> <span class="nn">fabric.context_managers</span> <span class="kn">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">hide</span>
+<span class="kn">from</span> <span class="nn">fabric.contrib.files</span> <span class="kn">import</span> <span class="n">sed</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="INSTALLDIR">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.INSTALLDIR">[docs]</a>
+<span class="n">INSTALLDIR</span> <span class="o">=</span> <span class="s1">&#39;/var/lib&#39;</span></div>
+
+<div class="viewcode-block" id="POSTGIS_VER">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.POSTGIS_VER">[docs]</a>
+<span class="n">POSTGIS_VER</span> <span class="o">=</span> <span class="s2">&quot;1.5.3-2&quot;</span></div>
+
+<div class="viewcode-block" id="GEONODE_BRANCH">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.GEONODE_BRANCH">[docs]</a>
+<span class="n">GEONODE_BRANCH</span> <span class="o">=</span> <span class="s1">&#39;dev&#39;</span></div>
+
+<div class="viewcode-block" id="GEONODE_GIT_URL">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.GEONODE_GIT_URL">[docs]</a>
+<span class="n">GEONODE_GIT_URL</span> <span class="o">=</span> <span class="s1">&#39;git://github.com/GeoNode/geonode.git&#39;</span></div>
+
+<div class="viewcode-block" id="ADMIN_USER">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.ADMIN_USER">[docs]</a>
+<span class="n">ADMIN_USER</span> <span class="o">=</span> <span class="s1">&#39;geonode&#39;</span>  <span class="c1"># Matches user in ubuntu packages</span></div>
+
+<div class="viewcode-block" id="ADMIN_PASSWORD">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.ADMIN_PASSWORD">[docs]</a>
+<span class="n">ADMIN_PASSWORD</span> <span class="o">=</span> <span class="s1">&#39;adm1n&#39;</span></div>
+
+<div class="viewcode-block" id="ADMIN_EMAIL">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.ADMIN_EMAIL">[docs]</a>
+<span class="n">ADMIN_EMAIL</span> <span class="o">=</span> <span class="s1">&#39;admin@admin.admin&#39;</span></div>
+
+<div class="viewcode-block" id="UBUNTU_VERSION">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.UBUNTU_VERSION">[docs]</a>
+<span class="n">UBUNTU_VERSION</span> <span class="o">=</span> <span class="s2">&quot;precise&quot;</span></div>
+
+<div class="viewcode-block" id="ARCH">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.ARCH">[docs]</a>
+<span class="n">ARCH</span> <span class="o">=</span> <span class="s1">&#39;x86_64&#39;</span></div>
+
+<div class="viewcode-block" id="VERSION">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.VERSION">[docs]</a>
+<span class="n">VERSION</span> <span class="o">=</span> <span class="s1">&#39;2.0a0&#39;</span></div>
+
+<div class="viewcode-block" id="MAKE_PUBLIC">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.MAKE_PUBLIC">[docs]</a>
+<span class="n">MAKE_PUBLIC</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="AMI_BUCKET">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.AMI_BUCKET">[docs]</a>
+<span class="n">AMI_BUCKET</span> <span class="o">=</span> <span class="s1">&#39;geonode-ami-dev&#39;</span></div>
+
+<div class="viewcode-block" id="AWS_USER_ID">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.AWS_USER_ID">[docs]</a>
+<span class="n">AWS_USER_ID</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_USER_ID&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="AWS_ACCESS_KEY_ID">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.AWS_ACCESS_KEY_ID">[docs]</a>
+<span class="n">AWS_ACCESS_KEY_ID</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_ACCESS_KEY_ID&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="AWS_SECRET_ACCESS_KEY">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.AWS_SECRET_ACCESS_KEY">[docs]</a>
+<span class="n">AWS_SECRET_ACCESS_KEY</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_SECRET_ACCESS_KEY&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="KEY_BASE">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.KEY_BASE">[docs]</a>
+<span class="n">KEY_BASE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;EC2_KEY_BASE&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="KEY_PATH">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.KEY_PATH">[docs]</a>
+<span class="n">KEY_PATH</span> <span class="o">=</span> <span class="s1">&#39;~/.ssh/&#39;</span>  <span class="c1"># trailing slash please</span></div>
+
+
+<span class="c1"># Derived variables</span>
+<div class="viewcode-block" id="GEONODEDIR">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.GEONODEDIR">[docs]</a>
+<span class="n">GEONODEDIR</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">INSTALLDIR</span><span class="si">}</span><span class="s2">/geonode&quot;</span></div>
+
+<div class="viewcode-block" id="PYLIBS">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.PYLIBS">[docs]</a>
+<span class="n">PYLIBS</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">GEONODEDIR</span><span class="si">}</span><span class="s2">/lib/python2.7/site-packages&quot;</span></div>
+
+<div class="viewcode-block" id="ACT">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.ACT">[docs]</a>
+<span class="n">ACT</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;source </span><span class="si">{</span><span class="n">GEONODEDIR</span><span class="si">}</span><span class="s2">/bin/activate&quot;</span></div>
+
+
+
+<span class="c1"># Install GeoNode dependencies</span>
+<div class="viewcode-block" id="install_depend">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.install_depend">[docs]</a>
+<span class="k">def</span> <span class="nf">install_depend</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cd </span><span class="si">{</span><span class="n">INSTALLDIR</span><span class="si">}</span><span class="s1">; virtualenv geonode --system-site-packages;&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -y gcc python-pastescript python-dev libxml2-dev libxslt1-dev openjdk-6-jdk &#39;</span>
+         <span class="s1">&#39;python-psycopg2 imagemagick&#39;</span><span class="p">)</span>
+    <span class="c1"># Web server</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -y apache2 tomcat6 libapache2-mod-wsgi maven2&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s2">&quot;a2enmod proxy_http&quot;</span><span class="p">)</span>
+    <span class="c1"># Database</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;apt-get install -y postgis=</span><span class="si">{</span><span class="n">POSTGIS_VER</span><span class="si">}</span><span class="s1"> postgresql-9.1-postgis postgresql-server-dev-9.1&#39;</span><span class="p">)</span>
+    <span class="n">create_postgis_template</span><span class="p">()</span></div>
+
+    <span class="c1"># sed(&#39;/etc/postgresql/9.1/main/pg_hba.conf&#39;,</span>
+    <span class="c1">#    &#39;local   all             all                                     peer&#39;,</span>
+    <span class="c1">#    &#39;local   all             all                                     md5&#39;, use_sudo=True)</span>
+
+
+<div class="viewcode-block" id="create_postgis_template">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.create_postgis_template">[docs]</a>
+<span class="k">def</span> <span class="nf">create_postgis_template</span><span class="p">():</span>
+    <span class="c1"># Create postgis template</span>
+    <span class="k">with</span> <span class="n">fab_settings</span><span class="p">(</span><span class="n">warn_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;createdb -E UTF8 template_postgis&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;createlang -d template_postgis plpgsql&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span>
+        <span class="n">cstring</span> <span class="o">=</span> <span class="s2">&quot;UPDATE pg_database SET datistemplate=&#39;true&#39; WHERE datname=&#39;template_postgis&#39;&quot;</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;psql -d postgres -c </span><span class="si">{</span><span class="n">cstring</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;psql -d template_postgis -f /usr/share/postgresql/9.1/contrib/postgis-</span><span class="si">{</span><span class="n">POSTGIS_VER</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s1">/postgis.sql&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;psql -d template_postgis -f /usr/share/postgresql/9.1/contrib/postgis-</span><span class="si">{</span><span class="n">POSTGIS_VER</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s1">/spatial_ref_sys.sql&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;psql -d template_postgis -c &quot;GRANT ALL ON geometry_columns TO PUBLIC;&quot;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;psql -d template_postgis -c &quot;GRANT ALL ON geography_columns TO PUBLIC;&quot;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;psql -d template_postgis -c &quot;GRANT ALL ON spatial_ref_sys TO PUBLIC;&quot;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">POSTGIS_VER</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;2&#39;</span><span class="p">:</span>
+            <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;psql -d template_postgis -f /usr/share/postgresql/9.1/contrib/postgis-</span><span class="si">{</span><span class="n">POSTGIS_VER</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s1">/rtpostgis.sql&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Install GeoNode library</span>
+<div class="viewcode-block" id="deploy_geonode">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.deploy_geonode">[docs]</a>
+<span class="k">def</span> <span class="nf">deploy_geonode</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -y python-virtualenv&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">GEONODEDIR</span><span class="p">),</span> <span class="n">prefix</span><span class="p">(</span><span class="n">ACT</span><span class="p">):</span>
+        <span class="c1"># Fetch from GitHub</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -y git&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rm -rf setup&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;git clone -b </span><span class="si">{</span><span class="n">GEONODE_BRANCH</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">GEONODE_GIT_URL</span><span class="si">}</span><span class="s1"> setup&#39;</span><span class="p">)</span>
+        <span class="c1"># Install requirements, setup</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;pip install -e setup&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cp -r setup/geonode </span><span class="si">{</span><span class="n">PYLIBS</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;cp setup/package/support/geonode.apache /etc/apache2/sites-available/geonode&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rm -rf setup&#39;</span><span class="p">)</span>
+    <span class="n">sed</span><span class="p">(</span><span class="s1">&#39;/etc/apache2/sites-available/geonode&#39;</span><span class="p">,</span> <span class="s1">&#39;REPLACE_WITH_SITEDIR&#39;</span><span class="p">,</span> <span class="n">PYLIBS</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sed</span><span class="p">(</span><span class="s1">&#39;/etc/apache2/sites-available/geonode&#39;</span><span class="p">,</span> <span class="s1">&#39;/var/www/geonode/wsgi/geonode.wsgi&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PYLIBS</span><span class="si">}</span><span class="s2">/geonode/wsgi.py&quot;</span><span class="p">,</span>
+        <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Fix geoserver auth config file</span>
+    <span class="n">sed</span><span class="p">(</span><span class="s1">&#39;/usr/share/geoserver/data/security/auth/geonodeAuthProvider/config.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;localhost:8000&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="c1"># Use debian package instead</span>
+    <span class="c1"># sudo(&#39;git branch deb;paver deb&#39;)</span>
+    <span class="c1"># sudo(&#39;dpkg -i geonode/geonode*.deb&#39;)</span>
+
+
+<span class="c1"># Deploy custom project from current local directory</span>
+<div class="viewcode-block" id="deploy_project">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.deploy_project">[docs]</a>
+<span class="k">def</span> <span class="nf">deploy_project</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+    <span class="c1"># Put apps....change settings to get project apps automagically</span>
+    <span class="n">put</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">PYLIBS</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">fab_settings</span><span class="p">(</span><span class="n">warn_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">projdir</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">,</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">projdir</span> <span class="o">!=</span> <span class="s1">&#39;shared&#39;</span> <span class="ow">and</span> <span class="n">projdir</span> <span class="o">!=</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span>
+                <span class="n">put</span><span class="p">(</span><span class="n">projdir</span><span class="p">,</span> <span class="n">PYLIBS</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">put</span><span class="p">(</span><span class="s1">&#39;requirements.txt&#39;</span><span class="p">,</span> <span class="n">GEONODEDIR</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">GEONODEDIR</span><span class="p">),</span> <span class="n">prefix</span><span class="p">(</span><span class="n">ACT</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;pip install -r requirements.txt --upgrade&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rm requirements.txt&#39;</span><span class="p">)</span>
+    <span class="n">put</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">.apache&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;/etc/apache2/sites-available/</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sed</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;/etc/apache2/sites-available/</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;REPLACE_WITH_SITEDIR&#39;</span><span class="p">,</span> <span class="n">PYLIBS</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PYLIBS</span><span class="p">,</span> <span class="n">project</span><span class="p">)):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;ln -s settings_production.py local_settings.py&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="enable_site">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.enable_site">[docs]</a>
+<span class="k">def</span> <span class="nf">enable_site</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">PYLIBS</span><span class="p">),</span> <span class="n">prefix</span><span class="p">(</span><span class="n">ACT</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;a2ensite </span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">; service apache2 restart&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;mkdir /var/www/geonode; chown www-data:www-data /var/www/geonode&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;django-admin.py collectstatic --noinput --settings=</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">.settings&#39;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># TODO - test/fix this function</span>
+<div class="viewcode-block" id="restore_data">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.restore_data">[docs]</a>
+<span class="k">def</span> <span class="nf">restore_data</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+    <span class="c1"># Restore geoserver data</span>
+    <span class="n">gsdir</span> <span class="o">=</span> <span class="s1">&#39;/var/lib/tomcat6/webapps/geoserver&#39;</span>
+    <span class="n">put</span><span class="p">(</span><span class="s1">&#39;data/geoserver-data.tar&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">gsdir</span><span class="si">}</span><span class="s2">/geoserver-data.tar&quot;</span><span class="p">,</span> <span class="n">use_sudo</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">cd</span><span class="p">(</span><span class="n">gsdir</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;rm -rf data&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;tar xvf geoserver-data.tar&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;chown -R tomcat6:tomcat6 data&#39;</span><span class="p">)</span>
+    <span class="n">run</span><span class="p">(</span><span class="s1">&#39;rm geoserver-data.tar&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;service tomcat6 restart&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">prefix</span><span class="p">(</span><span class="n">ACT</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;django-admin.py cleardeadlayers --settings=</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">.settings&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;django-admin.py updatelayers --settings=</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">.settings&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_database">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.create_database">[docs]</a>
+<span class="k">def</span> <span class="nf">create_database</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
+    <span class="c1"># sudo(f&quot;dropdb {db}&quot;, user=&quot;postgres&quot;)</span>
+    <span class="c1"># sudo(f&quot;dropuser {user}&quot;, user=&quot;postgres&quot;)</span>
+    <span class="k">with</span> <span class="n">fab_settings</span><span class="p">(</span><span class="n">warn_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;createuser -s </span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s2">&quot;postgres&quot;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;createdb -O </span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">db</span><span class="si">}</span><span class="s2"> -T template_postgis&quot;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s2">&quot;postgres&quot;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;psql -c </span><span class="se">\&quot;</span><span class="s2">alter user </span><span class="si">{</span><span class="n">user</span><span class="si">}</span><span class="s2"> with encrypted password &#39;</span><span class="si">{</span><span class="n">password</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\&quot;</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s2">&quot;postgres&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="setup_pgsql">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.setup_pgsql">[docs]</a>
+<span class="k">def</span> <span class="nf">setup_pgsql</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">exec</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;import </span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">.settings_production as settings&#39;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">][</span><span class="s1">&#39;NAME&#39;</span><span class="p">]</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">][</span><span class="s1">&#39;USER&#39;</span><span class="p">]</span>
+    <span class="n">password</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATABASES</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">][</span><span class="s1">&#39;PASSWORD&#39;</span><span class="p">]</span>
+    <span class="n">create_database</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">prefix</span><span class="p">(</span><span class="n">ACT</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;django-admin.py migrate --settings=</span><span class="si">{</span><span class="n">project</span><span class="si">}</span><span class="s1">.settings&#39;</span><span class="p">)</span></div>
+
+    <span class="c1"># Need to restore database and GeoServer data</span>
+    <span class="c1"># put(f&#39;data/{db}.sql&#39;, GEONODEDIR, use_sudo=True)</span>
+    <span class="c1"># sudo(f&#39;psql -d {db} -f {GEONODEDIR}/{db}.sql&#39;, user=&#39;postgres&#39;)</span>
+
+
+<div class="viewcode-block" id="deploy">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.deploy">[docs]</a>
+<span class="k">def</span> <span class="nf">deploy</span><span class="p">(</span><span class="n">project</span><span class="p">):</span>
+    <span class="n">install_depend</span><span class="p">()</span>
+    <span class="n">deploy_geonode</span><span class="p">()</span>
+    <span class="n">deploy_project</span><span class="p">(</span><span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">enable_site</span><span class="p">(</span><span class="n">project</span><span class="p">)</span>
+    <span class="n">setup_pgsql</span><span class="p">(</span><span class="n">project</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="deploy_default_geonode">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.deploy_default_geonode">[docs]</a>
+<span class="k">def</span> <span class="nf">deploy_default_geonode</span><span class="p">():</span>
+    <span class="n">install_depend</span><span class="p">()</span>
+    <span class="n">deploy_geonode</span><span class="p">()</span>
+    <span class="n">enable_site</span><span class="p">(</span><span class="s1">&#39;geonode&#39;</span><span class="p">)</span>
+    <span class="c1"># User needs to provide local_settings - where?</span>
+    <span class="n">setup_pgsql</span><span class="p">(</span><span class="s1">&#39;geonode&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="deploy_geonode_testing_package">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.deploy_geonode_testing_package">[docs]</a>
+<span class="k">def</span> <span class="nf">deploy_geonode_testing_package</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;add-apt-repository -y ppa:geonode/testing&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get update&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -f -y geonode&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="deploy_geonode_snapshot_package">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.deploy_geonode_snapshot_package">[docs]</a>
+<span class="k">def</span> <span class="nf">deploy_geonode_snapshot_package</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;add-apt-repository -y ppa:geonode/snapshots&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get update&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -f -y geonode&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="deploy_geonode_unstable_package">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.deploy_geonode_unstable_package">[docs]</a>
+<span class="k">def</span> <span class="nf">deploy_geonode_unstable_package</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;add-apt-repository -y ppa:geonode/unstable&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get update&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -f -y geonode&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="deploy_geonode_dev_deb">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.deploy_geonode_dev_deb">[docs]</a>
+<span class="k">def</span> <span class="nf">deploy_geonode_dev_deb</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;add-apt-repository -y ppa:geonode/unstable&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get update&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;wget -e robots=off --wait 0.25 -r -l1 --no-parent -A.deb http://build.geonode.org/geonode/latest/&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">settings</span><span class="p">(</span><span class="n">warn_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;cd build.geonode.org/geonode/latest;dpkg -i geonode_2.0.0*.deb&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -f -y&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="change_admin_password">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.change_admin_password">[docs]</a>
+<span class="k">def</span> <span class="nf">change_admin_password</span><span class="p">():</span>
+    <span class="n">put</span><span class="p">(</span><span class="s1">&#39;../misc/changepw.py&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/ubuntu/&#39;</span><span class="p">)</span>
+    <span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;perl -pi -e &#39;s/replace.me.admin.user/</span><span class="si">{</span><span class="n">ADMIN_USER</span><span class="si">}</span><span class="s2">/g&#39; ~/changepw.py&quot;</span><span class="p">)</span>
+    <span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;perl -pi -e &#39;s/replace.me.admin.pw/</span><span class="si">{</span><span class="n">ADMIN_PASSWORD</span><span class="si">}</span><span class="s2">/g&#39; ~/changepw.py&quot;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;source /var/lib/geonode/bin/activate;cat ~/changepw.py | django-admin.py shell --settings=geonode.settings&#39;</span><span class="p">)</span>
+    <span class="n">run</span><span class="p">(</span><span class="s1">&#39;rm ~/changepw.py&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="geonode_updateip">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.geonode_updateip">[docs]</a>
+<span class="k">def</span> <span class="nf">geonode_updateip</span><span class="p">(</span><span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;demo.geonode.org&quot;</span><span class="p">):</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;geonode-updateip </span><span class="si">{</span><span class="n">server_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="set_temp_hosts_entry">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.set_temp_hosts_entry">[docs]</a>
+<span class="k">def</span> <span class="nf">set_temp_hosts_entry</span><span class="p">(</span><span class="n">server_name</span><span class="o">=</span><span class="s2">&quot;demo.geonode.org&quot;</span><span class="p">):</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s2">&quot;IP=`wget -qO- http://instance-data/latest/meta-data/public-ipv4`; echo $IP demo.geonode.org &gt;&gt; /etc/hosts&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="remove_temp_hosts_entry">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.remove_temp_hosts_entry">[docs]</a>
+<span class="k">def</span> <span class="nf">remove_temp_hosts_entry</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s2">&quot;sed &#39;$d&#39; /etc/hosts &gt; temp; mv temp /etc/hosts&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="update_geoserver_geonode_auth">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.update_geoserver_geonode_auth">[docs]</a>
+<span class="k">def</span> <span class="nf">update_geoserver_geonode_auth</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;perl -pi -e &quot;s/:8000//g&quot; /usr/share/geoserver/data/security/auth/geonodeAuthProvider/config.xml&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;/etc/init.d/tomcat7 restart&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="update_instance">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.update_instance">[docs]</a>
+<span class="k">def</span> <span class="nf">update_instance</span><span class="p">():</span>
+    <span class="n">put</span><span class="p">(</span><span class="s1">&#39;../misc/update-instance&#39;</span><span class="p">,</span> <span class="s1">&#39;/home/ubuntu/&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;mv /home/ubuntu/update-instance /etc/init.d&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;chmod +x /etc/init.d/update-instance&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;sudo update-rc.d -f update-instance start 20 2 3 4 5 .&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="cleanup_temp">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.cleanup_temp">[docs]</a>
+<span class="k">def</span> <span class="nf">cleanup_temp</span><span class="p">():</span>
+    <span class="c1"># ToDo: Update as necessary</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s2">&quot;rm -f /root/.*hist* $HOME/.*hist*&quot;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s2">&quot;rm -f /var/log/*.gz&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="copy_keys">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.copy_keys">[docs]</a>
+<span class="k">def</span> <span class="nf">copy_keys</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;rm -f ~/.ssh/*</span><span class="si">{</span><span class="n">KEY_BASE</span><span class="si">}</span><span class="s1">.pem&#39;</span><span class="p">)</span>
+    <span class="n">put</span><span class="p">((</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">KEY_PATH</span><span class="si">}</span><span class="s1">*</span><span class="si">{</span><span class="n">KEY_BASE</span><span class="si">}</span><span class="s1">*&#39;</span><span class="p">),</span> <span class="s1">&#39;/home/ubuntu/.ssh/&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mo">0o400</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="install_ec2_tools">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.install_ec2_tools">[docs]</a>
+<span class="k">def</span> <span class="nf">install_ec2_tools</span><span class="p">():</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;add-apt-repository &quot;deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ </span><span class="si">{</span><span class="n">UBUNTU_VERSION</span><span class="si">}</span><span class="s1"> multiverse&quot;&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;add-apt-repository &quot;deb http://us-east-1.ec2.archive.ubuntu.com/ubuntu/ </span><span class="si">{</span><span class="n">UBUNTU_VERSION</span><span class="si">}</span><span class="s1">-updates multiverse&quot;&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get -y update&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -y ec2-ami-tools&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;apt-get install -y ec2-api-tools&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="build_geonode_ami">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.build_geonode_ami">[docs]</a>
+<span class="k">def</span> <span class="nf">build_geonode_ami</span><span class="p">():</span>
+    <span class="n">deploy_geonode_dev_deb</span><span class="p">()</span>
+    <span class="n">change_admin_password</span><span class="p">()</span>
+    <span class="n">cleanup_temp</span><span class="p">()</span>
+    <span class="n">copy_keys</span><span class="p">()</span>
+    <span class="n">update_instance</span><span class="p">()</span>
+    <span class="n">install_ec2_tools</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">hide</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">,</span> <span class="s1">&#39;stdout&#39;</span><span class="p">,</span> <span class="s1">&#39;stderr&#39;</span><span class="p">):</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;export AWS_USER_ID=</span><span class="si">{</span><span class="n">AWS_USER_ID</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;export AWS_ACCESS_KEY_ID=</span><span class="si">{</span><span class="n">AWS_ACCESS_KEY_ID</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;export AWS_SECRET_ACCESS_KEY=</span><span class="si">{</span><span class="n">AWS_SECRET_ACCESS_KEY</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;export ARCH=</span><span class="si">{</span><span class="n">ARCH</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;geonode-</span><span class="si">{</span><span class="n">VERSION</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">excludes</span> <span class="o">=</span> <span class="s1">&#39;/mnt,/root/.ssh,/home/ubuntu/.ssh,/tmp&#39;</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ec2-bundle-vol -r </span><span class="si">{</span><span class="n">ARCH</span><span class="si">}</span><span class="s2"> -d /mnt -p </span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> -u </span><span class="si">{</span><span class="n">AWS_USER_ID</span><span class="si">}</span><span class="s2"> -k ~/.ssh/pk-*.pem -c ~/.ssh/cert-*.pem -e </span><span class="si">{</span><span class="n">excludes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ec2-upload-bundle -b </span><span class="si">{</span><span class="n">AMI_BUCKET</span><span class="si">}</span><span class="s2"> -m /mnt/</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">.manifest.xml -a </span><span class="si">{</span><span class="n">AWS_ACCESS_KEY_ID</span><span class="si">}</span><span class="s2"> -s </span><span class="si">{</span><span class="n">AWS_SECRET_ACCESS_KEY</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;ec2-register --name &quot;</span><span class="si">{</span><span class="n">AMI_BUCKET</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">&quot; &quot;</span><span class="si">{</span><span class="n">AMI_BUCKET</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">.manifest.xml&quot; -K ~/.ssh/pk-*.pem -C ~/.ssh/cert-*.pem&#39;</span><span class="p">)</span>
+    <span class="n">ami_id</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">MAKE_PUBLIC</span><span class="p">:</span>
+        <span class="n">sudo</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ec2-modify-image-attribute -l -a all -K ~/.ssh/pk-*.pem -C ~/.ssh/cert-*.pem </span><span class="si">{</span><span class="n">ami_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AMI </span><span class="si">{</span><span class="n">ami_id</span><span class="si">}</span><span class="s2"> Ready for Use&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="install_sample_data">
+<a class="viewcode-back" href="../autoapi/fabfile/index.html#fabfile.install_sample_data">[docs]</a>
+<span class="k">def</span> <span class="nf">install_sample_data</span><span class="p">():</span>
+    <span class="n">run</span><span class="p">(</span><span class="s1">&#39;geonode loaddata sample_admin.json&#39;</span><span class="p">)</span>
+    <span class="n">run</span><span class="p">(</span><span class="s1">&#39;geonode importlayers `python -c &quot;import gisdata; print gisdata.GOOD_DATA&quot;` -v 3&#39;</span><span class="p">)</span>
+    <span class="c1"># Fix permissions issue on the newly created thumbs dir</span>
+    <span class="n">sudo</span><span class="p">(</span><span class="s1">&#39;chmod -R 7777 /var/www/geonode/uploaded/thumbs/&#39;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.catalogue.tests &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../catalogue.html">geonode.catalogue</a></li>
+      <li class="breadcrumb-item active">geonode.catalogue.tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.catalogue.tests</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.test</span> <span class="kn">import</span> <span class="n">RequestFactory</span>
+<span class="kn">from</span> <span class="nn">django.http.response</span> <span class="kn">import</span> <span class="n">Http404</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">PermissionDenied</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.catalogue</span> <span class="kn">import</span> <span class="n">get_catalogue</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">AnonymousUser</span>
+<span class="kn">from</span> <span class="nn">geonode.tests.base</span> <span class="kn">import</span> <span class="n">GeoNodeBaseTestSupport</span>
+<span class="kn">from</span> <span class="nn">geonode.catalogue.models</span> <span class="kn">import</span> <span class="n">catalogue_post_save</span>
+
+<span class="kn">from</span> <span class="nn">geonode.catalogue.views</span> <span class="kn">import</span> <span class="n">csw_global_dispatch</span><span class="p">,</span> <span class="n">resolve_uuid</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.populate_datasets_data</span> <span class="kn">import</span> <span class="n">create_dataset_data</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.populate_test_data</span> <span class="kn">import</span> <span class="n">all_public</span><span class="p">,</span> <span class="n">create_models</span><span class="p">,</span> <span class="n">remove_models</span><span class="p">,</span> <span class="n">create_single_dataset</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="CatalogueTest">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest">[docs]</a>
+<span class="k">class</span> <span class="nc">CatalogueTest</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CatalogueTest.setUpClass">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.setUpClass">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUpClass</span><span class="p">()</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">get_type</span><span class="p">,</span> <span class="n">integration</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">get_integration</span><span class="p">)</span>
+        <span class="n">all_public</span><span class="p">()</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CatalogueTest.tearDownClass">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.tearDownClass">[docs]</a>
+    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">tearDownClass</span><span class="p">()</span>
+        <span class="n">remove_models</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">get_obj_ids</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">get_type</span><span class="p">,</span> <span class="n">integration</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">get_integration</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CatalogueTest.setUp">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request_factory_single</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+        <span class="n">create_dataset_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passwd</span> <span class="o">=</span> <span class="s2">&quot;admin&quot;</span></div>
+
+
+<div class="viewcode-block" id="CatalogueTest.test_get_catalog">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.test_get_catalog">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_get_catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tests the get_catalogue function works.&quot;&quot;&quot;</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">get_catalogue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">c</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CatalogueTest.test_update_metadata_records">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.test_update_metadata_records">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_update_metadata_records</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">abstract</span> <span class="o">=</span> <span class="s2">&quot;&lt;p&gt;Test HTML abstract&lt;/p&gt;&quot;</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">abstract</span><span class="p">,</span> <span class="s2">&quot;&lt;p&gt;Test HTML abstract&lt;/p&gt;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">raw_abstract</span><span class="p">,</span> <span class="s2">&quot;Test HTML abstract&quot;</span><span class="p">)</span>
+        <span class="c1"># refresh catalogue metadata records</span>
+        <span class="n">catalogue_post_save</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="c1"># get all records</span>
+        <span class="n">csw</span> <span class="o">=</span> <span class="n">get_catalogue</span><span class="p">()</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">csw</span><span class="o">.</span><span class="n">get_record</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">abstract</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">raw_abstract</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">otherconstraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">identification</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">otherconstraints</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dataset</span><span class="o">.</span><span class="n">raw_constraints_other</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CatalogueTest.test_given_a_simple_request_should_return_200">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.test_given_a_simple_request_should_return_200">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_given_a_simple_request_should_return_200</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">actual</span> <span class="o">=</span> <span class="n">csw_global_dispatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">actual</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CatalogueTest.test_given_a_request_for_a_single_dataset_should_return_single_value_in_xml_without_dataset_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.test_given_a_request_for_a_single_dataset_should_return_single_value_in_xml_without_dataset_filter">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_given_a_request_for_a_single_dataset_should_return_single_value_in_xml_without_dataset_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request_factory_single</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">csw_global_dispatch</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">actual</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">root</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">actual</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CatalogueTest.test_given_a_request_for_a_single_dataset_should_return_empty_value_in_xml_with_dataset_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.test_given_a_request_for_a_single_dataset_should_return_empty_value_in_xml_with_dataset_filter">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_given_a_request_for_a_single_dataset_should_return_empty_value_in_xml_with_dataset_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request_factory_single</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">csw_global_dispatch</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_filter</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">actual</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">root</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">actual</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CatalogueTest.test_given_a_request_for_multiple_dataset_should_return_empty_value_in_xml_with_dataset_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.test_given_a_request_for_multiple_dataset_should_return_empty_value_in_xml_with_dataset_filter">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_given_a_request_for_multiple_dataset_should_return_empty_value_in_xml_with_dataset_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request_factory_multiple</span><span class="p">()</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">csw_global_dispatch</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_filter</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">actual</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;{http://www.opengis.net/cat/csw/2.0.2}SearchResults&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;numberOfRecordsReturned&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">actual</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="CatalogueTest.test_given_a_request_for_multiple_dataset_should_return_multiple_value_in_xml_with_dataset_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.test_given_a_request_for_multiple_dataset_should_return_multiple_value_in_xml_with_dataset_filter">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_given_a_request_for_multiple_dataset_should_return_multiple_value_in_xml_with_dataset_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request_factory_multiple</span><span class="p">()</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">csw_global_dispatch</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_filter_multiple</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">actual</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;{http://www.opengis.net/cat/csw/2.0.2}SearchResults&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;numberOfRecordsReturned&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">actual</span><span class="p">))</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CatalogueTest.dataset_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.dataset_filter">[docs]</a>
+    <span class="k">def</span> <span class="nf">dataset_filter</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">uuid__startswith</span><span class="o">=</span><span class="s2">&quot;foo_uuid&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CatalogueTest.dataset_filter_multiple">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.dataset_filter_multiple">[docs]</a>
+    <span class="k">def</span> <span class="nf">dataset_filter_multiple</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dataset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;CA&quot;</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;uniquetitle&quot;</span><span class="p">))</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CatalogueTest.__request_factory_single">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.__request_factory_single">[docs]</a>
+    <span class="k">def</span> <span class="nf">__request_factory_single</span><span class="p">(</span><span class="n">uuid</span><span class="p">):</span>
+        <span class="n">factory</span> <span class="o">=</span> <span class="n">RequestFactory</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8000/catalogue/csw?request=GetRecordById&quot;</span>
+        <span class="n">url</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;&amp;service=CSW&amp;version=2.0.2&amp;id=</span><span class="si">{</span><span class="n">uuid</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">url</span> <span class="o">+=</span> <span class="s2">&quot;&amp;outputschema=http%3A</span><span class="si">%2F%2F</span><span class="s2">www.isotc211.org</span><span class="si">%2F</span><span class="s2">2005</span><span class="si">%2F</span><span class="s2">gmd&amp;elementsetname=full&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">AnonymousUser</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">request</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CatalogueTest.__request_factory_multiple">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.CatalogueTest.__request_factory_multiple">[docs]</a>
+    <span class="k">def</span> <span class="nf">__request_factory_multiple</span><span class="p">():</span>
+        <span class="n">factory</span> <span class="o">=</span> <span class="n">RequestFactory</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8000/catalogue/csw/?request=GetRecords&amp;service=CSW&amp;version=2.0.2&quot;</span>
+        <span class="n">url</span> <span class="o">+=</span> <span class="s2">&quot;&amp;outputschema=http%3A</span><span class="si">%2F%2F</span><span class="s2">www.isotc211.org</span><span class="si">%2F</span><span class="s2">2005</span><span class="si">%2F</span><span class="s2">gmd&amp;elementsetname=full&quot;</span>
+        <span class="n">url</span> <span class="o">+=</span> <span class="s2">&quot;&amp;typenames=gmd:MD_Metadata&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">request</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="UUIDResolverTest">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.UUIDResolverTest">[docs]</a>
+<span class="k">class</span> <span class="nc">UUIDResolverTest</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="UUIDResolverTest.setUp">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.UUIDResolverTest.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">create_single_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;test_uuid_resolver_dataset&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UUIDResolverTest.tearDown">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.UUIDResolverTest.tearDown">[docs]</a>
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;test_uuid_resolver_dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="UUIDResolverTest.test_uuid_resolver_existing_dataset">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.UUIDResolverTest.test_uuid_resolver_existing_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_uuid_resolver_existing_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">set_default_permissions</span><span class="p">(</span><span class="n">owner</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">RequestFactory</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;http://localhost:8000/catalogue/uuid/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">uuid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">resolve_uuid</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">302</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/catalogue/#/dataset/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Location&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="UUIDResolverTest.test_uuid_resolver_non_existing_dataset">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.UUIDResolverTest.test_uuid_resolver_non_existing_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_uuid_resolver_non_existing_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">set_default_permissions</span><span class="p">(</span><span class="n">owner</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">RequestFactory</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;http://localhost:8000/catalogue/uuid/asdfasdf&quot;</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">Http404</span><span class="p">)</span> <span class="k">as</span> <span class="n">context</span><span class="p">:</span>
+            <span class="n">resolve_uuid</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;asdfasdf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;No ResourceBase matches the given query.&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exception</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="UUIDResolverTest.test_uuid_resolver_missing_permissions">
+<a class="viewcode-back" href="../../../autoapi/geonode/catalogue/tests/index.html#geonode.catalogue.tests.UUIDResolverTest.test_uuid_resolver_missing_permissions">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_uuid_resolver_missing_permissions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">set_permissions</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;registered-members&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;base.download_resourcebase&quot;</span><span class="p">]}}</span>
+        <span class="p">)</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">RequestFactory</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;http://localhost:8000/catalogue/uuid/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">uuid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">AnonymousUser</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">PermissionDenied</span><span class="p">)</span> <span class="k">as</span> <span class="n">context</span><span class="p">:</span>
+            <span class="n">resolve_uuid</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;Permission Denied&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">exception</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

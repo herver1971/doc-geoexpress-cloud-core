@@ -1,0 +1,1335 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pavement &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pavement</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pavement</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2018 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">fileinput</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">pytz</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">dateutil.parser</span> <span class="kn">import</span> <span class="n">parse</span> <span class="k">as</span> <span class="n">parsedate</span>
+
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span><span class="p">,</span> <span class="n">Request</span>
+
+<span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">psutil</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">paver.easy</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BuildFailure</span><span class="p">,</span>
+    <span class="n">call_task</span><span class="p">,</span>
+    <span class="n">cmdopts</span><span class="p">,</span>
+    <span class="n">info</span><span class="p">,</span>
+    <span class="n">needs</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">,</span>
+    <span class="n">sh</span><span class="p">,</span>
+    <span class="n">task</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">setuptools.command</span> <span class="kn">import</span> <span class="n">easy_install</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">paver.path</span> <span class="kn">import</span> <span class="n">pushd</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">paver.easy</span> <span class="kn">import</span> <span class="n">pushd</span>
+
+<span class="kn">from</span> <span class="nn">geonode.settings</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">on_travis</span><span class="p">,</span>
+    <span class="n">core_tests</span><span class="p">,</span>
+    <span class="n">internal_apps_tests</span><span class="p">,</span>
+    <span class="n">integration_tests</span><span class="p">,</span>
+    <span class="n">integration_server_tests</span><span class="p">,</span>
+    <span class="n">integration_upload_tests</span><span class="p">,</span>
+    <span class="n">integration_monitoring_tests</span><span class="p">,</span>
+    <span class="n">integration_csw_tests</span><span class="p">,</span>
+    <span class="n">integration_bdd_tests</span><span class="p">,</span>
+    <span class="n">INSTALLED_APPS</span><span class="p">,</span>
+    <span class="n">GEONODE_CORE_APPS</span><span class="p">,</span>
+    <span class="n">GEONODE_INTERNAL_APPS</span><span class="p">,</span>
+    <span class="n">GEONODE_APPS</span><span class="p">,</span>
+    <span class="n">OGC_SERVER</span><span class="p">,</span>
+    <span class="n">ASYNC_SIGNALS</span><span class="p">,</span>
+    <span class="n">MONITORING_ENABLED</span><span class="p">,</span>
+    <span class="n">CELERY_BEAT_SCHEDULER</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">geonode.settings</span> <span class="kn">import</span> <span class="n">TEST_RUNNER_KEEPDB</span><span class="p">,</span> <span class="n">TEST_RUNNER_PARALLEL</span>
+
+<div class="viewcode-block" id="_keepdb">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement._keepdb">[docs]</a>
+    <span class="n">_keepdb</span> <span class="o">=</span> <span class="s2">&quot;--keepdb&quot;</span> <span class="k">if</span> <span class="n">TEST_RUNNER_KEEPDB</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span></div>
+
+    <span class="n">_parallel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;--parallel=</span><span class="si">{</span><span class="n">TEST_RUNNER_PARALLEL</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">TEST_RUNNER_PARALLEL</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+<span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="n">_keepdb</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">_parallel</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="k">assert</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="ne">SystemError</span><span class="p">(</span><span class="s2">&quot;GeoNode Build requires python 2.6 or better&quot;</span><span class="p">)</span>
+
+<span class="n">dev_config</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dev_config.yml&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<div class="viewcode-block" id="dev_config">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.dev_config">[docs]</a>
+    <span class="n">dev_config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="grab">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.grab">[docs]</a>
+<span class="k">def</span> <span class="nf">grab</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; src, dest, name --&gt; </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dest</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">is_zipfile</span><span class="p">(</span><span class="n">dest</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> (corrupt file)&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">src</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;file://&quot;</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="n">file_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">dest</span><span class="p">))</span>
+        <span class="n">url_time</span> <span class="o">=</span> <span class="n">file_time</span>
+        <span class="k">for</span> <span class="n">_k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;last-modified&quot;</span><span class="p">,</span> <span class="s2">&quot;Date&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">_k</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+                <span class="n">url_time</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="n">_k</span><span class="p">]</span>
+        <span class="n">url_date</span> <span class="o">=</span> <span class="n">parsedate</span><span class="p">(</span><span class="n">url_time</span><span class="p">)</span>
+        <span class="n">utc</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span>
+        <span class="n">url_date</span> <span class="o">=</span> <span class="n">url_date</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
+        <span class="n">file_time</span> <span class="o">=</span> <span class="n">file_time</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">url_date</span> <span class="o">&lt;</span> <span class="n">file_time</span><span class="p">:</span>
+            <span class="c1"># Do not download if older than the local one</span>
+            <span class="k">return</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Downloading updated </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Local file does not exist or remote one is newer</span>
+    <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;file://&quot;</span><span class="p">):</span>
+        <span class="n">src2</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;file://&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">src2</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Source location (</span><span class="si">{</span><span class="n">src2</span><span class="si">}</span><span class="s2">) does not exist&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Copying local file from </span><span class="si">{</span><span class="n">src2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">src2</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># urlretrieve(str(src), str(dest))</span>
+        <span class="c1"># Streaming, so we can iterate over the response.</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Total size in bytes.</span>
+        <span class="n">total_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content-length&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Requesting </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">block_size</span> <span class="o">=</span> <span class="mi">1024</span>
+        <span class="n">wrote</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;output.bin&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">r</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">block_size</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">total_size</span> <span class="o">//</span> <span class="n">block_size</span><span class="p">),</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;KB&quot;</span><span class="p">,</span> <span class="n">unit_scale</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">):</span>
+                <span class="n">wrote</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; total_size [</span><span class="si">{</span><span class="n">total_size</span><span class="si">}</span><span class="s2">] / wrote [</span><span class="si">{</span><span class="n">wrote</span><span class="si">}</span><span class="s2">] &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">total_size</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">wrote</span> <span class="o">!=</span> <span class="n">total_size</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;ERROR, something went wrong. Data could not be written. Expected to write </span><span class="si">{</span><span class="n">wrote</span><span class="si">}</span><span class="s2"> but wrote </span><span class="si">{</span><span class="n">total_size</span><span class="si">}</span><span class="s2"> instead&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="s2">&quot;output.bin&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Cleaning up</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;output.bin&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;geoserver=&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;The location of the geoserver build (.war file).&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;jetty=&quot;</span><span class="p">,</span> <span class="s2">&quot;j&quot;</span><span class="p">,</span> <span class="s2">&quot;The location of the Jetty Runner (.jar file).&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;force_exec=&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;Force GeoServer Setup.&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="setup_geoserver">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.setup_geoserver">[docs]</a>
+<span class="k">def</span> <span class="nf">setup_geoserver</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare a testing instance of GeoServer.&quot;&quot;&quot;</span>
+    <span class="c1"># only start if using Geoserver backend</span>
+    <span class="k">if</span> <span class="s2">&quot;geonode.geoserver&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">INSTALLED_APPS</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">on_travis</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;force_exec&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Will make use of the docker container for the Integration Tests&quot;&quot;&quot;</span>
+        <span class="k">return</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">download_dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;downloaded&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">download_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">download_dir</span><span class="o">.</span><span class="n">makedirs</span><span class="p">()</span>
+        <span class="n">geoserver_dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">)</span>
+        <span class="n">geoserver_bin</span> <span class="o">=</span> <span class="n">download_dir</span> <span class="o">/</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">urlparse</span><span class="p">(</span><span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;GEOSERVER_URL&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">jetty_runner</span> <span class="o">=</span> <span class="n">download_dir</span> <span class="o">/</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">urlparse</span><span class="p">(</span><span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;JETTY_RUNNER_URL&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">geoserver_data</span> <span class="o">=</span> <span class="n">download_dir</span> <span class="o">/</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">urlparse</span><span class="p">(</span><span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;DATA_DIR_URL&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">grab</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;GEOSERVER_URL&quot;</span><span class="p">]),</span> <span class="n">geoserver_bin</span><span class="p">,</span> <span class="s2">&quot;geoserver binary&quot;</span><span class="p">)</span>
+        <span class="n">grab</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;jetty&quot;</span><span class="p">,</span> <span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;JETTY_RUNNER_URL&quot;</span><span class="p">]),</span> <span class="n">jetty_runner</span><span class="p">,</span> <span class="s2">&quot;jetty runner&quot;</span><span class="p">)</span>
+        <span class="n">grab</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoserver data&quot;</span><span class="p">,</span> <span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;DATA_DIR_URL&quot;</span><span class="p">]),</span> <span class="n">geoserver_data</span><span class="p">,</span> <span class="s2">&quot;geoserver data-dir&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">geoserver_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">geoserver_dir</span><span class="o">.</span><span class="n">makedirs</span><span class="p">()</span>
+
+            <span class="n">webapp_dir</span> <span class="o">=</span> <span class="n">geoserver_dir</span> <span class="o">/</span> <span class="s2">&quot;geoserver&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">webapp_dir</span><span class="p">:</span>
+                <span class="n">webapp_dir</span><span class="o">.</span><span class="n">makedirs</span><span class="p">()</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;extracting geoserver&quot;</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">geoserver_bin</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">z</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">webapp_dir</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;extracting geoserver data dir&quot;</span><span class="p">)</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="n">geoserver_data</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">z</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">geoserver_dir</span><span class="p">)</span>
+
+        <span class="n">_configure_data_dir</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="_configure_data_dir">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement._configure_data_dir">[docs]</a>
+<span class="k">def</span> <span class="nf">_configure_data_dir</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;geoserver/data/global.xml&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;proxyBaseUrl&gt;([^&lt;]+)&quot;</span><span class="p">,</span> <span class="n">xml</span><span class="p">)</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xml</span><span class="p">[:</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span><span class="si">}</span><span class="s2">http://localhost:8080/geoserver</span><span class="si">{</span><span class="n">xml</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">1</span><span class="p">):]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;geoserver/data/security/filter/geonode-oauth2/config.xml&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;accessTokenUri&gt;([^&lt;]+)&quot;</span><span class="p">,</span> <span class="n">xml</span><span class="p">)</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xml</span><span class="p">[:</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span><span class="si">}</span><span class="s2">http://localhost:8000/o/token/</span><span class="si">{</span><span class="n">xml</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">1</span><span class="p">):]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;userAuthorizationUri&gt;([^&lt;]+)&quot;</span><span class="p">,</span> <span class="n">xml</span><span class="p">)</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xml</span><span class="p">[:</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span><span class="si">}</span><span class="s2">http://localhost:8000/o/authorize/</span><span class="si">{</span><span class="n">xml</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">1</span><span class="p">):]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;redirectUri&gt;([^&lt;]+)&quot;</span><span class="p">,</span> <span class="n">xml</span><span class="p">)</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xml</span><span class="p">[:</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span><span class="si">}</span><span class="s2">http://localhost:8080/geoserver/index.html</span><span class="si">{</span><span class="n">xml</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">1</span><span class="p">):]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;checkTokenEndpointUrl&gt;([^&lt;]+)&quot;</span><span class="p">,</span> <span class="n">xml</span><span class="p">)</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xml</span><span class="p">[:</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span><span class="si">}</span><span class="s2">http://localhost:8000/api/o/v4/tokeninfo/</span><span class="si">{</span><span class="n">xml</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">1</span><span class="p">):]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;logoutUri&gt;([^&lt;]+)&quot;</span><span class="p">,</span> <span class="n">xml</span><span class="p">)</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xml</span><span class="p">[:</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span><span class="si">}</span><span class="s2">http://localhost:8000/account/logout/</span><span class="si">{</span><span class="n">xml</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">1</span><span class="p">):]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;geoserver/data/security/role/geonode REST role service/config.xml&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;baseUrl&gt;([^&lt;]+)&quot;</span><span class="p">,</span> <span class="n">xml</span><span class="p">)</span>
+            <span class="n">xml</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xml</span><span class="p">[:</span><span class="n">m</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span><span class="si">}</span><span class="s2">http://localhost:8000</span><span class="si">{</span><span class="n">xml</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="mi">1</span><span class="p">):]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="static">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.static">[docs]</a>
+<span class="k">def</span> <span class="nf">static</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">pushd</span><span class="p">(</span><span class="s2">&quot;geonode/static&quot;</span><span class="p">):</span>
+        <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;grunt production&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@needs</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;setup_geoserver&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="setup">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.setup">[docs]</a>
+<span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get dependencies and prepare a GeoNode development environment.&quot;&quot;&quot;</span>
+    <span class="n">info</span><span class="p">(</span>
+        <span class="s2">&quot;GeoNode development environment successfully set up.&quot;</span>
+        <span class="s2">&quot;If you have not set up an administrative account,&quot;</span>
+        <span class="s1">&#39; please do so now. Use &quot;paver start&quot; to start up the server.&#39;</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="grab_winfiles">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.grab_winfiles">[docs]</a>
+<span class="k">def</span> <span class="nf">grab_winfiles</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">packagename</span><span class="p">):</span>
+    <span class="c1"># Add headers</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Mozilla 5.10&quot;</span><span class="p">}</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">Request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dest</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writefile</span><span class="p">:</span>
+        <span class="n">writefile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="win_install_deps">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.win_install_deps">[docs]</a>
+<span class="k">def</span> <span class="nf">win_install_deps</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Install all Windows Binary automatically</span>
+<span class="sd">    This can be removed as wheels become available for these packages</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">download_dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;downloaded&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">abspath</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">download_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">download_dir</span><span class="o">.</span><span class="n">makedirs</span><span class="p">()</span>
+    <span class="n">win_packages</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="c1"># required by transifex-client</span>
+        <span class="s2">&quot;Py2exe&quot;</span><span class="p">:</span> <span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;WINDOWS&quot;</span><span class="p">][</span><span class="s2">&quot;py2exe&quot;</span><span class="p">],</span>
+        <span class="c1"># the wheel 1.9.4 installs but pycsw wants 1.9.3, which fails to compile</span>
+        <span class="c1"># when pycsw bumps their pyproj to 1.9.4 this can be removed.</span>
+        <span class="s2">&quot;PyProj&quot;</span><span class="p">:</span> <span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;WINDOWS&quot;</span><span class="p">][</span><span class="s2">&quot;pyproj&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;lXML&quot;</span><span class="p">:</span> <span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;WINDOWS&quot;</span><span class="p">][</span><span class="s2">&quot;lxml&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+    <span class="n">failed</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">package</span><span class="p">,</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">win_packages</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">tempfile</span> <span class="o">=</span> <span class="n">download_dir</span> <span class="o">/</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Installing file ... </span><span class="si">{</span><span class="n">tempfile</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">grab_winfiles</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">tempfile</span><span class="p">,</span> <span class="n">package</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">easy_install</span><span class="o">.</span><span class="n">main</span><span class="p">([</span><span class="n">tempfile</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">failed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;install failed with error: &quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tempfile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">failed</span> <span class="ow">and</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">**</span><span class="mi">32</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;64bit architecture is not currently supported&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;try finding the 64 binaries for py2exe, and pyproj&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">failed</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;install failed for py2exe, and/or pyproj&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Windows dependencies now complete.  Run pip install -e geonode --use-mirrors&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">([(</span><span class="s2">&quot;version=&quot;</span><span class="p">,</span> <span class="s2">&quot;v&quot;</span><span class="p">,</span> <span class="s2">&quot;Legacy GeoNode version of the existing database.&quot;</span><span class="p">)])</span>
+<div class="viewcode-block" id="upgradedb">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.upgradedb">[docs]</a>
+<span class="k">def</span> <span class="nf">upgradedb</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add &#39;fake&#39; data migrations for existing tables from legacy GeoNode versions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;1.1&quot;</span><span class="p">,</span> <span class="s2">&quot;1.2&quot;</span><span class="p">}:</span>
+        <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;python -W ignore manage.py migrate maps 0001 --fake&quot;</span><span class="p">)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;python -W ignore manage.py migrate avatar 0001 --fake&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Please specify your GeoNode version&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Upgrades from version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> are not yet supported.&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">([(</span><span class="s2">&quot;settings=&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="s2">&quot;Specify custom DJANGO_SETTINGS_MODULE&quot;</span><span class="p">)])</span>
+<div class="viewcode-block" id="sync">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.sync">[docs]</a>
+<span class="k">def</span> <span class="nf">sync</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run the migrate and migrate management commands to create and migrate a DB</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;settings&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span> <span class="ow">and</span> <span class="s2">&quot;DJANGO_SETTINGS_MODULE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py makemigrations --noinput&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py migrate --noinput&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py loaddata sample_admin.json&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py loaddata geonode/base/fixtures/default_oauth_apps.json&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py loaddata geonode/base/fixtures/initial_data.json&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py set_all_datasets_alternate&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py collectstatic --noinput&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="package">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.package">[docs]</a>
+<span class="k">def</span> <span class="nf">package</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a tarball to use for building the system elsewhere</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">tarfile</span>
+    <span class="kn">import</span> <span class="nn">geonode</span>
+
+    <span class="n">version</span> <span class="o">=</span> <span class="n">geonode</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
+    <span class="c1"># Use GeoNode&#39;s version for the package name.</span>
+    <span class="n">pkgname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;GeoNode-</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">-all&quot;</span>
+
+    <span class="c1"># Create the output directory.</span>
+    <span class="n">out_pkg</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="n">pkgname</span><span class="p">)</span>
+    <span class="n">out_pkg_tar</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pkgname</span><span class="si">}</span><span class="s2">.tar.gz&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Create a distribution in zip format for the geonode python package.</span>
+    <span class="n">dist_dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;dist&quot;</span><span class="p">)</span>
+    <span class="n">dist_dir</span><span class="o">.</span><span class="n">rmtree</span><span class="p">()</span>
+    <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;python setup.py sdist --formats=zip&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">pushd</span><span class="p">(</span><span class="s2">&quot;package&quot;</span><span class="p">):</span>
+        <span class="c1"># Delete old tar files in that directory</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;GeoNode*.tar.gz&quot;</span><span class="p">):</span>
+            <span class="n">old_package</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">old_package</span> <span class="o">!=</span> <span class="n">out_pkg_tar</span><span class="p">:</span>
+                <span class="n">old_package</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">out_pkg_tar</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There is already a package for version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Clean anything that is in the oupout package tree.</span>
+        <span class="n">out_pkg</span><span class="o">.</span><span class="n">rmtree</span><span class="p">()</span>
+        <span class="n">out_pkg</span><span class="o">.</span><span class="n">makedirs</span><span class="p">()</span>
+
+        <span class="n">support_folder</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;support&quot;</span><span class="p">)</span>
+        <span class="n">install_file</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;install.sh&quot;</span><span class="p">)</span>
+
+        <span class="c1"># And copy the default files from the package folder.</span>
+        <span class="n">justcopy</span><span class="p">(</span><span class="n">support_folder</span><span class="p">,</span> <span class="n">out_pkg</span> <span class="o">/</span> <span class="s2">&quot;support&quot;</span><span class="p">)</span>
+        <span class="n">justcopy</span><span class="p">(</span><span class="n">install_file</span><span class="p">,</span> <span class="n">out_pkg</span><span class="p">)</span>
+
+        <span class="n">geonode_dist</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;dist&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;GeoNode-</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">.zip&quot;</span>
+        <span class="n">justcopy</span><span class="p">(</span><span class="n">geonode_dist</span><span class="p">,</span> <span class="n">out_pkg</span><span class="p">)</span>
+
+        <span class="c1"># Create a tar file with all files in the output package folder.</span>
+        <span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">out_pkg_tar</span><span class="p">,</span> <span class="s2">&quot;w:gz&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">out_pkg</span><span class="o">.</span><span class="n">walkfiles</span><span class="p">():</span>
+            <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+        <span class="c1"># Add the README with the license and important links to documentation.</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;README&quot;</span><span class="p">,</span> <span class="n">arcname</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out_pkg</span><span class="si">}</span><span class="s2">/README.rst&quot;</span><span class="p">)</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1"># Remove all the files in the temporary output package directory.</span>
+        <span class="n">out_pkg</span><span class="o">.</span><span class="n">rmtree</span><span class="p">()</span>
+
+    <span class="c1"># Report the info about the new package.</span>
+    <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out_pkg_tar</span><span class="o">.</span><span class="n">abspath</span><span class="p">()</span><span class="si">}</span><span class="s2"> created&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@needs</span><span class="p">([</span><span class="s2">&quot;start_geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;start_django&quot;</span><span class="p">])</span>
+<span class="nd">@cmdopts</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;bind=&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;Bind server to provided IP address and port number.&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;java_path=&quot;</span><span class="p">,</span> <span class="s2">&quot;j&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path to java install for Windows&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;foreground&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;Do not run in background but in foreground&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;settings=&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="s2">&quot;Specify custom DJANGO_SETTINGS_MODULE&quot;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">share_with</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;start_django&quot;</span><span class="p">,</span> <span class="s2">&quot;start_geoserver&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="start">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.start">[docs]</a>
+<span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start GeoNode (Django, GeoServer &amp; Client)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">info</span><span class="p">(</span><span class="s2">&quot;GeoNode is now available.&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="stop_django">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.stop_django">[docs]</a>
+<span class="k">def</span> <span class="nf">stop_django</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stop the GeoNode Django application</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ASYNC_SIGNALS</span><span class="p">:</span>
+        <span class="n">kill</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="s2">&quot;celery&quot;</span><span class="p">)</span>
+        <span class="n">kill</span><span class="p">(</span><span class="s2">&quot;celery&quot;</span><span class="p">,</span> <span class="s2">&quot;worker&quot;</span><span class="p">)</span>
+    <span class="n">kill</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="s2">&quot;runserver&quot;</span><span class="p">)</span>
+    <span class="n">kill</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="s2">&quot;runmessaging&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">([(</span><span class="s2">&quot;force_exec=&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;Force GeoServer Stop.&quot;</span><span class="p">)])</span>
+<div class="viewcode-block" id="stop_geoserver">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.stop_geoserver">[docs]</a>
+<span class="k">def</span> <span class="nf">stop_geoserver</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stop GeoServer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># we use docker-compose for integration tests</span>
+    <span class="k">if</span> <span class="n">on_travis</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;force_exec&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="c1"># only start if using Geoserver backend</span>
+    <span class="k">if</span> <span class="s2">&quot;geonode.geoserver&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">INSTALLED_APPS</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">kill</span><span class="p">(</span><span class="s2">&quot;java&quot;</span><span class="p">,</span> <span class="s2">&quot;geoserver&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Kill process.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># proc = subprocess.Popen(&quot;ps -ef | grep -i -e &#39;[j]ava\|geoserver&#39; |</span>
+        <span class="c1"># awk &#39;{print $2}&#39;&quot;,</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="s2">&quot;ps -ef | grep -i -e &#39;geoserver&#39; | awk &#39;{print $2}&#39;&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">proc</span><span class="o">.</span><span class="n">stdout</span><span class="p">):</span>
+            <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stopping geoserver (process number </span><span class="si">{</span><span class="n">pid</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
+
+            <span class="c1"># Check if the process that we killed is alive.</span>
+            <span class="n">killed</span><span class="p">,</span> <span class="n">alive</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">wait_procs</span><span class="p">([</span><span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">pid</span><span class="o">=</span><span class="n">pid</span><span class="p">)],</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">alive</span><span class="p">:</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">info</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@needs</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;stop_geoserver&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="stop">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.stop">[docs]</a>
+<span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stop GeoNode</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># windows needs to stop the geoserver first b/c we can&#39;t tell which python</span>
+    <span class="c1"># is running, so we kill everything</span>
+    <span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping GeoNode ...&quot;</span><span class="p">)</span>
+    <span class="n">stop_django</span><span class="p">(</span><span class="n">options</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">([(</span><span class="s2">&quot;bind=&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;Bind server to provided IP address and port number.&quot;</span><span class="p">)])</span>
+<div class="viewcode-block" id="start_django">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.start_django">[docs]</a>
+<span class="k">def</span> <span class="nf">start_django</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start the GeoNode Django application</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;settings&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span> <span class="ow">and</span> <span class="s2">&quot;DJANGO_SETTINGS_MODULE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">bind</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bind&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0.0.0:8000&quot;</span><span class="p">)</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">bind</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">foreground</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;foreground&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&amp;&quot;</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py runserver </span><span class="si">{</span><span class="n">bind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">foreground</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ASYNC_SIGNALS</span><span class="p">:</span>
+        <span class="n">sh</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> celery -A geonode.celery_app:app worker --autoscale=20,10 --without-gossip --without-mingle -Ofair -B -E </span><span class="se">\</span>
+<span class="s2">            --statedb=/tmp/worker.state --scheduler=</span><span class="si">{</span><span class="n">CELERY_BEAT_SCHEDULER</span><span class="si">}</span><span class="s2"> --loglevel=DEBUG </span><span class="se">\</span>
+<span class="s2">            --concurrency=10 --max-tasks-per-child=10 -n worker1@%h -f celery.log </span><span class="si">{</span><span class="n">foreground</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py runmessaging </span><span class="si">{</span><span class="n">foreground</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># wait for Django to start</span>
+    <span class="n">started</span> <span class="o">=</span> <span class="n">waitfor</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;http://localhost:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span><span class="p">:</span>
+        <span class="n">info</span><span class="p">(</span><span class="s2">&quot;Django never started properly or timed out.&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="start_messaging">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.start_messaging">[docs]</a>
+<span class="k">def</span> <span class="nf">start_messaging</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start the GeoNode messaging server</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;settings&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span> <span class="ow">and</span> <span class="s2">&quot;DJANGO_SETTINGS_MODULE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">foreground</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;foreground&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&amp;&quot;</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py runmessaging </span><span class="si">{</span><span class="n">foreground</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">([(</span><span class="s2">&quot;java_path=&quot;</span><span class="p">,</span> <span class="s2">&quot;j&quot;</span><span class="p">,</span> <span class="s2">&quot;Full path to java install for Windows&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;force_exec=&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;Force GeoServer Start.&quot;</span><span class="p">)])</span>
+<div class="viewcode-block" id="start_geoserver">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.start_geoserver">[docs]</a>
+<span class="k">def</span> <span class="nf">start_geoserver</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Start GeoServer with GeoNode extensions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># we use docker-compose for integration tests</span>
+    <span class="k">if</span> <span class="n">on_travis</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;force_exec&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="c1"># only start if using Geoserver backend</span>
+    <span class="k">if</span> <span class="s2">&quot;geonode.geoserver&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">INSTALLED_APPS</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">GEOSERVER_BASE_URL</span> <span class="o">=</span> <span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;LOCATION&quot;</span><span class="p">]</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">GEOSERVER_BASE_URL</span>
+
+    <span class="k">if</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">GEOSERVER_BASE_URL</span><span class="p">)</span><span class="o">.</span><span class="n">hostname</span> <span class="o">!=</span> <span class="s2">&quot;localhost&quot;</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Warning: OGC_SERVER[&#39;default&#39;][&#39;LOCATION&#39;] hostname is not equal to &#39;localhost&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">GEOSERVER_BASE_URL</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error: OGC_SERVER[&#39;default&#39;][&#39;LOCATION&#39;] does not end with a &#39;/&#39;&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">download_dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;downloaded&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">abspath</span><span class="p">()</span>
+    <span class="n">jetty_runner</span> <span class="o">=</span> <span class="n">download_dir</span> <span class="o">/</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dev_config</span><span class="p">[</span><span class="s2">&quot;JETTY_RUNNER_URL&quot;</span><span class="p">])</span>
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;geoserver/data&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">abspath</span><span class="p">()</span>
+    <span class="n">geofence_dir</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;geoserver/data/geofence&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">abspath</span><span class="p">()</span>
+    <span class="n">web_app</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;geoserver/geoserver&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">abspath</span><span class="p">()</span>
+    <span class="n">log_file</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;geoserver/jetty.log&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">abspath</span><span class="p">()</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;scripts/misc/jetty-runner.xml&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">abspath</span><span class="p">()</span>
+    <span class="n">jetty_port</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">GEOSERVER_BASE_URL</span><span class="p">)</span><span class="o">.</span><span class="n">port</span>
+
+    <span class="kn">import</span> <span class="nn">socket</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+    <span class="n">socket_free</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">jetty_port</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">socket_free</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="mi">98</span><span class="p">:</span>
+            <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Port </span><span class="si">{</span><span class="n">jetty_port</span><span class="si">}</span><span class="s2"> is already in use&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Something else raised the socket.error exception while checking port </span><span class="si">{</span><span class="n">jetty_port</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">socket_free</span><span class="p">:</span>
+        <span class="c1"># @todo - we should not have set workdir to the datadir but a bug in geoserver</span>
+        <span class="c1"># prevents geonode security from initializing correctly otherwise</span>
+        <span class="k">with</span> <span class="n">pushd</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+            <span class="n">javapath</span> <span class="o">=</span> <span class="s2">&quot;java&quot;</span>
+            <span class="k">if</span> <span class="n">on_travis</span><span class="p">:</span>
+                <span class="n">sh</span><span class="p">(</span>
+                    <span class="s2">&quot;sudo apt install -y openjdk-8-jre openjdk-8-jdk;&quot;</span>
+                    <span class="s2">&quot; sudo update-java-alternatives --set java-1.8.0-openjdk-amd64;&quot;</span>
+                    <span class="s1">&#39; export JAVA_HOME=$(readlink -f /usr/bin/java | sed &quot;s:bin/java::&quot;);&#39;</span>
+                    <span class="s2">&quot; export PATH=$JAVA_HOME&#39;bin/java&#39;:$PATH;&quot;</span>
+                <span class="p">)</span>
+                <span class="c1"># import subprocess</span>
+                <span class="c1"># result = subprocess.run([&#39;update-alternatives&#39;, &#39;--list&#39;, &#39;java&#39;], stdout=subprocess.PIPE)</span>
+                <span class="c1"># javapath = result.stdout</span>
+                <span class="n">javapath</span> <span class="o">=</span> <span class="s2">&quot;/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java&quot;</span>
+            <span class="n">loggernullpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">devnull</span>
+
+            <span class="c1"># checking if our loggernullpath exists and if not, reset it to</span>
+            <span class="c1"># something manageable</span>
+            <span class="k">if</span> <span class="n">loggernullpath</span> <span class="o">==</span> <span class="s2">&quot;nul&quot;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;../../downloaded/null.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s2">&quot;Chances are that you have Geoserver currently running. You &quot;</span>
+                        <span class="s2">&quot;can either stop all servers with paver stop or start only &quot;</span>
+                        <span class="s2">&quot;the django application with paver start_django.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">loggernullpath</span> <span class="o">=</span> <span class="s2">&quot;../../downloaded/null.txt&quot;</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sh</span><span class="p">((</span><span class="s2">&quot;</span><span class="si">%(javapath)s</span><span class="s2"> -version&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">())</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Java was not found in your path.  Trying some other options: &quot;</span><span class="p">)</span>
+                <span class="n">javapath_opt</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;JAVA_HOME&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using the JAVA_HOME environment variable&quot;</span><span class="p">)</span>
+                    <span class="n">javapath_opt</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;JAVA_HOME&quot;</span><span class="p">]),</span> <span class="s2">&quot;bin&quot;</span><span class="p">,</span> <span class="s2">&quot;java.exe&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;java_path&quot;</span><span class="p">):</span>
+                    <span class="n">javapath_opt</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;java_path&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+                        <span class="s2">&quot;Paver cannot find java in the Windows Environment. &quot;</span>
+                        <span class="s2">&quot;Please provide the --java_path flag with your full path to &quot;</span>
+                        <span class="s2">&quot;java.exe e.g. --java_path=C:/path/to/java/bin/java.exe&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># if there are spaces</span>
+                <span class="n">javapath</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;START /B &quot;&quot; &quot;</span><span class="si">{</span><span class="n">javapath_opt</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+
+            <span class="n">sh</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%(javapath)s</span><span class="s2"> -Xms512m -Xmx2048m -server -Dgwc.context.suffix=gwc -XX:+UseConcMarkSweepGC -XX:MaxPermSize=512m&quot;</span>
+                <span class="s2">&quot; -DGEOSERVER_DATA_DIR=</span><span class="si">%(data_dir)s</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; -DGEOSERVER_CSRF_DISABLED=true&quot;</span>
+                <span class="s2">&quot; -Dgeofence.dir=</span><span class="si">%(geofence_dir)s</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; -Djava.awt.headless=true&quot;</span>
+                <span class="c1"># &#39; -Dgeofence-ovr=geofence-datasource-ovr.properties&#39;</span>
+                <span class="c1"># workaround for JAI sealed jar issue and jetty classloader</span>
+                <span class="c1"># &#39; -Dorg.eclipse.jetty.server.webapp.parentLoaderPriority=true&#39;</span>
+                <span class="s2">&quot; -jar </span><span class="si">%(jetty_runner)s</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; --port </span><span class="si">%(jetty_port)i</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; --log </span><span class="si">%(log_file)s</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; </span><span class="si">%(config)s</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; &gt; </span><span class="si">%(loggernullpath)s</span><span class="s2"> &amp;&quot;</span> <span class="o">%</span> <span class="nb">locals</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting GeoServer on </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># wait for GeoServer to start</span>
+    <span class="n">started</span> <span class="o">=</span> <span class="n">waitfor</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The logs are available at </span><span class="si">{</span><span class="n">log_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">started</span><span class="p">:</span>
+        <span class="c1"># If applications did not start in time we will give the user a chance</span>
+        <span class="c1"># to inspect them and stop them manually.</span>
+        <span class="n">info</span><span class="p">(</span><span class="s2">&quot;GeoServer never started properly or timed out.&quot;</span> <span class="s2">&quot;It may still be running in the background.&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="test">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.test">[docs]</a>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run GeoNode&#39;s Unit Test Suite</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">on_travis</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">core_tests</span><span class="p">:</span>
+            <span class="n">_apps</span> <span class="o">=</span> <span class="n">GEONODE_CORE_APPS</span>
+        <span class="k">if</span> <span class="n">internal_apps_tests</span><span class="p">:</span>
+            <span class="n">_apps</span> <span class="o">=</span> <span class="n">GEONODE_INTERNAL_APPS</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_apps</span> <span class="o">=</span> <span class="n">GEONODE_APPS</span>
+
+    <span class="n">_apps_to_test</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_app</span> <span class="ow">in</span> <span class="n">_apps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_app</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">_app</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="s2">&quot;geonode&quot;</span> <span class="ow">in</span> <span class="n">_app</span><span class="p">:</span>
+            <span class="n">_apps_to_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_app</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">MONITORING_ENABLED</span> <span class="ow">and</span> <span class="s2">&quot;geonode.monitoring&quot;</span> <span class="ow">in</span> <span class="n">INSTALLED_APPS</span> <span class="ow">and</span> <span class="s2">&quot;geonode.monitoring&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_apps_to_test</span><span class="p">:</span>
+        <span class="n">_apps_to_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;geonode.monitoring&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;prefix&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> manage.py test geonode.tests.smoke </span><span class="se">\</span>
+<span class="si">{</span><span class="p">(</span><span class="s1">&#39;.tests &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_apps_to_test</span><span class="p">))</span><span class="si">}</span><span class="s2">.tests --noinput </span><span class="si">{</span><span class="n">_keepdb</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">_parallel</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">([(</span><span class="s2">&quot;local=&quot;</span><span class="p">,</span> <span class="s2">&quot;l&quot;</span><span class="p">,</span> <span class="s2">&quot;Set to True if running bdd tests locally&quot;</span><span class="p">)])</span>
+<div class="viewcode-block" id="test_bdd">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.test_bdd">[docs]</a>
+<span class="k">def</span> <span class="nf">test_bdd</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run GeoNode&#39;s BDD Test Suite</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">local</span> <span class="o">=</span> <span class="n">str2bool</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+        <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;reset_hard&quot;</span><span class="p">)</span>
+
+    <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;setup&quot;</span><span class="p">)</span>
+    <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;sync&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+        <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;sleep 30&quot;</span><span class="p">)</span>
+
+    <span class="n">info</span><span class="p">(</span><span class="s2">&quot;GeoNode is now available, running the bdd tests now.&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;py.test&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="test_javascript">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.test_javascript">[docs]</a>
+<span class="k">def</span> <span class="nf">test_javascript</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">pushd</span><span class="p">(</span><span class="s2">&quot;geonode/static/geonode&quot;</span><span class="p">):</span>
+        <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;./run-tests.sh&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;name=&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;Run specific tests.&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;settings=&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="s2">&quot;Specify custom DJANGO_SETTINGS_MODULE&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;local=&quot;</span><span class="p">,</span> <span class="s2">&quot;l&quot;</span><span class="p">,</span> <span class="s2">&quot;Set to True if running bdd tests locally&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="test_integration">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.test_integration">[docs]</a>
+<span class="k">def</span> <span class="nf">test_integration</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run GeoNode&#39;s Integration test suite against the external apps</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prefix&quot;</span><span class="p">)</span>
+    <span class="n">local</span> <span class="o">=</span> <span class="n">str2bool</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+        <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;stop_geoserver&quot;</span><span class="p">)</span>
+        <span class="n">_reset</span><span class="p">()</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;settings&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;setup&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;force_exec&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">settings</span><span class="p">:</span>
+            <span class="n">settings</span> <span class="o">=</span> <span class="s2">&quot;REUSE_DB=1 DJANGO_SETTINGS_MODULE=geonode.settings&quot;</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;geonode.tests.csw&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode.tests.integration&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode.geoserver.tests.integration&quot;</span><span class="p">):</span>
+            <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;sync&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">})</span>
+            <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+                <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;start_geoserver&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;force_exec&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+                <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">})</span>
+            <span class="k">if</span> <span class="n">integration_server_tests</span><span class="p">:</span>
+                <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;setup_data&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">})</span>
+        <span class="k">elif</span> <span class="s2">&quot;geonode.geoserver&quot;</span> <span class="ow">in</span> <span class="n">INSTALLED_APPS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+                <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;cp geonode/upload/tests/test_settings.py geonode/&quot;</span><span class="p">)</span>
+                <span class="n">settings</span> <span class="o">=</span> <span class="s2">&quot;geonode.test_settings&quot;</span>
+                <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py &quot;</span> <span class="s2">&quot;makemigrations --noinput&quot;</span><span class="p">)</span>
+                <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py &quot;</span> <span class="s2">&quot;migrate --noinput&quot;</span><span class="p">)</span>
+                <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py &quot;</span> <span class="s2">&quot;loaddata sample_admin.json&quot;</span><span class="p">)</span>
+                <span class="n">sh</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py &quot;</span>
+                    <span class="s2">&quot;loaddata geonode/base/fixtures/default_oauth_apps.json&quot;</span>
+                <span class="p">)</span>
+                <span class="n">sh</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py &quot;</span>
+                    <span class="s2">&quot;loaddata geonode/base/fixtures/initial_data.json&quot;</span>
+                <span class="p">)</span>
+                <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;start_geoserver&quot;</span><span class="p">)</span>
+                <span class="n">bind</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bind&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0.0.0:8000&quot;</span><span class="p">)</span>
+                <span class="n">foreground</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;foreground&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&amp;&quot;</span>
+                <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py runmessaging </span><span class="si">{</span><span class="n">foreground</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py runserver </span><span class="si">{</span><span class="n">bind</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">foreground</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;sleep 30&quot;</span><span class="p">)</span>
+                <span class="n">settings</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;REUSE_DB=1 DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;sync&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="p">})</span>
+
+        <span class="n">live_server_option</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running the tests now...&quot;</span><span class="p">)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2"> manage.py test </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> -v 3 </span><span class="si">{</span><span class="n">_keepdb</span><span class="si">}</span><span class="s2"> --noinput </span><span class="si">{</span><span class="n">live_server_option</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="n">BuildFailure</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tests failed! </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">local</span><span class="p">:</span>
+            <span class="n">stop</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+            <span class="n">_reset</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@needs</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;start_geoserver&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="nd">@cmdopts</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;coverage&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;use this flag to generate coverage during test runs&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;local=&quot;</span><span class="p">,</span> <span class="s2">&quot;l&quot;</span><span class="p">,</span> <span class="s2">&quot;Set to True if running tests locally&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="run_tests">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.run_tests">[docs]</a>
+<span class="k">def</span> <span class="nf">run_tests</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Executes the entire test suite.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;coverage&quot;</span><span class="p">):</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;coverage run --branch --source=geonode </span><span class="se">\</span>
+<span class="s1">--omit=&quot;*/__init__*,*/test*,*/wsgi*,*/version*,*/migrations*,</span><span class="se">\</span>
+<span class="s1">*/search_indexes*,*/management/*,*/context_processors*,*/upload/*&quot;&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;python&quot;</span>
+    <span class="n">local</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span>  <span class="c1"># travis uses default to false</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">integration_tests</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">integration_csw_tests</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">integration_bdd_tests</span><span class="p">:</span>
+        <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">})</span>
+    <span class="k">elif</span> <span class="n">integration_tests</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">integration_upload_tests</span><span class="p">:</span>
+            <span class="n">call_task</span><span class="p">(</span>
+                <span class="s2">&quot;test_integration&quot;</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geonode.upload.tests.integration&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span> <span class="n">local</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">integration_monitoring_tests</span><span class="p">:</span>
+            <span class="n">call_task</span><span class="p">(</span>
+                <span class="s2">&quot;test_integration&quot;</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geonode.monitoring.tests.integration&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span> <span class="n">local</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">integration_csw_tests</span><span class="p">:</span>
+            <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;test_integration&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geonode.tests.csw&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span> <span class="n">local</span><span class="p">})</span>
+        <span class="k">elif</span> <span class="n">integration_bdd_tests</span><span class="p">:</span>
+            <span class="n">call_task</span><span class="p">(</span><span class="s2">&quot;test_bdd&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;local&quot;</span><span class="p">:</span> <span class="n">local</span><span class="p">})</span>
+        <span class="k">elif</span> <span class="n">integration_server_tests</span><span class="p">:</span>
+            <span class="n">call_task</span><span class="p">(</span>
+                <span class="s2">&quot;test_integration&quot;</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geonode.geoserver.tests.integration&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span> <span class="n">local</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">call_task</span><span class="p">(</span>
+                <span class="s2">&quot;test_integration&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geonode.tests.integration&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span> <span class="n">local</span><span class="p">}</span>
+            <span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;flake8 geonode&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@needs</span><span class="p">([</span><span class="s2">&quot;stop&quot;</span><span class="p">])</span>
+<div class="viewcode-block" id="reset">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.reset">[docs]</a>
+<span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reset a development environment (Database, GeoServer &amp; Catalogue)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_reset</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="_reset">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement._reset">[docs]</a>
+<span class="k">def</span> <span class="nf">_reset</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">settings</span>
+
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">PROJECT_ROOT</span><span class="p">,</span> <span class="s2">&quot;development.db&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rm -rf </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;rm -rf geonode/development.db&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;rm -rf geonode/uploaded/*&quot;</span><span class="p">)</span>
+    <span class="n">_configure_data_dir</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@needs</span><span class="p">([</span><span class="s2">&quot;reset&quot;</span><span class="p">])</span>
+<div class="viewcode-block" id="reset_hard">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.reset_hard">[docs]</a>
+<span class="k">def</span> <span class="nf">reset_hard</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reset a development environment (Database, GeoServer &amp; Catalogue)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;git clean -dxf&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<span class="nd">@cmdopts</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;type=&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s1">&#39;Import specific data type (&quot;vector&quot;, &quot;raster&quot;, &quot;time&quot;)&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;settings=&quot;</span><span class="p">,</span> <span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="s2">&quot;Specify custom DJANGO_SETTINGS_MODULE&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="setup_data">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.setup_data">[docs]</a>
+<span class="k">def</span> <span class="nf">setup_data</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Import sample data (from gisdata package) into GeoNode</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">gisdata</span>
+
+    <span class="n">ctype</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">gisdata</span><span class="o">.</span><span class="n">GOOD_DATA</span>
+
+    <span class="k">if</span> <span class="n">ctype</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;vector&quot;</span><span class="p">,</span> <span class="s2">&quot;raster&quot;</span><span class="p">,</span> <span class="s2">&quot;time&quot;</span><span class="p">}:</span>
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gisdata</span><span class="o">.</span><span class="n">GOOD_DATA</span><span class="p">,</span> <span class="n">ctype</span><span class="p">)</span>
+
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;settings&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span> <span class="ow">and</span> <span class="s2">&quot;DJANGO_SETTINGS_MODULE&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;DJANGO_SETTINGS_MODULE=</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">settings</span> <span class="k">as</span> <span class="n">geonode_settings</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">geonode_settings</span><span class="o">.</span><span class="n">MEDIA_ROOT</span><span class="p">):</span>
+        <span class="n">info</span><span class="p">(</span><span class="s2">&quot;media root not available, creating...&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">geonode_settings</span><span class="o">.</span><span class="n">MEDIA_ROOT</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="si">}</span><span class="s2"> python -W ignore manage.py importlayers -v2 -hh </span><span class="si">{</span><span class="n">geonode_settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">data_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@needs</span><span class="p">([</span><span class="s2">&quot;package&quot;</span><span class="p">])</span>
+<span class="nd">@cmdopts</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;key=&quot;</span><span class="p">,</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;The GPG key to sign the package&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;ppa=&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="s2">&quot;PPA this package should be published to.&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<div class="viewcode-block" id="deb">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.deb">[docs]</a>
+<span class="k">def</span> <span class="nf">deb</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates debian packages.</span>
+
+<span class="sd">    Example uses:</span>
+<span class="sd">        paver deb</span>
+<span class="sd">        paver deb -k 12345</span>
+<span class="sd">        paver deb -k 12345 -p geonode/testing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ppa</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ppa&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">version</span><span class="p">,</span> <span class="n">simple_version</span> <span class="o">=</span> <span class="n">versions</span><span class="p">()</span>
+
+    <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating package for GeoNode version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Get rid of any uncommitted changes to debian/changelog</span>
+    <span class="n">info</span><span class="p">(</span><span class="s2">&quot;Getting rid of any uncommitted changes in debian/changelog&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;git checkout package/debian/changelog&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Workaround for git-dch bug</span>
+    <span class="c1"># http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594580</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rm -rf </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="s1">&#39;package&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/.git&quot;</span><span class="p">)</span>
+    <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ln -s </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="s1">&#39;.git&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="s1">&#39;package&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">pushd</span><span class="p">(</span><span class="s2">&quot;package&quot;</span><span class="p">):</span>
+        <span class="c1"># Install requirements</span>
+        <span class="c1"># sh(&#39;sudo apt-get -y install debhelper devscripts git-buildpackage&#39;)</span>
+
+        <span class="c1"># sh((&#39;git-dch --spawn-editor=snapshot --git-author --new-version=%s&#39;</span>
+        <span class="c1">#     &#39; --id-length=6 --ignore-branch --release&#39; % (simple_version)))</span>
+        <span class="c1"># In case you publish from Ubuntu Xenial (git-dch is removed from upstream)</span>
+        <span class="c1">#  use the following line instead:</span>
+        <span class="c1"># sh((&#39;gbp dch --spawn-editor=snapshot --git-author --new-version=%s&#39;</span>
+        <span class="c1">#    &#39; --id-length=6 --ignore-branch --release&#39; % (simple_version)))</span>
+        <span class="n">distribution</span> <span class="o">=</span> <span class="s2">&quot;bionic&quot;</span>
+        <span class="c1"># sh((&#39;gbp dch --distribution=%s --force-distribution --spawn-editor=snapshot --git-author --new-version=%s&#39;</span>
+        <span class="c1">#    &#39; --id-length=6 --ignore-branch --release&#39; % (distribution, simple_version)))</span>
+
+        <span class="n">deb_changelog</span> <span class="o">=</span> <span class="n">path</span><span class="p">(</span><span class="s2">&quot;debian&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;changelog&quot;</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fileinput</span><span class="o">.</span><span class="n">input</span><span class="p">([</span><span class="n">deb_changelog</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;geonode (</span><span class="si">{</span><span class="n">simple_version</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">distribution</span><span class="si">}</span><span class="s2">; urgency=high&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;urgency=medium&quot;</span><span class="p">,</span> <span class="s2">&quot;urgency=high&quot;</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Revert workaround for git-dhc bug</span>
+        <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;rm -rf .git&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ppa</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;A local installable package&quot;</span><span class="p">)</span>
+            <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;debuild -uc -us -A&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ppa</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;A sources package, signed by daemon&quot;</span><span class="p">)</span>
+            <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;debuild -S&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ppa</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;A signed installable package&quot;</span><span class="p">)</span>
+            <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;debuild -k</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> -A&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ppa</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;A signed, source package&quot;</span><span class="p">)</span>
+            <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;debuild -k</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> -S&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ppa</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dput ppa:</span><span class="si">{</span><span class="n">ppa</span><span class="si">}</span><span class="s2"> geonode_</span><span class="si">{</span><span class="n">simple_version</span><span class="si">}</span><span class="s2">_source.changes&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@task</span>
+<div class="viewcode-block" id="publish">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.publish">[docs]</a>
+<span class="k">def</span> <span class="nf">publish</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">&quot;GPG_KEY_GEONODE&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;GPG_KEY_GEONODE&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;You need to set the GPG_KEY_GEONODE environment variable&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="s2">&quot;PPA_GEONODE&quot;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">ppa</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PPA_GEONODE&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ppa</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">call_task</span><span class="p">(</span>
+        <span class="s2">&quot;deb&quot;</span><span class="p">,</span>
+        <span class="n">options</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+            <span class="s2">&quot;ppa&quot;</span><span class="p">:</span> <span class="n">ppa</span><span class="p">,</span>
+            <span class="c1"># &#39;ppa&#39;: &#39;geonode/testing&#39;,</span>
+            <span class="c1"># &#39;ppa&#39;: &#39;geonode/unstable&#39;,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+
+    <span class="n">version</span><span class="p">,</span> <span class="n">simple_version</span> <span class="o">=</span> <span class="n">versions</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ppa</span><span class="p">:</span>
+        <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;git add package/debian/changelog&quot;</span><span class="p">)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;git commit -m &quot;Updated changelog for version </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;git tag -f </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;git push origin </span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;git tag -f debian/</span><span class="si">{</span><span class="n">simple_version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;git push origin debian/</span><span class="si">{</span><span class="n">simple_version</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># sh(&#39;git push origin master&#39;)</span>
+        <span class="n">sh</span><span class="p">(</span><span class="s2">&quot;python setup.py sdist upload -r pypi&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="versions">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.versions">[docs]</a>
+<span class="k">def</span> <span class="nf">versions</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">geonode</span>
+    <span class="kn">from</span> <span class="nn">geonode.version</span> <span class="kn">import</span> <span class="n">get_git_changeset</span>
+
+    <span class="n">raw_version</span> <span class="o">=</span> <span class="n">geonode</span><span class="o">.</span><span class="n">__version__</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="n">geonode</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">get_git_changeset</span><span class="p">()</span>
+
+    <span class="n">major</span><span class="p">,</span> <span class="n">minor</span><span class="p">,</span> <span class="n">revision</span><span class="p">,</span> <span class="n">stage</span><span class="p">,</span> <span class="n">edition</span> <span class="o">=</span> <span class="n">raw_version</span>
+
+    <span class="n">branch</span> <span class="o">=</span> <span class="s2">&quot;dev&quot;</span>
+
+    <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;final&quot;</span><span class="p">:</span>
+        <span class="n">stage</span> <span class="o">=</span> <span class="s2">&quot;thefinal&quot;</span>
+
+    <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s2">&quot;unstable&quot;</span><span class="p">:</span>
+        <span class="n">tail</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">branch</span><span class="si">}{</span><span class="n">timestamp</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tail</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stage</span><span class="si">}{</span><span class="n">edition</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">simple_version</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">major</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">minor</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">revision</span><span class="si">}</span><span class="s2">+</span><span class="si">{</span><span class="n">tail</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">version</span><span class="p">,</span> <span class="n">simple_version</span></div>
+
+
+
+<div class="viewcode-block" id="kill">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.kill">[docs]</a>
+<span class="k">def</span> <span class="nf">kill</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stops a proces that contains arg1 and is filtered by arg2&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+
+    <span class="c1"># Wait until ready</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="c1"># Wait no more than these many seconds</span>
+    <span class="n">time_out</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">running</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">while</span> <span class="n">running</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span> <span class="o">&lt;</span> <span class="n">time_out</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;tasklist | find &quot;</span><span class="si">{</span><span class="n">arg1</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">close_fds</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ps aux | grep </span><span class="si">{</span><span class="n">arg1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">close_fds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+        <span class="n">running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="c1"># this kills all java.exe and python including self in windows</span>
+            <span class="k">if</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">arg2</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">line</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span> <span class="ow">and</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">arg1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">line</span><span class="p">)):</span>
+                <span class="n">running</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="c1"># Get pid</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                <span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stopping </span><span class="si">{</span><span class="n">arg1</span><span class="si">}</span><span class="s2"> (process number </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span><span class="p">:</span>
+                    <span class="n">kill</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;taskkill /F /PID &quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">kill</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;kill -9 </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2"> 2&gt; /dev/null&quot;</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">kill</span><span class="p">)</span>
+
+        <span class="c1"># Give it a little more time</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+        <span class="n">_procs</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">_l</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">_l</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not stop </span><span class="si">{</span><span class="n">arg1</span><span class="si">}</span><span class="s2">: &quot;</span> <span class="sa">f</span><span class="s2">&quot;Running processes are</span><span class="se">\n</span><span class="si">{</span><span class="n">_procs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="waitfor">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.waitfor">[docs]</a>
+<span class="k">def</span> <span class="nf">waitfor</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">):</span>
+    <span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">timeout</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">getcode</span><span class="p">()</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+                <span class="n">started</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">started</span></div>
+
+
+
+<div class="viewcode-block" id="_copytree">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement._copytree">[docs]</a>
+<span class="k">def</span> <span class="nf">_copytree</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">symlinks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">symlinks</span><span class="p">,</span> <span class="n">ignore</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="justcopy">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.justcopy">[docs]</a>
+<span class="k">def</span> <span class="nf">justcopy</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">origin</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">_copytree</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">origin</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="str2bool">
+<a class="viewcode-back" href="../autoapi/pavement/index.html#pavement.str2bool">[docs]</a>
+<span class="k">def</span> <span class="nf">str2bool</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">v</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
