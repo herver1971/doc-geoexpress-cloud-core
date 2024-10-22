@@ -885,8 +885,9 @@
 <span class="sd">            }</span>
 
 <span class="sd">        Sample Requests:</span>
+
 <span class="sd">        - Removes all the permissions (except owner and admin ones) from a Resource:</span>
-<span class="sd">        curl -v -X DELETE -u admin:admin -H &quot;Content-Type: application/json&quot; http://localhost:8000/api/v2/resources/&lt;id&gt;/permissions</span>
+<span class="sd">            curl -v -X DELETE -u admin:admin -H &quot;Content-Type: application/json&quot; http://localhost:8000/api/v2/resources/&lt;id&gt;/permissions</span>
 
 <span class="sd">        - Changes the owner of a Resource:</span>
 <span class="sd">            curl -u admin:admin --location --request PUT &#39;http://localhost:8000/api/v2/resources/&lt;id&gt;/permissions&#39; \</span>
@@ -909,6 +910,7 @@
 <span class="sd">                --data-raw &#39;{&quot;groups&quot;: [{&quot;id&quot;: 1,&quot;permissions&quot;: &quot;manage&quot;}],&quot;organizations&quot;: [],&quot;users&quot;: [{&quot;id&quot;: -1,&quot;permissions&quot;: &quot;view&quot;}]}&#39;</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
         <span class="n">resource</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">ResourceBase</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="n">pk</span><span class="p">)</span>
         <span class="n">_user_can_manage</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">has_perm</span><span class="p">(</span><span class="s2">&quot;change_resourcebase_permissions&quot;</span><span class="p">,</span> <span class="n">resource</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
