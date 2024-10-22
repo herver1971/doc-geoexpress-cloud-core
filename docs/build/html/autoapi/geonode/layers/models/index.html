@@ -1,0 +1,758 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.layers.models &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="geonode.layers.populate_datasets_data" href="../populate_datasets_data/index.html" />
+    <link rel="prev" title="geonode.layers.metadata" href="../metadata/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">geonode</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../api/index.html">geonode.api</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../base/index.html">geonode.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../br/index.html">geonode.br</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogue/index.html">geonode.catalogue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../client/index.html">geonode.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../documents/index.html">geonode.documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../facets/index.html">geonode.facets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../favorite/index.html">geonode.favorite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoapps/index.html">geonode.geoapps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoserver/index.html">geonode.geoserver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../groups/index.html">geonode.groups</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../harvesting/index.html">geonode.harvesting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../invitations/index.html">geonode.invitations</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">geonode.layers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../management_commands_http/index.html">geonode.management_commands_http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../maps/index.html">geonode.maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../messaging/index.html">geonode.messaging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../monitoring/index.html">geonode.monitoring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../people/index.html">geonode.people</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../proxy/index.html">geonode.proxy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resource/index.html">geonode.resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../security/index.html">geonode.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../services/index.html">geonode.services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../social/index.html">geonode.social</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../storage/index.html">geonode.storage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tasks/index.html">geonode.tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tests/index.html">geonode.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../themes/index.html">geonode.themes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../thumbs/index.html">geonode.thumbs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../upload/index.html">geonode.upload</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">geonode.layers</a></li>
+      <li class="breadcrumb-item active">geonode.layers.models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/geonode/layers/models/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-geonode.layers.models">
+<span id="geonode-layers-models"></span><h1>geonode.layers.models<a class="headerlink" href="#module-geonode.layers.models" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.layers.models.logger" title="geonode.layers.models.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.layers.models.shp_exts" title="geonode.layers.models.shp_exts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shp_exts</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.layers.models.csv_exts" title="geonode.layers.models.csv_exts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">csv_exts</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.layers.models.kml_exts" title="geonode.layers.models.kml_exts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kml_exts</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.layers.models.vec_exts" title="geonode.layers.models.vec_exts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vec_exts</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.layers.models.cov_exts" title="geonode.layers.models.cov_exts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cov_exts</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.layers.models.TIME_REGEX" title="geonode.layers.models.TIME_REGEX"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TIME_REGEX</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.layers.models.TIME_REGEX_FORMAT" title="geonode.layers.models.TIME_REGEX_FORMAT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TIME_REGEX_FORMAT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.layers.models.Style" title="geonode.layers.models.Style"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Style</span></code></a></p></td>
+<td><p>Model for storing styles.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.layers.models.DatasetManager" title="geonode.layers.models.DatasetManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetManager</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.layers.models.Dataset" title="geonode.layers.models.Dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dataset</span></code></a></p></td>
+<td><p>Dataset (inherits ResourceBase fields)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.layers.models.AttributeManager" title="geonode.layers.models.AttributeManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AttributeManager</span></code></a></p></td>
+<td><p>Helper class to access filtered attributes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.layers.models.Attribute" title="geonode.layers.models.Attribute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Attribute</span></code></a></p></td>
+<td><p>Auxiliary model for storing layer attributes.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.layers.models.logger">
+<span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.layers.models.shp_exts">
+<span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">shp_exts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['.shp']</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#shp_exts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.shp_exts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.layers.models.csv_exts">
+<span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">csv_exts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['.csv']</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#csv_exts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.csv_exts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.layers.models.kml_exts">
+<span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">kml_exts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['.kml']</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#kml_exts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.kml_exts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.layers.models.vec_exts">
+<span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">vec_exts</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#vec_exts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.vec_exts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.layers.models.cov_exts">
+<span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">cov_exts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['.tif',</span> <span class="pre">'.tiff',</span> <span class="pre">'.geotiff',</span> <span class="pre">'.geotif',</span> <span class="pre">'.asc']</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#cov_exts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.cov_exts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.layers.models.TIME_REGEX">
+<span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">TIME_REGEX</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#TIME_REGEX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.TIME_REGEX" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.layers.models.TIME_REGEX_FORMAT">
+<span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">TIME_REGEX_FORMAT</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#TIME_REGEX_FORMAT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.TIME_REGEX_FORMAT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.layers.models.Style">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">Style</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.db.models.Model</span></code>, <a class="reference internal" href="../../security/models/index.html#geonode.security.models.PermissionLevelMixin" title="geonode.security.models.PermissionLevelMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.security.models.PermissionLevelMixin</span></code></a></p>
+<p>Model for storing styles.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.sld_title">
+<span class="sig-name descname"><span class="pre">sld_title</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.sld_title"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.sld_title" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.sld_body">
+<span class="sig-name descname"><span class="pre">sld_body</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.sld_body"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.sld_body" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.sld_version">
+<span class="sig-name descname"><span class="pre">sld_version</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.sld_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.sld_version" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.sld_url">
+<span class="sig-name descname"><span class="pre">sld_url</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.sld_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.sld_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.workspace">
+<span class="sig-name descname"><span class="pre">workspace</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.workspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.workspace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.absolute_url">
+<span class="sig-name descname"><span class="pre">absolute_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.absolute_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.absolute_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Style.get_self_resource">
+<span class="sig-name descname"><span class="pre">get_self_resource</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Style.get_self_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Style.get_self_resource" title="Link to this definition"></a></dt>
+<dd><p>Get associated resource base.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.layers.models.DatasetManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">DatasetManager</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#DatasetManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.DatasetManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../base/models/index.html#geonode.base.models.ResourceBaseManager" title="geonode.base.models.ResourceBaseManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.base.models.ResourceBaseManager</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">Dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../base/models/index.html#geonode.base.models.ResourceBase" title="geonode.base.models.ResourceBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.base.models.ResourceBase</span></code></a></p>
+<p>Dataset (inherits ResourceBase fields)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.PERMISSIONS">
+<span class="sig-name descname"><span class="pre">PERMISSIONS</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.PERMISSIONS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.PERMISSIONS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.objects" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.workspace">
+<span class="sig-name descname"><span class="pre">workspace</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.workspace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.workspace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.store">
+<span class="sig-name descname"><span class="pre">store</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.store" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.typename">
+<span class="sig-name descname"><span class="pre">typename</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.typename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.typename" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.ows_url">
+<span class="sig-name descname"><span class="pre">ows_url</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.ows_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.ows_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.is_mosaic">
+<span class="sig-name descname"><span class="pre">is_mosaic</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.is_mosaic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.is_mosaic" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.has_time">
+<span class="sig-name descname"><span class="pre">has_time</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.has_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.has_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.has_elevation">
+<span class="sig-name descname"><span class="pre">has_elevation</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.has_elevation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.has_elevation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.time_regex">
+<span class="sig-name descname"><span class="pre">time_regex</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.time_regex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.time_regex" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.elevation_regex">
+<span class="sig-name descname"><span class="pre">elevation_regex</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.elevation_regex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.elevation_regex" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.ptype">
+<span class="sig-name descname"><span class="pre">ptype</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.ptype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.ptype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.default_style">
+<span class="sig-name descname"><span class="pre">default_style</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.default_style"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.default_style" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.styles">
+<span class="sig-name descname"><span class="pre">styles</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.styles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.styles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.remote_service">
+<span class="sig-name descname"><span class="pre">remote_service</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.remote_service"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.remote_service" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.charset">
+<span class="sig-name descname"><span class="pre">charset</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.charset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.charset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.use_featureinfo_custom_template">
+<span class="sig-name descname"><span class="pre">use_featureinfo_custom_template</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.use_featureinfo_custom_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.use_featureinfo_custom_template" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.featureinfo_custom_template">
+<span class="sig-name descname"><span class="pre">featureinfo_custom_template</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.featureinfo_custom_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.featureinfo_custom_template" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.is_vector">
+<span class="sig-name descname"><span class="pre">is_vector</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.is_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.is_vector" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.is_raster">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_raster</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.is_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.is_raster" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.display_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">display_type</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.display_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.display_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.data_model">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_model</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.data_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.data_model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.data_objects">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_objects</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.data_objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.data_objects" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.attributes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">attributes</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.attributes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.service_typename">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">service_typename</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.service_typename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.service_typename" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.gtype">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gtype</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.gtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.gtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.get_base_file">
+<span class="sig-name descname"><span class="pre">get_base_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.get_base_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.get_base_file" title="Link to this definition"></a></dt>
+<dd><p>Get the shp or geotiff file for this layer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.get_absolute_url">
+<span class="sig-name descname"><span class="pre">get_absolute_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.get_absolute_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.get_absolute_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.capabilities_url">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">capabilities_url</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.capabilities_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.capabilities_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.dataset_ows_url">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dataset_ows_url</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.dataset_ows_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.dataset_ows_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.embed_url">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">embed_url</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.embed_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.embed_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.attribute_config">
+<span class="sig-name descname"><span class="pre">attribute_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.attribute_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.attribute_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.Meta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../base/models/index.html#geonode.base.models.ResourceBase.Meta" title="geonode.base.models.ResourceBase.Meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.base.models.ResourceBase.Meta</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.Meta.permissions">
+<span class="sig-name descname"><span class="pre">permissions</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(('change_dataset_data',</span> <span class="pre">'Can</span> <span class="pre">edit</span> <span class="pre">layer</span> <span class="pre">data'),</span> <span class="pre">('change_dataset_style',</span> <span class="pre">'Can</span> <span class="pre">change</span> <span class="pre">layer</span> <span class="pre">style'))</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.Meta.permissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.Meta.permissions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.Meta.unique_together">
+<span class="sig-name descname"><span class="pre">unique_together</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('store',</span> <span class="pre">'workspace',</span> <span class="pre">'name')</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.Meta.unique_together"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.Meta.unique_together" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.LEVEL_READ">
+<span class="sig-name descname"><span class="pre">LEVEL_READ</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dataset_readonly'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.LEVEL_READ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.LEVEL_READ" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.LEVEL_WRITE">
+<span class="sig-name descname"><span class="pre">LEVEL_WRITE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dataset_readwrite'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.LEVEL_WRITE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.LEVEL_WRITE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.LEVEL_ADMIN">
+<span class="sig-name descname"><span class="pre">LEVEL_ADMIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dataset_admin'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.LEVEL_ADMIN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.LEVEL_ADMIN" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.maps">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">maps</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.maps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.get_linked_resources">
+<span class="sig-name descname"><span class="pre">get_linked_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">as_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.get_linked_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.get_linked_resources" title="Link to this definition"></a></dt>
+<dd><p>Get all the linked resources to this ResourceBase instance.
+This is implemented as a method so that derived classes can override it (for instance, Maps may add
+related datasets)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.download_url">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">download_url</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.download_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.download_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.maplayers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">maplayers</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.maplayers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.maplayers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.allowed_permissions">
+<span class="sig-name descname"><span class="pre">allowed_permissions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.allowed_permissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.allowed_permissions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.class_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">class_name</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.class_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.class_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Dataset.view_count_up">
+<span class="sig-name descname"><span class="pre">view_count_up</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_local</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Dataset.view_count_up"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Dataset.view_count_up" title="Link to this definition"></a></dt>
+<dd><p>increase view counter, if user is not owner and not super</p>
+<p>&#64;param user which views layer
+&#64;type User model</p>
+<p>&#64;param do_local - do local counter update even if pubsub is enabled
+&#64;type bool</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.layers.models.AttributeManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">AttributeManager</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#AttributeManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.AttributeManager" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.db.models.Manager</span></code></p>
+<p>Helper class to access filtered attributes</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.AttributeManager.visible">
+<span class="sig-name descname"><span class="pre">visible</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#AttributeManager.visible"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.AttributeManager.visible" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.layers.models.</span></span><span class="sig-name descname"><span class="pre">Attribute</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">django.db.models.Model</span></code></p>
+<blockquote>
+<div><p>Auxiliary model for storing layer attributes.</p>
+</div></blockquote>
+<p>This helps reduce the need for runtime lookups
+to other servers, and lets users customize attribute titles,
+sort order, and visibility.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.attribute">
+<span class="sig-name descname"><span class="pre">attribute</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.description">
+<span class="sig-name descname"><span class="pre">description</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.description" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.attribute_label">
+<span class="sig-name descname"><span class="pre">attribute_label</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.attribute_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.attribute_label" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.attribute_type">
+<span class="sig-name descname"><span class="pre">attribute_type</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.attribute_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.attribute_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.visible">
+<span class="sig-name descname"><span class="pre">visible</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.visible"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.visible" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.display_order">
+<span class="sig-name descname"><span class="pre">display_order</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.display_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.display_order" title="Link to this definition"></a></dt>
+<dd><p>Attribute FeatureInfo-Type list</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_PROPERTY">
+<span class="sig-name descname"><span class="pre">TYPE_PROPERTY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_property'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_PROPERTY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_PROPERTY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_HREF">
+<span class="sig-name descname"><span class="pre">TYPE_HREF</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_href'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_HREF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_HREF" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_IMAGE">
+<span class="sig-name descname"><span class="pre">TYPE_IMAGE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_image'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_IMAGE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_IMAGE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_VIDEO_MP4">
+<span class="sig-name descname"><span class="pre">TYPE_VIDEO_MP4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_video_mp4'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_VIDEO_MP4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_VIDEO_MP4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_VIDEO_OGG">
+<span class="sig-name descname"><span class="pre">TYPE_VIDEO_OGG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_video_ogg'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_VIDEO_OGG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_VIDEO_OGG" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_VIDEO_WEBM">
+<span class="sig-name descname"><span class="pre">TYPE_VIDEO_WEBM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_video_webm'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_VIDEO_WEBM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_VIDEO_WEBM" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_VIDEO_3GP">
+<span class="sig-name descname"><span class="pre">TYPE_VIDEO_3GP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_video_3gp'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_VIDEO_3GP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_VIDEO_3GP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_VIDEO_FLV">
+<span class="sig-name descname"><span class="pre">TYPE_VIDEO_FLV</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_video_flv'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_VIDEO_FLV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_VIDEO_FLV" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_VIDEO_YOUTUBE">
+<span class="sig-name descname"><span class="pre">TYPE_VIDEO_YOUTUBE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_video_youtube'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_VIDEO_YOUTUBE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_VIDEO_YOUTUBE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_AUDIO">
+<span class="sig-name descname"><span class="pre">TYPE_AUDIO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_audio'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_AUDIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_AUDIO" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPE_IFRAME">
+<span class="sig-name descname"><span class="pre">TYPE_IFRAME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'type_iframe'</span></em><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPE_IFRAME"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPE_IFRAME" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.TYPES">
+<span class="sig-name descname"><span class="pre">TYPES</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.TYPES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.TYPES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.featureinfo_type">
+<span class="sig-name descname"><span class="pre">featureinfo_type</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.featureinfo_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.featureinfo_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.count">
+<span class="sig-name descname"><span class="pre">count</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.count" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.min">
+<span class="sig-name descname"><span class="pre">min</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.min" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.max">
+<span class="sig-name descname"><span class="pre">max</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.max" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.average">
+<span class="sig-name descname"><span class="pre">average</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.average"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.average" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.median">
+<span class="sig-name descname"><span class="pre">median</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.median"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.median" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.stddev">
+<span class="sig-name descname"><span class="pre">stddev</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.stddev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.stddev" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.sum">
+<span class="sig-name descname"><span class="pre">sum</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.sum" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.unique_values">
+<span class="sig-name descname"><span class="pre">unique_values</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.unique_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.unique_values" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.last_stats_updated">
+<span class="sig-name descname"><span class="pre">last_stats_updated</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.last_stats_updated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.last_stats_updated" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.objects">
+<span class="sig-name descname"><span class="pre">objects</span></span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.objects"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.objects" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.layers.models.Attribute.unique_values_as_list">
+<span class="sig-name descname"><span class="pre">unique_values_as_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/layers/models.html#Attribute.unique_values_as_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.layers.models.Attribute.unique_values_as_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../metadata/index.html" class="btn btn-neutral float-left" title="geonode.layers.metadata" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../populate_datasets_data/index.html" class="btn btn-neutral float-right" title="geonode.layers.populate_datasets_data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

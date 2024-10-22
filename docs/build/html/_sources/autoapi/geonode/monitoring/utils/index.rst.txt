@@ -1,0 +1,232 @@
+geonode.monitoring.utils
+========================
+
+.. py:module:: geonode.monitoring.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.monitoring.utils.GS_FORMAT
+   geonode.monitoring.utils.log
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.monitoring.utils.MonitoringHandler
+   geonode.monitoring.utils.RequestToMonitoringThread
+   geonode.monitoring.utils.GeoServerMonitorClient
+   geonode.monitoring.utils.TypeChecks
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.monitoring.utils.align_period_end
+   geonode.monitoring.utils.align_period_start
+   geonode.monitoring.utils.generate_periods
+   geonode.monitoring.utils.dump
+   geonode.monitoring.utils.extend_datetime_input_formats
+   geonode.monitoring.utils.collect_metric
+   geonode.monitoring.utils.run_check
+
+
+Module Contents
+---------------
+
+.. py:data:: GS_FORMAT
+   :value: '%Y-%m-%dT%H:%M:%S'
+
+
+.. py:data:: log
+
+.. py:class:: MonitoringHandler(service, *args, **kwargs)
+
+   Bases: :py:obj:`logging.Handler`
+
+
+   Handler instances dispatch logging events to specific destinations.
+
+   The base handler class. Acts as a placeholder which defines the Handler
+   interface. Handlers can optionally use Formatter instances to format
+   records as desired. By default, no formatter is specified; in this case,
+   the 'raw' message as determined by record.message is logged.
+
+
+   .. py:attribute:: service
+
+
+   .. py:method:: emit(record)
+
+      Do whatever it takes to actually log the specified logging record.
+
+      This version is intended to be implemented by subclasses and so
+      raises a NotImplementedError.
+
+
+
+.. py:class:: RequestToMonitoringThread(service, *args, **kwargs)
+
+   Bases: :py:obj:`threading.Thread`
+
+
+   A class that represents a thread of control.
+
+   This class can be safely subclassed in a limited fashion. There are two ways
+   to specify the activity: by passing a callable object to the constructor, or
+   by overriding the run() method in a subclass.
+
+
+
+   .. py:attribute:: q
+
+
+   .. py:attribute:: service
+
+
+   .. py:method:: add(req, resp)
+
+
+   .. py:method:: run()
+
+      Method representing the thread's activity.
+
+      You may override this method in a subclass. The standard run() method
+      invokes the callable object passed to the object's constructor as the
+      target argument, if any, with sequential and keyword arguments taken
+      from the args and kwargs arguments, respectively.
+
+
+
+
+.. py:class:: GeoServerMonitorClient(base_url)
+
+   .. py:attribute:: REPORT_FORMATS
+      :value: ('html', 'xml', 'json')
+
+
+
+   .. py:attribute:: base_url
+
+
+   .. py:method:: get_href(link, format=None)
+
+
+   .. py:method:: get_requests(format=None, since=None, until=None)
+
+      Returns list of requests from monitoring
+
+
+
+   .. py:method:: get_request(href, format=format)
+
+
+   .. py:method:: _from_xml(val)
+
+
+   .. py:method:: _from_html(val)
+
+
+   .. py:method:: to_json(data, from_format)
+
+
+.. py:function:: align_period_end(end, interval)
+
+.. py:function:: align_period_start(start, interval)
+
+.. py:function:: generate_periods(since, interval, end=None, align=True)
+
+   Generator of periods: tuple of [start, end).
+   since parameter will be aligned to closest interval before since.
+
+
+.. py:class:: TypeChecks
+
+   .. py:attribute:: AUDIT_TYPE_JSON
+      :value: 'json'
+
+
+
+   .. py:attribute:: AUDIT_TYPE_XML
+      :value: 'xml'
+
+
+
+   .. py:attribute:: AUDIT_FORMATS
+
+
+   .. py:method:: audit_format(val)
+      :classmethod:
+
+
+
+   .. py:method:: host_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: resource_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: resource_type_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: metric_name_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: service_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: service_type_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: label_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: user_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: event_type_type(val)
+      :staticmethod:
+
+
+
+   .. py:method:: ows_service_type(val)
+      :staticmethod:
+
+
+
+.. py:function:: dump(obj, additional_fields=tuple())
+
+.. py:function:: extend_datetime_input_formats(formats)
+
+   Add new DateTime input formats
+   :param formats: input formats yoy want to add (tuple or list)
+   :return: extended input formats
+
+
+.. py:function:: collect_metric(**options)
+
+.. py:function:: run_check(service, collector, since=None, until=None, force_check=None, format=None)
+

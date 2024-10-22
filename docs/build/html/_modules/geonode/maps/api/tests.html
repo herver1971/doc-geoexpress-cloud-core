@@ -1,0 +1,585 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.maps.api.tests &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../maps.html">geonode.maps</a></li>
+      <li class="breadcrumb-item active">geonode.maps.api.tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.maps.api.tests</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urljoin</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+
+<span class="kn">from</span> <span class="nn">guardian.shortcuts</span> <span class="kn">import</span> <span class="n">assign_perm</span><span class="p">,</span> <span class="n">get_anonymous_user</span>
+<span class="kn">from</span> <span class="nn">mock</span> <span class="kn">import</span> <span class="n">patch</span>
+<span class="kn">from</span> <span class="nn">rest_framework.test</span> <span class="kn">import</span> <span class="n">APITestCase</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.populate_test_data</span> <span class="kn">import</span> <span class="n">create_models</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.maps.models</span> <span class="kn">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">MapLayer</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="MapsApiTests">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests">[docs]</a>
+<span class="k">class</span> <span class="nc">MapsApiTests</span><span class="p">(</span><span class="n">APITestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="MapsApiTests.fixtures">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.fixtures">[docs]</a>
+    <span class="n">fixtures</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;initial_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;group_test_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;default_oauth_apps.json&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MapsApiTests.setUp">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;document&quot;</span><span class="p">)</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;map&quot;</span><span class="p">)</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span>
+        <span class="n">first_map</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">first_map</span><span class="o">.</span><span class="n">blob</span> <span class="o">=</span> <span class="n">DUMMY_MAPDATA</span>
+        <span class="n">first_map</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">first_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">MapLayer</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="nb">map</span><span class="o">=</span><span class="n">first_map</span><span class="p">,</span>
+            <span class="n">extra_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="s2">&quot;bar&quot;</span><span class="p">},</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">first_dataset</span><span class="o">.</span><span class="n">alternate</span><span class="p">,</span>
+            <span class="n">store</span><span class="o">=</span><span class="n">first_dataset</span><span class="o">.</span><span class="n">store</span><span class="p">,</span>
+            <span class="n">current_style</span><span class="o">=</span><span class="s2">&quot;some-style&quot;</span><span class="p">,</span>
+            <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MapsApiTests.test_maps">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.test_maps">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensure we can access the Maps list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;maps-list&quot;</span><span class="p">)</span>
+        <span class="c1"># Anonymous</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">],</span> <span class="mi">9</span><span class="p">)</span>
+        <span class="c1"># Check: No overfetching for maplayers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">any</span><span class="p">([</span><span class="nb">map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;maplayers&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="k">for</span> <span class="nb">map</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;maps&quot;</span><span class="p">]]))</span>
+
+        <span class="c1"># Pagination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;maps&quot;</span><span class="p">]),</span> <span class="mi">9</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_l</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;maps&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">_l</span><span class="p">[</span><span class="s2">&quot;resource_type&quot;</span><span class="p">],</span> <span class="s2">&quot;map&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Get Layers List (backgrounds)</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">assign_perm</span><span class="p">(</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="n">get_anonymous_user</span><span class="p">(),</span> <span class="n">resource</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;maps-detail&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">resource</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="s2">&quot;maplayers/&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="n">layers_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">layers_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">layers_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;extra_params&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="s2">&quot;bar&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">layers_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;dataset&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Get Local-Layers List (GeoNode)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;maps-detail&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span><span class="w"> </span><span class="n">resource</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="s2">&quot;datasets/&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="n">layers_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">layers_data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">GEONODE_CLIENT_LAYER_PREVIEW_LIBRARY</span> <span class="o">==</span> <span class="s2">&quot;mapstore&quot;</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;maps-list&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;/api/v2/maps&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Anonymous</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># now are 5 since will read from maps</span>
+
+                <span class="c1"># Get Full Map layer configuration</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;maps-detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;layers&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;extra_params&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="s2">&quot;bar&quot;</span><span class="p">})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;dataset&quot;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;extra_params&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="s2">&quot;bar&quot;</span><span class="p">})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;visibility&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;order&quot;</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;opacity&quot;</span><span class="p">],</span> <span class="mf">1.0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MapsApiTests.test_extra_metadata_included_with_param">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.test_extra_metadata_included_with_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_extra_metadata_included_with_param</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;maps-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;include[]&quot;</span><span class="p">:</span> <span class="s2">&quot;metadata&quot;</span><span class="p">}</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">))</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;map&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MapsApiTests.test_patch_map">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.test_patch_map">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Patch to maps/&lt;pk&gt;/</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get Layers List (backgrounds)</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;maps-detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">-edited&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;abstract&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">abstract</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPDATA</span><span class="p">,</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;maplayers&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPLAYERS_DATA</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;layers&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span>
+        <span class="n">response_maplayer</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;extra_params&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor__0&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;current_style&quot;</span><span class="p">],</span> <span class="s2">&quot;some-style-first-layer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MapsApiTests.test_patch_map_with_extra_maplayer_info">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.test_patch_map_with_extra_maplayer_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_map_with_extra_maplayer_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Patch to maps/&lt;pk&gt;/</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get Layers List (backgrounds)</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;maps-detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">-edited&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;abstract&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">abstract</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPDATA</span><span class="p">,</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;maplayers&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPLAYERS_DATA_WITH_EXTRA_INFO</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;layers&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span>
+        <span class="n">response_maplayer</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;extra_params&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor__0&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;current_style&quot;</span><span class="p">],</span> <span class="s2">&quot;some-style-first-layer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;visibility&quot;</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">],</span> <span class="mi">99</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;opacity&quot;</span><span class="p">],</span> <span class="mf">1.3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">])</span></div>
+
+
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.maps.api.views.resolve_object&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="MapsApiTests.test_patch_map_raise_exception">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.test_patch_map_raise_exception">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_map_raise_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mocked_obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Patch to maps/&lt;pk&gt;/</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get Layers List (backgrounds)</span>
+        <span class="n">resource</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">mocked_obj</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;maps-detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resource</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">-edited&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;abstract&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">abstract</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPDATA</span><span class="p">,</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;maplayers&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPLAYERS_DATA</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+
+        <span class="n">expected_error</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;serializer instance and object are different&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;maps_exception&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">expected_error</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="MapsApiTests.test_create_map">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.test_create_map">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_create_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Post to maps/</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get Layers List (backgrounds)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;maps-list&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Some created map&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPDATA</span><span class="p">,</span>
+            <span class="s2">&quot;maplayers&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPLAYERS_DATA</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;layers&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span>
+        <span class="n">response_maplayer</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;extra_params&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor__0&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;current_style&quot;</span><span class="p">],</span> <span class="s2">&quot;some-style-first-layer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;thumbnail_url&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MapsApiTests.test_create_map_with_extra_maplayer_info">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.MapsApiTests.test_create_map_with_extra_maplayer_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_create_map_with_extra_maplayer_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Post to maps/</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get Layers List (backgrounds)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;maps-list&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Some created map&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPDATA</span><span class="p">,</span>
+            <span class="s2">&quot;maplayers&quot;</span><span class="p">:</span> <span class="n">DUMMY_MAPLAYERS_DATA_WITH_EXTRA_INFO</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">?include[]=data&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s2">&quot;data&quot;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;layers&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span>
+        <span class="n">response_maplayer</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;maplayers&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;extra_params&quot;</span><span class="p">],</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor__0&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;current_style&quot;</span><span class="p">],</span> <span class="s2">&quot;some-style-first-layer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;visibility&quot;</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">],</span> <span class="mi">99</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response_maplayer</span><span class="p">[</span><span class="s2">&quot;opacity&quot;</span><span class="p">],</span> <span class="mf">1.3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;map&quot;</span><span class="p">][</span><span class="s2">&quot;thumbnail_url&quot;</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DUMMY_MAPDATA">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.DUMMY_MAPDATA">[docs]</a>
+<span class="n">DUMMY_MAPDATA</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;map&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;zoom&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span>
+        <span class="s2">&quot;units&quot;</span><span class="p">:</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mf">11.763505157657004</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">43.7880264429571</span><span class="p">,</span> <span class="s2">&quot;crs&quot;</span><span class="p">:</span> <span class="s2">&quot;EPSG:4326&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;Default&quot;</span><span class="p">,</span> <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Default&quot;</span><span class="p">,</span> <span class="s2">&quot;expanded&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}],</span>
+        <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor__0&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tileprovider&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;background&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen Watercolor&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;thumbURL&quot;</span><span class="p">:</span> <span class="s2">&quot;https://stamen-tiles-c.a.ssl.fastly.net/watercolor/0/0/0.jpg&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dimensions&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;styles&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;some-style-first-layer&quot;</span><span class="p">,</span> <span class="s2">&quot;some-other-style-first-layer&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;singleTile&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;visibility&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;extraParams&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor__0&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;hideLoading&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;useForElevation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;handleClickOnLayer&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Terrain__1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Terrain&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tileprovider&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;background&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen Terrain&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Terrain&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;thumbURL&quot;</span><span class="p">:</span> <span class="s2">&quot;https://stamen-tiles-d.a.ssl.fastly.net/terrain/0/0/0.png&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dimensions&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;singleTile&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;visibility&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;extraParams&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Terrain__1&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;hideLoading&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;useForElevation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;handleClickOnLayer&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Toner__2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Toner&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tileprovider&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;background&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen Toner&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Toner&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;thumbURL&quot;</span><span class="p">:</span> <span class="s2">&quot;https://stamen-tiles-d.a.ssl.fastly.net/toner/0/0/0.png&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dimensions&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;singleTile&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;visibility&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;extraParams&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Toner__2&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;hideLoading&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;useForElevation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;handleClickOnLayer&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;mapnik__3&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;mapnik&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;osm&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;background&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Open Street Map&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;osm&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dimensions&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;singleTile&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;visibility&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;extraParams&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;mapnik__3&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;hideLoading&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;useForElevation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;handleClickOnLayer&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenTopoMap__4&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenTopoMap&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tileprovider&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;background&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenTopoMap&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenTopoMap&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenTopoMap&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dimensions&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;singleTile&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;visibility&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;extraParams&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenTopoMap__4&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;hideLoading&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;useForElevation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;handleClickOnLayer&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;s2cloudless&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://maps.geosolutionsgroup.com.it/geoserver/wms&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;s2cloudless:s2cloudless&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;wms&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;background&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Sentinel-2 cloudless - https://s2maps.eu&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;thumbURL&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8000/static/mapstorestyle/img/s2cloudless-s2cloudless.png&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dimensions&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;singleTile&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;visibility&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;extraParams&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;s2cloudless&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;hideLoading&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;useForElevation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;handleClickOnLayer&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;empty&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;empty&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="s2">&quot;background&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Empty Background&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;ol&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dimensions&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;singleTile&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;visibility&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;extraParams&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;hideLoading&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;useForElevation&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;handleClickOnLayer&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;maxExtent&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">20037508.34</span><span class="p">,</span> <span class="o">-</span><span class="mf">20037508.34</span><span class="p">,</span> <span class="mf">20037508.34</span><span class="p">,</span> <span class="mf">20037508.34</span><span class="p">],</span>
+        <span class="s2">&quot;mapOptions&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;projection&quot;</span><span class="p">:</span> <span class="s2">&quot;EPSG:3857&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;backgrounds&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;timelineData&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;dimensionData&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;widgetsConfig&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;layouts&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;md&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;xxs&quot;</span><span class="p">:</span> <span class="p">[]}},</span>
+    <span class="s2">&quot;catalogServices&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;services&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;GeoNode Catalogue&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8000/catalogue/csw&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;csw&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;GeoNode Catalogue&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;autoload&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;selectedService&quot;</span><span class="p">:</span> <span class="s2">&quot;GeoNode Catalogue&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;mapInfoConfiguration&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="DUMMY_MAPLAYERS_DATA">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.DUMMY_MAPLAYERS_DATA">[docs]</a>
+<span class="n">DUMMY_MAPLAYERS_DATA</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;extra_params&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor__0&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;current_style&quot;</span><span class="p">:</span> <span class="s2">&quot;some-style-first-layer&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geonode:CA&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DUMMY_MAPLAYERS_DATA_WITH_EXTRA_INFO">
+<a class="viewcode-back" href="../../../../autoapi/geonode/maps/api/tests/index.html#geonode.maps.api.tests.DUMMY_MAPLAYERS_DATA_WITH_EXTRA_INFO">[docs]</a>
+<span class="n">DUMMY_MAPLAYERS_DATA_WITH_EXTRA_INFO</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;extra_params&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;msId&quot;</span><span class="p">:</span> <span class="s2">&quot;Stamen.Watercolor__0&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;current_style&quot;</span><span class="p">:</span> <span class="s2">&quot;some-style-first-layer&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;geonode:CA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;opacity&quot;</span><span class="p">:</span> <span class="mf">1.3</span><span class="p">,</span>
+        <span class="s2">&quot;visibility&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

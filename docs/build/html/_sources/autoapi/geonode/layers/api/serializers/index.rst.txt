@@ -1,0 +1,226 @@
+geonode.layers.api.serializers
+==============================
+
+.. py:module:: geonode.layers.api.serializers
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.layers.api.serializers.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.layers.api.serializers.StyleSerializer
+   geonode.layers.api.serializers.AttributeSerializer
+   geonode.layers.api.serializers.FeatureInfoTemplateField
+   geonode.layers.api.serializers.DatasetSerializer
+   geonode.layers.api.serializers.DatasetListSerializer
+   geonode.layers.api.serializers.DatasetReplaceAppendSerializer
+   geonode.layers.api.serializers.MetadataFileField
+   geonode.layers.api.serializers.DatasetMetadataSerializer
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: StyleSerializer
+
+   Bases: :py:obj:`dynamic_rest.serializers.DynamicModelSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'style'
+
+
+
+      .. py:attribute:: fields
+         :value: ('pk', 'name', 'workspace', 'sld_title', 'sld_url')
+
+
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: workspace
+
+
+   .. py:attribute:: sld_url
+
+
+   .. py:method:: get_sld_url(instance)
+
+
+.. py:class:: AttributeSerializer
+
+   Bases: :py:obj:`dynamic_rest.serializers.DynamicModelSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'attribute'
+
+
+
+      .. py:attribute:: fields
+         :value: ('pk', 'attribute', 'description', 'attribute_label', 'attribute_type', 'visible',...
+
+
+
+
+   .. py:attribute:: attribute
+
+
+.. py:class:: FeatureInfoTemplateField(**kwargs)
+
+   Bases: :py:obj:`dynamic_rest.fields.fields.DynamicComputedField`
+
+
+   .. py:method:: get_attribute(instance)
+
+
+.. py:class:: DatasetSerializer(*args, **kwargs)
+
+   Bases: :py:obj:`geonode.base.api.serializers.ResourceBaseSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: name
+         :value: 'dataset'
+
+
+
+      .. py:attribute:: view_name
+         :value: 'datasets-list'
+
+
+
+      .. py:attribute:: fields
+         :value: ('pk', 'uuid', 'name', 'metadata', 'attribute_set', 'charset', 'is_mosaic', 'has_time',...
+
+
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: workspace
+
+
+   .. py:attribute:: store
+
+
+   .. py:attribute:: charset
+
+
+   .. py:attribute:: default_style
+
+
+   .. py:attribute:: styles
+
+
+   .. py:attribute:: attribute_set
+
+
+   .. py:attribute:: featureinfo_custom_template
+
+
+.. py:class:: DatasetListSerializer(*args, **kwargs)
+
+   Bases: :py:obj:`DatasetSerializer`
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`DatasetSerializer`
+
+
+      .. py:attribute:: fields
+         :value: ('pk', 'uuid', 'name', 'workspace', 'store', 'subtype', 'charset', 'is_mosaic', 'has_time',...
+
+
+
+
+   .. py:attribute:: featureinfo_custom_template
+
+
+.. py:class:: DatasetReplaceAppendSerializer
+
+   Bases: :py:obj:`rest_framework.serializers.Serializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: fields
+         :value: ('base_file', 'dbf_file', 'shx_file', 'prj_file', 'xml_file', 'sld_file', 'store_spatial_files')
+
+
+
+
+   .. py:attribute:: base_file
+
+
+   .. py:attribute:: dbf_file
+
+
+   .. py:attribute:: shx_file
+
+
+   .. py:attribute:: prj_file
+
+
+   .. py:attribute:: xml_file
+
+
+   .. py:attribute:: sld_file
+
+
+   .. py:attribute:: store_spatial_files
+
+
+.. py:class:: MetadataFileField
+
+   Bases: :py:obj:`dynamic_rest.fields.fields.DynamicComputedField`
+
+
+   .. py:method:: get_attribute(instance)
+
+
+.. py:class:: DatasetMetadataSerializer
+
+   Bases: :py:obj:`rest_framework.serializers.Serializer`
+
+
+   .. py:attribute:: metadata_file
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: fields
+         :value: 'metadata_file'
+
+
+
+

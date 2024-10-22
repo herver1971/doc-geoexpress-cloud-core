@@ -1,0 +1,1316 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.api.serializers &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="geonode.base.api.tests" href="../tests/index.html" />
+    <link rel="prev" title="geonode.base.api.permissions" href="../permissions/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">geonode</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../api/index.html">geonode.api</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">geonode.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../br/index.html">geonode.br</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../catalogue/index.html">geonode.catalogue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../client/index.html">geonode.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../documents/index.html">geonode.documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../facets/index.html">geonode.facets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../favorite/index.html">geonode.favorite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../geoapps/index.html">geonode.geoapps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../geoserver/index.html">geonode.geoserver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../groups/index.html">geonode.groups</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../harvesting/index.html">geonode.harvesting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../invitations/index.html">geonode.invitations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../layers/index.html">geonode.layers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../management_commands_http/index.html">geonode.management_commands_http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../maps/index.html">geonode.maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../messaging/index.html">geonode.messaging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../monitoring/index.html">geonode.monitoring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../people/index.html">geonode.people</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../proxy/index.html">geonode.proxy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resource/index.html">geonode.resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../security/index.html">geonode.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../services/index.html">geonode.services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../social/index.html">geonode.social</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../storage/index.html">geonode.storage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tasks/index.html">geonode.tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tests/index.html">geonode.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../themes/index.html">geonode.themes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../thumbs/index.html">geonode.thumbs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../upload/index.html">geonode.upload</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">geonode.base</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">geonode.base.api</a></li>
+      <li class="breadcrumb-item active">geonode.base.api.serializers</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/geonode/base/api/serializers/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-geonode.base.api.serializers">
+<span id="geonode-base-api-serializers"></span><h1>geonode.base.api.serializers<a class="headerlink" href="#module-geonode.base.api.serializers" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.logger" title="geonode.base.api.serializers.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.api_bbox_settable_resource_models" title="geonode.base.api.serializers.api_bbox_settable_resource_models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">api_bbox_settable_resource_models</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.BaseDynamicModelSerializer" title="geonode.base.api.serializers.BaseDynamicModelSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseDynamicModelSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin" title="geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResourceBaseToRepresentationSerializerMixin</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ResourceBaseTypesSerializer" title="geonode.base.api.serializers.ResourceBaseTypesSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResourceBaseTypesSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.PermSpecSerialiazer" title="geonode.base.api.serializers.PermSpecSerialiazer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PermSpecSerialiazer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.GroupSerializer" title="geonode.base.api.serializers.GroupSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroupSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.GroupProfileSerializer" title="geonode.base.api.serializers.GroupProfileSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroupProfileSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer" title="geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleHierarchicalKeywordSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn" title="geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_ThesaurusKeywordSerializerMixIn</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.SimpleThesaurusKeywordSerializer" title="geonode.base.api.serializers.SimpleThesaurusKeywordSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleThesaurusKeywordSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.SimpleRegionSerializer" title="geonode.base.api.serializers.SimpleRegionSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleRegionSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.SimpleTopicCategorySerializer" title="geonode.base.api.serializers.SimpleTopicCategorySerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleTopicCategorySerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.RestrictionCodeTypeSerializer" title="geonode.base.api.serializers.RestrictionCodeTypeSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RestrictionCodeTypeSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.LicenseSerializer" title="geonode.base.api.serializers.LicenseSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LicenseSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.SpatialRepresentationTypeSerializer" title="geonode.base.api.serializers.SpatialRepresentationTypeSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpatialRepresentationTypeSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.AvatarUrlField" title="geonode.base.api.serializers.AvatarUrlField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AvatarUrlField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.EmbedUrlField" title="geonode.base.api.serializers.EmbedUrlField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EmbedUrlField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.DetailUrlField" title="geonode.base.api.serializers.DetailUrlField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DetailUrlField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ExtraMetadataSerializer" title="geonode.base.api.serializers.ExtraMetadataSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExtraMetadataSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ThumbnailUrlField" title="geonode.base.api.serializers.ThumbnailUrlField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThumbnailUrlField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.DownloadLinkField" title="geonode.base.api.serializers.DownloadLinkField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DownloadLinkField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.DownloadArrayLinkField" title="geonode.base.api.serializers.DownloadArrayLinkField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DownloadArrayLinkField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.FavoriteField" title="geonode.base.api.serializers.FavoriteField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FavoriteField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.UserSerializer" title="geonode.base.api.serializers.UserSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UserSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ContactRoleField" title="geonode.base.api.serializers.ContactRoleField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContactRoleField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ExtentBboxField" title="geonode.base.api.serializers.ExtentBboxField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExtentBboxField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.DataBlobField" title="geonode.base.api.serializers.DataBlobField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataBlobField</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.DataBlobSerializer" title="geonode.base.api.serializers.DataBlobSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataBlobSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ResourceExecutionRequestSerializer" title="geonode.base.api.serializers.ResourceExecutionRequestSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResourceExecutionRequestSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ResourceBaseSerializer" title="geonode.base.api.serializers.ResourceBaseSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResourceBaseSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.FavoriteSerializer" title="geonode.base.api.serializers.FavoriteSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FavoriteSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.BaseResourceCountSerializer" title="geonode.base.api.serializers.BaseResourceCountSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseResourceCountSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.HierarchicalKeywordSerializer" title="geonode.base.api.serializers.HierarchicalKeywordSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HierarchicalKeywordSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.ThesaurusKeywordSerializer" title="geonode.base.api.serializers.ThesaurusKeywordSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThesaurusKeywordSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.RegionSerializer" title="geonode.base.api.serializers.RegionSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RegionSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.TopicCategorySerializer" title="geonode.base.api.serializers.TopicCategorySerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TopicCategorySerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.OwnerSerializer" title="geonode.base.api.serializers.OwnerSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OwnerSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.api.serializers.SimpleResourceSerializer" title="geonode.base.api.serializers.SimpleResourceSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleResourceSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.api.serializers.LinkedResourceSerializer" title="geonode.base.api.serializers.LinkedResourceSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinkedResourceSerializer</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.logger">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.BaseDynamicModelSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">BaseDynamicModelSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#BaseDynamicModelSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.BaseDynamicModelSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.BaseDynamicModelSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#BaseDynamicModelSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.BaseDynamicModelSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ResourceBaseToRepresentationSerializerMixin</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseToRepresentationSerializerMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseToRepresentationSerializerMixin.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseTypesSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ResourceBaseTypesSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseTypesSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseTypesSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicEphemeralSerializer</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseTypesSerializer.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseTypesSerializer.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseTypesSerializer.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseTypesSerializer.count">
+<span class="sig-name descname"><span class="pre">count</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseTypesSerializer.count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseTypesSerializer.count" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseTypesSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseTypesSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseTypesSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseTypesSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'resource-types'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseTypesSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseTypesSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.PermSpecSerialiazer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">PermSpecSerialiazer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#PermSpecSerialiazer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.PermSpecSerialiazer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicEphemeralSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.PermSpecSerialiazer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#PermSpecSerialiazer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.PermSpecSerialiazer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.PermSpecSerialiazer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'perm-spec'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#PermSpecSerialiazer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.PermSpecSerialiazer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.PermSpecSerialiazer.PermSpecFieldSerialiazer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PermSpecFieldSerialiazer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#PermSpecSerialiazer.PermSpecFieldSerialiazer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.PermSpecSerialiazer.PermSpecFieldSerialiazer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicEphemeralSerializer</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.PermSpecSerialiazer.PermSpecFieldSerialiazer.perm_spec">
+<span class="sig-name descname"><span class="pre">perm_spec</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#PermSpecSerialiazer.PermSpecFieldSerialiazer.perm_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.PermSpecSerialiazer.PermSpecFieldSerialiazer.perm_spec" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.PermSpecSerialiazer.users">
+<span class="sig-name descname"><span class="pre">users</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#PermSpecSerialiazer.users"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.PermSpecSerialiazer.users" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.PermSpecSerialiazer.groups">
+<span class="sig-name descname"><span class="pre">groups</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#PermSpecSerialiazer.groups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.PermSpecSerialiazer.groups" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">GroupSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'group'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',</span> <span class="pre">'name')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">GroupProfileSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers.BaseDynamicModelSerializer" title="geonode.base.api.serializers.BaseDynamicModelSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseDynamicModelSerializer</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'group_profile'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer.Meta.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'group-profiles-list'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer.Meta.view_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer.Meta.view_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',</span> <span class="pre">'title',</span> <span class="pre">'group',</span> <span class="pre">'slug',</span> <span class="pre">'logo',</span> <span class="pre">'description',</span> <span class="pre">'email',</span> <span class="pre">'keywords',</span> <span class="pre">'access',</span> <span class="pre">'categories')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer.group">
+<span class="sig-name descname"><span class="pre">group</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer.group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer.group" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer.keywords">
+<span class="sig-name descname"><span class="pre">keywords</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer.keywords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer.keywords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.GroupProfileSerializer.categories">
+<span class="sig-name descname"><span class="pre">categories</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#GroupProfileSerializer.categories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.GroupProfileSerializer.categories" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">SimpleHierarchicalKeywordSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleHierarchicalKeywordSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleHierarchicalKeywordSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleHierarchicalKeywordSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HierarchicalKeyword'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleHierarchicalKeywordSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('name',</span> <span class="pre">'slug')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleHierarchicalKeywordSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleHierarchicalKeywordSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleHierarchicalKeywordSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">_ThesaurusKeywordSerializerMixIn</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#_ThesaurusKeywordSerializerMixIn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn" title="Link to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#_ThesaurusKeywordSerializerMixIn.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleThesaurusKeywordSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">SimpleThesaurusKeywordSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleThesaurusKeywordSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleThesaurusKeywordSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn" title="geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_ThesaurusKeywordSerializerMixIn</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleThesaurusKeywordSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleThesaurusKeywordSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleThesaurusKeywordSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleThesaurusKeywordSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleThesaurusKeywordSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleThesaurusKeywordSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleThesaurusKeywordSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ThesaurusKeyword'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleThesaurusKeywordSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleThesaurusKeywordSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleThesaurusKeywordSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('alt_label',)</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleThesaurusKeywordSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleThesaurusKeywordSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleRegionSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">SimpleRegionSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleRegionSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleRegionSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleRegionSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleRegionSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleRegionSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleRegionSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleRegionSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleRegionSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleRegionSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Region'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleRegionSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleRegionSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleRegionSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('code',</span> <span class="pre">'name')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleRegionSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleRegionSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleTopicCategorySerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">SimpleTopicCategorySerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleTopicCategorySerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleTopicCategorySerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleTopicCategorySerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleTopicCategorySerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleTopicCategorySerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleTopicCategorySerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleTopicCategorySerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleTopicCategorySerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleTopicCategorySerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'TopicCategory'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleTopicCategorySerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleTopicCategorySerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleTopicCategorySerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('identifier',</span> <span class="pre">'gn_description')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleTopicCategorySerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleTopicCategorySerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RestrictionCodeTypeSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">RestrictionCodeTypeSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RestrictionCodeTypeSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RestrictionCodeTypeSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RestrictionCodeTypeSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RestrictionCodeTypeSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RestrictionCodeTypeSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RestrictionCodeTypeSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RestrictionCodeTypeSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RestrictionCodeTypeSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RestrictionCodeTypeSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'RestrictionCodeType'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RestrictionCodeTypeSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RestrictionCodeTypeSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RestrictionCodeTypeSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('identifier',)</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RestrictionCodeTypeSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RestrictionCodeTypeSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LicenseSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">LicenseSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LicenseSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LicenseSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LicenseSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LicenseSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LicenseSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LicenseSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LicenseSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LicenseSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LicenseSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'License'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LicenseSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LicenseSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LicenseSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('identifier',)</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LicenseSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LicenseSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SpatialRepresentationTypeSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">SpatialRepresentationTypeSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SpatialRepresentationTypeSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SpatialRepresentationTypeSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SpatialRepresentationTypeSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SpatialRepresentationTypeSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SpatialRepresentationTypeSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SpatialRepresentationTypeSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SpatialRepresentationTypeSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SpatialRepresentationTypeSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SpatialRepresentationTypeSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SpatialRepresentationType'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SpatialRepresentationTypeSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SpatialRepresentationTypeSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SpatialRepresentationTypeSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('identifier',)</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SpatialRepresentationTypeSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SpatialRepresentationTypeSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.AvatarUrlField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">AvatarUrlField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">avatar_size</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#AvatarUrlField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.AvatarUrlField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.AvatarUrlField.avatar_size">
+<span class="sig-name descname"><span class="pre">avatar_size</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#AvatarUrlField.avatar_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.AvatarUrlField.avatar_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.AvatarUrlField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#AvatarUrlField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.AvatarUrlField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.EmbedUrlField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">EmbedUrlField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#EmbedUrlField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.EmbedUrlField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.EmbedUrlField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#EmbedUrlField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.EmbedUrlField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DetailUrlField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">DetailUrlField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DetailUrlField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DetailUrlField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DetailUrlField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DetailUrlField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DetailUrlField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtraMetadataSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ExtraMetadataSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtraMetadataSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtraMetadataSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtraMetadataSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtraMetadataSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtraMetadataSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtraMetadataSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtraMetadataSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtraMetadataSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtraMetadataSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ExtraMetadata'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtraMetadataSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtraMetadataSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtraMetadataSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',</span> <span class="pre">'metadata')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtraMetadataSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtraMetadataSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtraMetadataSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtraMetadataSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtraMetadataSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThumbnailUrlField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ThumbnailUrlField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThumbnailUrlField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThumbnailUrlField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThumbnailUrlField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThumbnailUrlField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThumbnailUrlField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DownloadLinkField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">DownloadLinkField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DownloadLinkField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DownloadLinkField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DownloadLinkField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DownloadLinkField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DownloadLinkField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DownloadArrayLinkField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">DownloadArrayLinkField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DownloadArrayLinkField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DownloadArrayLinkField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DownloadArrayLinkField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DownloadArrayLinkField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DownloadArrayLinkField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">FavoriteField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">UserSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers.BaseDynamicModelSerializer" title="geonode.base.api.serializers.BaseDynamicModelSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseDynamicModelSerializer</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.Meta.ref_name">
+<span class="sig-name descname"><span class="pre">ref_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'UserProfile'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.Meta.ref_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.Meta.ref_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'user'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.Meta.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'users-list'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.Meta.view_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.Meta.view_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',</span> <span class="pre">'username',</span> <span class="pre">'first_name',</span> <span class="pre">'last_name',</span> <span class="pre">'avatar',</span> <span class="pre">'perms',</span> <span class="pre">'is_superuser',</span> <span class="pre">'is_staff',</span> <span class="pre">'email')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.setup_eager_loading">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup_eager_loading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.setup_eager_loading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.setup_eager_loading" title="Link to this definition"></a></dt>
+<dd><p>Perform necessary eager loading of data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.UserSerializer.avatar">
+<span class="sig-name descname"><span class="pre">avatar</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#UserSerializer.avatar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.UserSerializer.avatar" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ContactRoleField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ContactRoleField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contact_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ContactRoleField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ContactRoleField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ContactRoleField.default_error_messages">
+<span class="sig-name descname"><span class="pre">default_error_messages</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ContactRoleField.default_error_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ContactRoleField.default_error_messages" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ContactRoleField.contact_type">
+<span class="sig-name descname"><span class="pre">contact_type</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ContactRoleField.contact_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ContactRoleField.contact_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ContactRoleField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ContactRoleField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ContactRoleField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ContactRoleField.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ContactRoleField.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ContactRoleField.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ContactRoleField.get_pks_of_users_to_set">
+<span class="sig-name descname"><span class="pre">get_pks_of_users_to_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ContactRoleField.get_pks_of_users_to_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ContactRoleField.get_pks_of_users_to_set" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ContactRoleField.to_internal_value">
+<span class="sig-name descname"><span class="pre">to_internal_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ContactRoleField.to_internal_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ContactRoleField.to_internal_value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtentBboxField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ExtentBboxField</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtentBboxField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtentBboxField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicComputedField</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtentBboxField.get_attribute">
+<span class="sig-name descname"><span class="pre">get_attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtentBboxField.get_attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtentBboxField.get_attribute" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ExtentBboxField.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ExtentBboxField.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ExtentBboxField.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DataBlobField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">DataBlobField</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DataBlobField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DataBlobField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.fields.fields.DynamicRelationField</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DataBlobField.value_to_string">
+<span class="sig-name descname"><span class="pre">value_to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DataBlobField.value_to_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DataBlobField.value_to_string" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DataBlobSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">DataBlobSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DataBlobSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DataBlobSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DataBlobSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DataBlobSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DataBlobSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DataBlobSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DataBlobSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DataBlobSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DataBlobSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',</span> <span class="pre">'blob')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DataBlobSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DataBlobSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.DataBlobSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#DataBlobSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.DataBlobSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceExecutionRequestSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ResourceExecutionRequestSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceExecutionRequestSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceExecutionRequestSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceExecutionRequestSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceExecutionRequestSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceExecutionRequestSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceExecutionRequestSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceExecutionRequestSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceExecutionRequestSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceExecutionRequestSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',)</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceExecutionRequestSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceExecutionRequestSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceExecutionRequestSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceExecutionRequestSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceExecutionRequestSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.api_bbox_settable_resource_models">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">api_bbox_settable_resource_models</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#api_bbox_settable_resource_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.api_bbox_settable_resource_models" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ResourceBaseSerializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin" title="geonode.base.api.serializers.ResourceBaseToRepresentationSerializerMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResourceBaseToRepresentationSerializerMixin</span></code></a>, <a class="reference internal" href="#geonode.base.api.serializers.BaseDynamicModelSerializer" title="geonode.base.api.serializers.BaseDynamicModelSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseDynamicModelSerializer</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'resource'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.Meta.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'base-resources-list'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.Meta.view_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.Meta.view_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',</span> <span class="pre">'uuid',</span> <span class="pre">'resource_type',</span> <span class="pre">'polymorphic_ctype_id',</span> <span class="pre">'perms',</span> <span class="pre">'owner',</span> <span class="pre">'poc',...</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.Meta.extra_kwargs">
+<span class="sig-name descname"><span class="pre">extra_kwargs</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.Meta.extra_kwargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.Meta.extra_kwargs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.to_internal_value">
+<span class="sig-name descname"><span class="pre">to_internal_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.to_internal_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.to_internal_value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.save" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.data" title="Link to this definition"></a></dt>
+<dd><ul class="simple">
+<li><p>Deferred / not Embedded –&gt; ?include[]=executions</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ResourceBaseSerializer.executions">
+<span class="sig-name descname"><span class="pre">executions</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ResourceBaseSerializer.executions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ResourceBaseSerializer.executions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">FavoriteSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteSerializer.resource">
+<span class="sig-name descname"><span class="pre">resource</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteSerializer.resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteSerializer.resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'favorites'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('resource',)</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.FavoriteSerializer.get_resource">
+<span class="sig-name descname"><span class="pre">get_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#FavoriteSerializer.get_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.FavoriteSerializer.get_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.BaseResourceCountSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">BaseResourceCountSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#BaseResourceCountSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.BaseResourceCountSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers.BaseDynamicModelSerializer" title="geonode.base.api.serializers.BaseDynamicModelSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseDynamicModelSerializer</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.BaseResourceCountSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#BaseResourceCountSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.BaseResourceCountSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.HierarchicalKeywordSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">HierarchicalKeywordSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#HierarchicalKeywordSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.HierarchicalKeywordSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers.BaseResourceCountSerializer" title="geonode.base.api.serializers.BaseResourceCountSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseResourceCountSerializer</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#HierarchicalKeywordSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'keywords'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#HierarchicalKeywordSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#HierarchicalKeywordSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.count_type">
+<span class="sig-name descname"><span class="pre">count_type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'keywords'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#HierarchicalKeywordSerializer.Meta.count_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.count_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'keywords-list'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#HierarchicalKeywordSerializer.Meta.view_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.view_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'__all__'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#HierarchicalKeywordSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.HierarchicalKeywordSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThesaurusKeywordSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">ThesaurusKeywordSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThesaurusKeywordSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThesaurusKeywordSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn" title="geonode.base.api.serializers._ThesaurusKeywordSerializerMixIn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_ThesaurusKeywordSerializerMixIn</span></code></a>, <a class="reference internal" href="#geonode.base.api.serializers.BaseResourceCountSerializer" title="geonode.base.api.serializers.BaseResourceCountSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseResourceCountSerializer</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThesaurusKeywordSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThesaurusKeywordSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'tkeywords'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThesaurusKeywordSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'tkeywords-list'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThesaurusKeywordSerializer.Meta.view_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.view_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.count_type">
+<span class="sig-name descname"><span class="pre">count_type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'tkeywords'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThesaurusKeywordSerializer.Meta.count_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.count_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'__all__'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#ThesaurusKeywordSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.ThesaurusKeywordSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RegionSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">RegionSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RegionSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RegionSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers.BaseResourceCountSerializer" title="geonode.base.api.serializers.BaseResourceCountSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseResourceCountSerializer</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RegionSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RegionSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RegionSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RegionSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'regions'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RegionSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RegionSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RegionSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RegionSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RegionSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RegionSerializer.Meta.count_type">
+<span class="sig-name descname"><span class="pre">count_type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'regions'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RegionSerializer.Meta.count_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RegionSerializer.Meta.count_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RegionSerializer.Meta.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'regions-list'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RegionSerializer.Meta.view_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RegionSerializer.Meta.view_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.RegionSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'__all__'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#RegionSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.RegionSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.TopicCategorySerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">TopicCategorySerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#TopicCategorySerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.TopicCategorySerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers.BaseResourceCountSerializer" title="geonode.base.api.serializers.BaseResourceCountSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseResourceCountSerializer</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.TopicCategorySerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#TopicCategorySerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.TopicCategorySerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.TopicCategorySerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'categories'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#TopicCategorySerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.TopicCategorySerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.TopicCategorySerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#TopicCategorySerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.TopicCategorySerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.TopicCategorySerializer.Meta.count_type">
+<span class="sig-name descname"><span class="pre">count_type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'category'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#TopicCategorySerializer.Meta.count_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.TopicCategorySerializer.Meta.count_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.TopicCategorySerializer.Meta.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'categories-list'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#TopicCategorySerializer.Meta.view_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.TopicCategorySerializer.Meta.view_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.TopicCategorySerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'__all__'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#TopicCategorySerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.TopicCategorySerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.OwnerSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">OwnerSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#OwnerSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.OwnerSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#geonode.base.api.serializers.BaseResourceCountSerializer" title="geonode.base.api.serializers.BaseResourceCountSerializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseResourceCountSerializer</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.OwnerSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#OwnerSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.OwnerSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.OwnerSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'owners'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#OwnerSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.OwnerSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.OwnerSerializer.Meta.count_type">
+<span class="sig-name descname"><span class="pre">count_type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'owner'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#OwnerSerializer.Meta.count_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.OwnerSerializer.Meta.count_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.OwnerSerializer.Meta.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'owners-list'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#OwnerSerializer.Meta.view_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.OwnerSerializer.Meta.view_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.OwnerSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#OwnerSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.OwnerSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.OwnerSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',</span> <span class="pre">'username',</span> <span class="pre">'first_name',</span> <span class="pre">'last_name',</span> <span class="pre">'avatar',</span> <span class="pre">'perms')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#OwnerSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.OwnerSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.OwnerSerializer.avatar">
+<span class="sig-name descname"><span class="pre">avatar</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#OwnerSerializer.avatar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.OwnerSerializer.avatar" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleResourceSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">SimpleResourceSerializer</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleResourceSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleResourceSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleResourceSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleResourceSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleResourceSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleResourceSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'linked_resources'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleResourceSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleResourceSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleResourceSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleResourceSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleResourceSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleResourceSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('pk',</span> <span class="pre">'title',</span> <span class="pre">'resource_type',</span> <span class="pre">'detail_url',</span> <span class="pre">'thumbnail_url')</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleResourceSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleResourceSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.SimpleResourceSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.base.models.LinkedResource" title="geonode.base.models.LinkedResource"><span class="pre">geonode.base.models.LinkedResource</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#SimpleResourceSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.SimpleResourceSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LinkedResourceSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.api.serializers.</span></span><span class="sig-name descname"><span class="pre">LinkedResourceSerializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">kargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serialize_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LinkedResourceSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LinkedResourceSerializer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic_rest.serializers.DynamicModelSerializer</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LinkedResourceSerializer.serialize_target">
+<span class="sig-name descname"><span class="pre">serialize_target</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LinkedResourceSerializer.serialize_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LinkedResourceSerializer.serialize_target" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LinkedResourceSerializer.Meta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Meta</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LinkedResourceSerializer.Meta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LinkedResourceSerializer.Meta" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LinkedResourceSerializer.Meta.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'linked_resources'</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LinkedResourceSerializer.Meta.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LinkedResourceSerializer.Meta.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LinkedResourceSerializer.Meta.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LinkedResourceSerializer.Meta.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LinkedResourceSerializer.Meta.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LinkedResourceSerializer.Meta.fields">
+<span class="sig-name descname"><span class="pre">fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('internal',)</span></em><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LinkedResourceSerializer.Meta.fields"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LinkedResourceSerializer.Meta.fields" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.api.serializers.LinkedResourceSerializer.to_representation">
+<span class="sig-name descname"><span class="pre">to_representation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.base.models.LinkedResource" title="geonode.base.models.LinkedResource"><span class="pre">geonode.base.models.LinkedResource</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/base/api/serializers.html#LinkedResourceSerializer.to_representation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.api.serializers.LinkedResourceSerializer.to_representation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../permissions/index.html" class="btn btn-neutral float-left" title="geonode.base.api.permissions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../tests/index.html" class="btn btn-neutral float-right" title="geonode.base.api.tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
