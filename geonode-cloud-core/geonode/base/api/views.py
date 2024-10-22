@@ -587,26 +587,26 @@ class ResourceBaseViewSet(DynamicModelViewSet):
     def resource_service_permissions(self, request, pk, *args, **kwargs):
         """Instructs the Async dispatcher to execute a 'DELETE' or 'UPDATE' on the permissions of a valid 'uuid'
 
-        - GET input_params: {
-            id: "<str: ID>"
-        }
-
-        - DELETE input_params: {
-            id: "<str: ID>"
-        }
-
-        - PUT input_params: {
-            id: "<str: ID>"
-            owner: str = None
-            permissions: dict = {}
-            created: bool = False
-        }
-
-        - output_params: {
-            output: {
-                uuid: "<str: UUID>"
+            - GET input_params: {
+                id: "<str: ID>"
             }
-        }
+
+            - DELETE input_params: {
+                id: "<str: ID>"
+            }
+
+            - PUT input_params: {
+                id: "<str: ID>"
+                owner: str = None
+                permissions: dict = {}
+                created: bool = False
+            }
+
+            - output_params: {
+                output: {
+                    uuid: "<str: UUID>"
+                }
+            }
 
         - output: {
                 "status": "ready",
