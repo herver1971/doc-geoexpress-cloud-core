@@ -1,0 +1,146 @@
+geonode.base
+============
+
+.. py:module:: geonode.base
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/geonode/base/api/index
+   /autoapi/geonode/base/management/index
+   /autoapi/geonode/base/templatetags/index
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/geonode/base/admin/index
+   /autoapi/geonode/base/auth/index
+   /autoapi/geonode/base/bbox_utils/index
+   /autoapi/geonode/base/enumerations/index
+   /autoapi/geonode/base/fields/index
+   /autoapi/geonode/base/forms/index
+   /autoapi/geonode/base/middleware/index
+   /autoapi/geonode/base/models/index
+   /autoapi/geonode/base/populate_test_data/index
+   /autoapi/geonode/base/tests/index
+   /autoapi/geonode/base/translation/index
+   /autoapi/geonode/base/urls/index
+   /autoapi/geonode/base/utils/index
+   /autoapi/geonode/base/views/index
+   /autoapi/geonode/base/widgets/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.base.default_app_config
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.NotificationsAppConfigBase
+   geonode.base.BaseAppConfig
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.base.register_url_event
+   geonode.base.register_event
+   geonode.base.register_proxy_event
+
+
+Package Contents
+----------------
+
+.. py:class:: NotificationsAppConfigBase
+
+   Bases: :py:obj:`django.apps.AppConfig`
+
+
+   Base class for AppConfig notifications setup
+
+   You should subclass it and provide list of notifications
+   in NOTIFICATIONS attribute to automatically register to
+   post_migrate signal.
+
+
+   .. py:attribute:: NOTIFICATIONS
+
+
+   .. py:method:: _get_logger()
+
+
+   .. py:method:: _register_notifications(*args, **kwargs)
+
+
+   .. py:method:: ready()
+
+
+.. py:class:: BaseAppConfig
+
+   Bases: :py:obj:`geonode.notifications_helper.NotificationsAppConfigBase`
+
+
+   Base class for AppConfig notifications setup
+
+   You should subclass it and provide list of notifications
+   in NOTIFICATIONS attribute to automatically register to
+   post_migrate signal.
+
+
+   .. py:attribute:: name
+      :value: 'geonode.base'
+
+
+
+   .. py:attribute:: NOTIFICATIONS
+
+
+.. py:function:: register_url_event(event_type=None)
+
+   Decorator on views, which will register url event
+
+   usage:
+
+   >>> register_url_event()(TemplateView.view_as_view())
+
+
+
+.. py:function:: register_event(request, event_type, resource)
+
+   Wrapper function to be used inside views to collect event and resource
+
+   :param request: Request object
+   :param event_type: name of event type
+   :param resource: string (then resource type will be url) or Resource instance
+
+   >>> from geonode.base import register_event
+   >>> def view(request):
+           register_event(request, 'view', layer)
+
+
+.. py:function:: register_proxy_event(request)
+
+   Process request to geoserver proxy. Extract layer and ows type
+
+
+.. py:data:: default_app_config
+   :value: 'geonode.base.BaseAppConfig'
+
+

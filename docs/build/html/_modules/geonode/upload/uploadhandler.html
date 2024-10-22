@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.upload.uploadhandler &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../upload.html">geonode.upload</a></li>
+      <li class="breadcrumb-item active">geonode.upload.uploadhandler</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.upload.uploadhandler</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">binascii</span>
+<span class="kn">import</span> <span class="nn">html</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">RequestDataTooBig</span><span class="p">,</span> <span class="n">TooManyFieldsSent</span>
+<span class="kn">from</span> <span class="nn">django.core.files.uploadedfile</span> <span class="kn">import</span> <span class="n">SimpleUploadedFile</span>
+<span class="kn">from</span> <span class="nn">django.core.files.uploadhandler</span> <span class="kn">import</span> <span class="n">FileUploadHandler</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">QueryDict</span>
+<span class="kn">from</span> <span class="nn">django.http.multipartparser</span> <span class="kn">import</span> <span class="n">FIELD</span><span class="p">,</span> <span class="n">FILE</span><span class="p">,</span> <span class="n">ChunkIter</span><span class="p">,</span> <span class="n">LazyStream</span><span class="p">,</span> <span class="n">Parser</span><span class="p">,</span> <span class="n">exhaust</span>
+<span class="kn">from</span> <span class="nn">django.utils.datastructures</span> <span class="kn">import</span> <span class="n">MultiValueDict</span>
+<span class="kn">from</span> <span class="nn">django.utils.encoding</span> <span class="kn">import</span> <span class="n">force_str</span>
+
+<span class="kn">from</span> <span class="nn">geonode.upload.models</span> <span class="kn">import</span> <span class="n">UploadSizeLimit</span>
+
+
+<div class="viewcode-block" id="SizeRestrictedFileUploadHandler">
+<a class="viewcode-back" href="../../../autoapi/geonode/upload/uploadhandler/index.html#geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">SizeRestrictedFileUploadHandler</span><span class="p">(</span><span class="n">FileUploadHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Upload handler exhaust the stream to avoit overload the memory when the file is bigger than the limit set.</span>
+<span class="sd">    The upload will be blocked afterwards by the Upload Form</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SizeRestrictedFileUploadHandler.elegible_url_names">
+<a class="viewcode-back" href="../../../autoapi/geonode/upload/uploadhandler/index.html#geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler.elegible_url_names">[docs]</a>
+    <span class="n">elegible_url_names</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">SIZE_RESTRICTED_FILE_UPLOAD_ELEGIBLE_URL_NAMES</span></div>
+
+
+<div class="viewcode-block" id="SizeRestrictedFileUploadHandler.handle_raw_input">
+<a class="viewcode-back" href="../../../autoapi/geonode/upload/uploadhandler/index.html#geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler.handle_raw_input">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_raw_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">META</span><span class="p">,</span> <span class="n">content_length</span><span class="p">,</span> <span class="n">boundary</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        We use the content_length to signal whether or not this handler should be used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check the content-length header and url_name to see if we should</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_view_elegible_for_size_restriction</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">resolver_match</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">resolver_match</span><span class="o">.</span><span class="n">url_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elegible_url_names</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_size_allowed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activated</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># If the post is too large, we create a empty UploadedFile, otherwise another handler will take care or it.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_view_elegible_for_size_restriction</span><span class="p">:</span>
+            <span class="n">file_type</span> <span class="o">=</span> <span class="s2">&quot;dataset_upload_size&quot;</span> <span class="k">if</span> <span class="s2">&quot;uploads/upload&quot;</span> <span class="ow">in</span> <span class="n">input_data</span><span class="o">.</span><span class="n">path</span> <span class="k">else</span> <span class="s2">&quot;document_upload_size&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_size_allowed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_max_size</span><span class="p">(</span><span class="n">file_type</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activated</span> <span class="o">=</span> <span class="n">content_length</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_size_allowed</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">activated</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_raw_input_without_file_stream</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">META</span><span class="p">,</span> <span class="n">content_length</span><span class="p">,</span> <span class="n">boundary</span><span class="p">,</span> <span class="n">encoding</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SizeRestrictedFileUploadHandler._handle_raw_input_without_file_stream">
+<a class="viewcode-back" href="../../../autoapi/geonode/upload/uploadhandler/index.html#geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler._handle_raw_input_without_file_stream">[docs]</a>
+    <span class="k">def</span> <span class="nf">_handle_raw_input_without_file_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">,</span> <span class="n">META</span><span class="p">,</span> <span class="n">raw_content_length</span><span class="p">,</span> <span class="n">boundary</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Replaces django.http.multipartparser.MultiPartParser.parse</span>
+<span class="sd">        A rfc2388 multipart/form-data parser but replacing the file stream to the creation of empty files.</span>
+<span class="sd">        Returns a tuple of ``(MultiValueDict(POST), MultiValueDict(FILES))``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Create the data structures to be used later.</span>
+        <span class="n">_post</span> <span class="o">=</span> <span class="n">QueryDict</span><span class="p">(</span><span class="n">mutable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">_files</span> <span class="o">=</span> <span class="n">MultiValueDict</span><span class="p">()</span>
+
+        <span class="c1"># For compatibility with low-level network APIs (with 32-bit integers),</span>
+        <span class="c1"># the chunk size should be &lt; 2^31, but still divisible by 4.</span>
+        <span class="n">_chunk_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="mi">2</span><span class="o">**</span><span class="mi">31</span> <span class="o">-</span> <span class="mi">4</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span><span class="p">])</span>
+
+        <span class="c1"># Instantiate the parser and stream:</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">LazyStream</span><span class="p">(</span><span class="n">ChunkIter</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">_chunk_size</span><span class="p">))</span>
+
+        <span class="c1"># Whether or not to signal a file-completion at the beginning of the loop.</span>
+        <span class="n">old_field_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Number of bytes that have been read.</span>
+        <span class="n">num_bytes_read</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># To count the number of keys in the request.</span>
+        <span class="n">num_post_keys</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># To limit the amount of data read from the request.</span>
+        <span class="n">read_size</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">item_type</span><span class="p">,</span> <span class="n">meta_data</span><span class="p">,</span> <span class="n">field_stream</span> <span class="ow">in</span> <span class="n">Parser</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">boundary</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">old_field_name</span><span class="p">:</span>
+                <span class="c1"># We run this at the beginning of the next loop</span>
+                <span class="c1"># since we cannot be sure a file is complete until</span>
+                <span class="c1"># we hit the next boundary/part of the multipart content.</span>
+                <span class="n">file_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_complete</span><span class="p">(</span><span class="n">raw_content_length</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">file_obj</span><span class="p">:</span>
+                    <span class="c1"># If it returns a file object, then set the files dict.</span>
+                    <span class="n">_files</span><span class="o">.</span><span class="n">appendlist</span><span class="p">(</span><span class="n">force_str</span><span class="p">(</span><span class="n">old_field_name</span><span class="p">,</span> <span class="n">encoding</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">),</span> <span class="n">file_obj</span><span class="p">)</span>
+                <span class="n">old_field_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">disposition</span> <span class="o">=</span> <span class="n">meta_data</span><span class="p">[</span><span class="s2">&quot;content-disposition&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">field_name</span> <span class="o">=</span> <span class="n">disposition</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="n">transfer_encoding</span> <span class="o">=</span> <span class="n">meta_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content-transfer-encoding&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">transfer_encoding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">transfer_encoding</span> <span class="o">=</span> <span class="n">transfer_encoding</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">field_name</span> <span class="o">=</span> <span class="n">force_str</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">encoding</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">item_type</span> <span class="o">==</span> <span class="n">FIELD</span><span class="p">:</span>
+                <span class="c1"># NOTE: Parse fields as usual, same as ``MultiPartParser.parse``</span>
+                <span class="c1"># Avoid storing more than DATA_UPLOAD_MAX_NUMBER_FIELDS.</span>
+                <span class="n">num_post_keys</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">settings</span><span class="o">.</span><span class="n">DATA_UPLOAD_MAX_NUMBER_FIELDS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATA_UPLOAD_MAX_NUMBER_FIELDS</span> <span class="o">&lt;</span> <span class="n">num_post_keys</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">TooManyFieldsSent</span><span class="p">(</span>
+                        <span class="s2">&quot;The number of GET/POST parameters exceeded &quot;</span> <span class="s2">&quot;settings.DATA_UPLOAD_MAX_NUMBER_FIELDS.&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="c1"># Avoid reading more than DATA_UPLOAD_MAX_MEMORY_SIZE.</span>
+                <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATA_UPLOAD_MAX_MEMORY_SIZE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">read_size</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATA_UPLOAD_MAX_MEMORY_SIZE</span> <span class="o">-</span> <span class="n">num_bytes_read</span>
+
+                <span class="c1"># This is a post field, we can just set it in the post</span>
+                <span class="k">if</span> <span class="n">transfer_encoding</span> <span class="o">==</span> <span class="s2">&quot;base64&quot;</span><span class="p">:</span>
+                    <span class="n">raw_data</span> <span class="o">=</span> <span class="n">field_stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">read_size</span><span class="p">)</span>
+                    <span class="n">num_bytes_read</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">binascii</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">raw_data</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">field_stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">read_size</span><span class="p">)</span>
+                    <span class="n">num_bytes_read</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+                <span class="c1"># Add two here to make the check consistent with the</span>
+                <span class="c1"># x-www-form-urlencoded check that includes &#39;&amp;=&#39;.</span>
+                <span class="n">num_bytes_read</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">settings</span><span class="o">.</span><span class="n">DATA_UPLOAD_MAX_MEMORY_SIZE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="ow">and</span> <span class="n">num_bytes_read</span> <span class="o">&gt;</span> <span class="n">settings</span><span class="o">.</span><span class="n">DATA_UPLOAD_MAX_MEMORY_SIZE</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">RequestDataTooBig</span><span class="p">(</span><span class="s2">&quot;Request body exceeded settings.DATA_UPLOAD_MAX_MEMORY_SIZE.&quot;</span><span class="p">)</span>
+
+                <span class="n">_post</span><span class="o">.</span><span class="n">appendlist</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">force_str</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">encoding</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">item_type</span> <span class="o">==</span> <span class="n">FILE</span><span class="p">:</span>
+                <span class="c1"># NOTE: Parse files WITHOUT a stream.</span>
+                <span class="c1"># This is a file, use the handler...</span>
+                <span class="n">file_name</span> <span class="o">=</span> <span class="n">disposition</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">file_name</span><span class="p">:</span>
+                    <span class="n">file_name</span> <span class="o">=</span> <span class="n">force_str</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">encoding</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+                    <span class="n">file_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sanitize_file_name</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">file_name</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">content_type</span><span class="p">,</span> <span class="n">content_type_extra</span> <span class="o">=</span> <span class="n">meta_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content-type&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="p">{}))</span>
+                <span class="n">content_type</span> <span class="o">=</span> <span class="n">content_type</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="n">charset</span> <span class="o">=</span> <span class="n">content_type_extra</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;charset&quot;</span><span class="p">)</span>
+                <span class="n">content_length</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">new_file</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="n">content_length</span><span class="p">,</span> <span class="n">charset</span><span class="p">,</span> <span class="n">content_type_extra</span><span class="p">)</span>
+
+                <span class="c1"># Handle file upload completions on next iteration.</span>
+                <span class="n">old_field_name</span> <span class="o">=</span> <span class="n">field_name</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If this is neither a FIELD or a FILE, just exhaust the stream.</span>
+                <span class="n">exhaust</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+
+        <span class="c1"># Make sure that the request data is all fed</span>
+        <span class="n">exhaust</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+
+        <span class="n">_post</span><span class="o">.</span><span class="n">_mutable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">_post</span><span class="p">,</span> <span class="n">_files</span></div>
+
+
+<div class="viewcode-block" id="SizeRestrictedFileUploadHandler.sanitize_file_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/upload/uploadhandler/index.html#geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler.sanitize_file_name">[docs]</a>
+    <span class="k">def</span> <span class="nf">sanitize_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Same as django.http.multipartparser.MultiPartParser.sanitize_file_name</span>
+<span class="sd">        so it&#39;s not needed to instantiate a MultiPartParser object just to</span>
+<span class="sd">        sanitize the filename of an upload.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">}:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">file_name</span></div>
+
+
+<div class="viewcode-block" id="SizeRestrictedFileUploadHandler._get_max_size">
+<a class="viewcode-back" href="../../../autoapi/geonode/upload/uploadhandler/index.html#geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler._get_max_size">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_max_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_type</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">max_size_db_obj</span> <span class="o">=</span> <span class="n">UploadSizeLimit</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">file_type</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">UploadSizeLimit</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="n">max_size_db_obj</span> <span class="o">=</span> <span class="n">UploadSizeLimit</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create_default_limit_with_slug</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">file_type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">max_size_db_obj</span><span class="o">.</span><span class="n">max_size</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2097152</span></div>
+
+
+<div class="viewcode-block" id="SizeRestrictedFileUploadHandler.receive_data_chunk">
+<a class="viewcode-back" href="../../../autoapi/geonode/upload/uploadhandler/index.html#geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler.receive_data_chunk">[docs]</a>
+    <span class="k">def</span> <span class="nf">receive_data_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_data</span><span class="p">,</span> <span class="n">start</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Receive data from the streamed upload parser. ``start`` is the position in the file of the chunk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">raw_data</span></div>
+
+
+<div class="viewcode-block" id="SizeRestrictedFileUploadHandler.file_complete">
+<a class="viewcode-back" href="../../../autoapi/geonode/upload/uploadhandler/index.html#geonode.upload.uploadhandler.SizeRestrictedFileUploadHandler.file_complete">[docs]</a>
+    <span class="k">def</span> <span class="nf">file_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_size</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Signal that a file has completed.</span>
+<span class="sd">        NOTE: When activated, file size DOES NOT corresponds to the actual size.</span>
+<span class="sd">        NOTE: When activated, file size IS NOT accumulated by all the chunks.</span>
+<span class="sd">        In this case, it represents the total content_length of the request.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">activated</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Create a concrete `UploadedFile` with empty content and `file_size` size</span>
+        <span class="n">uploaded_file</span> <span class="o">=</span> <span class="n">SimpleUploadedFile</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span>
+            <span class="n">content</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">,</span>  <span class="c1"># Empty Content</span>
+            <span class="n">content_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">content_type</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">uploaded_file</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">field_name</span>
+        <span class="n">uploaded_file</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">file_size</span>  <span class="c1"># Set Size</span>
+        <span class="n">uploaded_file</span><span class="o">.</span><span class="n">charset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">charset</span>
+        <span class="n">uploaded_file</span><span class="o">.</span><span class="n">content_type_extra</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_type_extra</span>
+
+        <span class="k">return</span> <span class="n">uploaded_file</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

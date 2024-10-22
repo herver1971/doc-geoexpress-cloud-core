@@ -1,0 +1,495 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.monitoring.service_handlers &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../monitoring.html">geonode.monitoring</a></li>
+      <li class="breadcrumb-item active">geonode.monitoring.service_handlers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.monitoring.service_handlers</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2017 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pytz</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">geonode.monitoring.utils</span> <span class="kn">import</span> <span class="n">GeoServerMonitorClient</span>
+<span class="kn">from</span> <span class="nn">geonode.monitoring.probes</span> <span class="kn">import</span> <span class="n">get_probe</span>
+<span class="kn">from</span> <span class="nn">geonode.monitoring.models</span> <span class="kn">import</span> <span class="n">RequestEvent</span><span class="p">,</span> <span class="n">ExceptionEvent</span>
+
+<div class="viewcode-block" id="log">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.log">[docs]</a>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="BaseServiceExpose">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceExpose">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseServiceExpose</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseServiceExpose.NAME">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceExpose.NAME">[docs]</a>
+    <span class="n">NAME</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseServiceExpose.args">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceExpose.args">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span></div>
+
+<div class="viewcode-block" id="BaseServiceExpose.kwargs">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceExpose.kwargs">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceExpose.setup">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceExpose.setup">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceExpose.expose">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceExpose.expose">[docs]</a>
+    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseServiceExpose.get_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceExpose.get_name">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">NAME</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">NAME</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">return</span> <span class="n">n</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="s2">&quot;serviceexpose&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HostGeoNodeServiceExpose">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoNodeServiceExpose">[docs]</a>
+<span class="k">class</span> <span class="nc">HostGeoNodeServiceExpose</span><span class="p">(</span><span class="n">BaseServiceExpose</span><span class="p">):</span>
+<div class="viewcode-block" id="HostGeoNodeServiceExpose.NAME">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoNodeServiceExpose.NAME">[docs]</a>
+    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;hostgeonode&quot;</span></div>
+
+
+<div class="viewcode-block" id="HostGeoNodeServiceExpose.expose">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoNodeServiceExpose.expose">[docs]</a>
+    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">probe</span> <span class="o">=</span> <span class="n">get_probe</span><span class="p">()</span>
+        <span class="n">uptime</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">get_uptime</span><span class="p">()</span>
+        <span class="n">disks</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">get_disk</span><span class="p">()</span>
+        <span class="n">load</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">get_loadavg</span><span class="p">()</span>
+        <span class="n">mem</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">get_mem</span><span class="p">()</span>
+        <span class="n">uname</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">get_uname</span><span class="p">()</span>
+        <span class="n">cpu</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">get_cpu</span><span class="p">()</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">get_network</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;uptime&quot;</span><span class="p">:</span> <span class="n">uptime</span><span class="p">,</span>
+            <span class="s2">&quot;uname&quot;</span><span class="p">:</span> <span class="n">uname</span><span class="p">,</span>
+            <span class="s2">&quot;load&quot;</span><span class="p">:</span> <span class="n">load</span><span class="p">,</span>
+            <span class="s2">&quot;cpu&quot;</span><span class="p">:</span> <span class="n">cpu</span><span class="p">,</span>
+            <span class="s2">&quot;disks&quot;</span><span class="p">:</span> <span class="n">disks</span><span class="p">,</span>
+            <span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="n">network</span><span class="p">,</span>
+            <span class="s2">&quot;memory&quot;</span><span class="p">:</span> <span class="n">mem</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GeoNodeServiceExpose">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoNodeServiceExpose">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoNodeServiceExpose</span><span class="p">(</span><span class="n">BaseServiceExpose</span><span class="p">):</span>
+<div class="viewcode-block" id="GeoNodeServiceExpose.NAME">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoNodeServiceExpose.NAME">[docs]</a>
+    <span class="n">NAME</span> <span class="o">=</span> <span class="s2">&quot;geonode&quot;</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeServiceExpose.expose">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoNodeServiceExpose.expose">[docs]</a>
+    <span class="k">def</span> <span class="nf">expose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">utc</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">exceptions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">since</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ExceptionEvent</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">created__gte</span><span class="o">=</span><span class="n">since</span><span class="p">,</span> <span class="n">service__service_type__name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">NAME</span><span class="p">):</span>
+            <span class="n">exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">expose</span><span class="p">())</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;exceptions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exceptions</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BaseServiceHandler">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseServiceHandler</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseServiceHandler.utc">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.utc">[docs]</a>
+        <span class="n">utc</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span></div>
+
+<div class="viewcode-block" id="BaseServiceHandler.service">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.service">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service</span> <span class="o">=</span> <span class="n">service</span></div>
+
+<div class="viewcode-block" id="BaseServiceHandler.now">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.now">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseServiceHandler.check_since">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.check_since">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_since</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">last_check</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">utc</span><span class="p">)</span> <span class="k">if</span> <span class="n">service</span><span class="o">.</span><span class="n">last_check</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span></div>
+
+<div class="viewcode-block" id="BaseServiceHandler.force_check">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.force_check">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_check</span> <span class="o">=</span> <span class="n">force_check</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceHandler.setup">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.setup">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceHandler.get_last_request">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.get_last_request">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_last_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span>
+        <span class="k">return</span> <span class="n">RequestEvent</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;-created&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceHandler.get_last_request_timestamp">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.get_last_request_timestamp">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_last_request_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_last_request</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">r</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">created</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceHandler.collect">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.collect">[docs]</a>
+    <span class="k">def</span> <span class="nf">collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">until</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">utc</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span> <span class="ow">or</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">since</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">since</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">last_check</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">utc</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">last_check</span> <span class="k">else</span> <span class="n">now</span>
+        <span class="k">if</span> <span class="n">until</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">until</span> <span class="o">=</span> <span class="n">now</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">last_check</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">last_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">last_check</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_check</span><span class="p">:</span>
+            <span class="n">last_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">last_check</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">utc</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">last_check</span> <span class="k">else</span> <span class="n">now</span>
+            <span class="k">if</span> <span class="n">last_check</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">check_interval</span> <span class="o">&gt;</span> <span class="n">now</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Next check too soon&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+        <span class="n">_collected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect</span><span class="p">(</span><span class="n">since</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">utc</span><span class="p">),</span> <span class="n">until</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">utc</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_collected</span><span class="p">(</span><span class="n">_collected</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceHandler._collect">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler._collect">[docs]</a>
+    <span class="k">def</span> <span class="nf">_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">since</span><span class="p">,</span> <span class="n">until</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceHandler.handle_collected">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.handle_collected">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_collected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="BaseServiceHandler.mark_as_checked">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.mark_as_checked">[docs]</a>
+    <span class="k">def</span> <span class="nf">mark_as_checked</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">last_check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">now</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BaseServiceHandler.get_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.BaseServiceHandler.get_name">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">return</span> <span class="n">n</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;service&quot;</span><span class="p">)]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GeoNodeService">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoNodeService">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoNodeService</span><span class="p">(</span><span class="n">BaseServiceHandler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">BaseServiceHandler</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GeoNodeService._get_collected_set">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoNodeService._get_collected_set">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_collected_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">until</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">filter_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">since</span><span class="p">:</span>
+            <span class="n">filter_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;created__gt&quot;</span><span class="p">:</span> <span class="n">since</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">RequestEvent</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="o">**</span><span class="n">filter_kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeService._collect">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoNodeService._collect">[docs]</a>
+    <span class="k">def</span> <span class="nf">_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">until</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_collected_set</span><span class="p">(</span><span class="n">since</span><span class="o">=</span><span class="n">since</span><span class="p">,</span> <span class="n">until</span><span class="o">=</span><span class="n">until</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeService.handle_collected">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoNodeService.handle_collected">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_collected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requests</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">requests</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GeoServerService">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoServerService">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoServerService</span><span class="p">(</span><span class="n">BaseServiceHandler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">BaseServiceHandler</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GeoServerService.setup">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoServerService.setup">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Monitoring is not configured to fetch from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gs_monitor</span> <span class="o">=</span> <span class="n">GeoServerMonitorClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">url</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoServerService._collect">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoServerService._collect">[docs]</a>
+    <span class="k">def</span> <span class="nf">_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">since</span><span class="p">,</span> <span class="n">until</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">format</span> <span class="o">=</span> <span class="nb">format</span> <span class="ow">or</span> <span class="s2">&quot;json&quot;</span>
+        <span class="n">requests</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gs_monitor</span><span class="o">.</span><span class="n">get_requests</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">,</span> <span class="n">since</span><span class="o">=</span><span class="n">since</span><span class="p">,</span> <span class="n">until</span><span class="o">=</span><span class="n">until</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">requests</span></div>
+
+
+<div class="viewcode-block" id="GeoServerService.handle_collected">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.GeoServerService.handle_collected">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_collected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">requests</span><span class="p">):</span>
+        <span class="n">utc</span> <span class="o">=</span> <span class="n">pytz</span><span class="o">.</span><span class="n">utc</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">utc</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">requests</span><span class="p">:</span>
+            <span class="n">RequestEvent</span><span class="o">.</span><span class="n">from_geoserver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">received</span><span class="o">=</span><span class="n">now</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RequestEvent</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">service</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="p">,</span> <span class="n">received</span><span class="o">=</span><span class="n">now</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HostGeoServerService">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoServerService">[docs]</a>
+<span class="k">class</span> <span class="nc">HostGeoServerService</span><span class="p">(</span><span class="n">BaseServiceHandler</span><span class="p">):</span>
+<div class="viewcode-block" id="HostGeoServerService.PATH">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoServerService.PATH">[docs]</a>
+    <span class="n">PATH</span> <span class="o">=</span> <span class="s2">&quot;/rest/about/system-status.json&quot;</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">BaseServiceHandler</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HostGeoServerService._collect">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoServerService._collect">[docs]</a>
+    <span class="k">def</span> <span class="nf">_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">url</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">base_url</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Service </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> should have url provided&quot;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">PATH</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">rdata</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rdata</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error response from api: (</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">rdata</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">rdata</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;metrics&quot;</span><span class="p">][</span><span class="s2">&quot;metric&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="HostGeoServerService.handle_collected">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoServerService.handle_collected">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_collected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HostGeoNodeService">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoNodeService">[docs]</a>
+<span class="k">class</span> <span class="nc">HostGeoNodeService</span><span class="p">(</span><span class="n">BaseServiceHandler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">BaseServiceHandler</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">force_check</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HostGeoNodeService._collect">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoNodeService._collect">[docs]</a>
+    <span class="k">def</span> <span class="nf">_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">since</span><span class="p">,</span> <span class="n">until</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">url</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">base_url</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Service </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> should have url provided&quot;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/monitoring/api/beacon/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">service_type</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">/&quot;</span>
+        <span class="n">rdata</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rdata</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error response from api: (</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">) </span><span class="si">{</span><span class="n">rdata</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">rdata</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="HostGeoNodeService.handle_collected">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.HostGeoNodeService.handle_collected">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_collected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="services">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.services">[docs]</a>
+<span class="n">services</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">get_name</span><span class="p">():</span> <span class="n">c</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="n">GeoNodeService</span><span class="p">,</span>
+        <span class="n">GeoServerService</span><span class="p">,</span>
+        <span class="n">HostGeoNodeService</span><span class="p">,</span>
+        <span class="n">HostGeoServerService</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="get_for_service">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.get_for_service">[docs]</a>
+<span class="k">def</span> <span class="nf">get_for_service</span><span class="p">(</span><span class="n">sname</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">services</span><span class="p">[</span><span class="n">sname</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="exposes">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.exposes">[docs]</a>
+<span class="n">exposes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">get_name</span><span class="p">():</span> <span class="n">c</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="n">GeoNodeServiceExpose</span><span class="p">,</span>
+        <span class="n">HostGeoNodeServiceExpose</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="exposes_for_service">
+<a class="viewcode-back" href="../../../autoapi/geonode/monitoring/service_handlers/index.html#geonode.monitoring.service_handlers.exposes_for_service">[docs]</a>
+<span class="k">def</span> <span class="nf">exposes_for_service</span><span class="p">(</span><span class="n">sname</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">exposes</span><span class="p">[</span><span class="n">sname</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

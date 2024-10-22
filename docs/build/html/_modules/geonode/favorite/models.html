@@ -1,0 +1,284 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.favorite.models &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../favorite.html">geonode.favorite</a></li>
+      <li class="breadcrumb-item active">geonode.favorite.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.favorite.models</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>
+<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.fields</span> <span class="kn">import</span> <span class="n">GenericForeignKey</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+<span class="kn">from</span> <span class="nn">geonode.documents.models</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.maps.models</span> <span class="kn">import</span> <span class="n">Map</span>
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">get_geonode_app_types</span>
+
+
+<div class="viewcode-block" id="FavoriteManager">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager">[docs]</a>
+<span class="k">class</span> <span class="nc">FavoriteManager</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
+<div class="viewcode-block" id="FavoriteManager.favorites_for_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager.favorites_for_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">favorites_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FavoriteManager._favorite_ct_for_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager._favorite_ct_for_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">_favorite_ct_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="n">content_type</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">favorites_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span><span class="s2">&quot;content_object&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="FavoriteManager.favorite_documents_for_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager.favorite_documents_for_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">favorite_documents_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_favorite_ct_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">Document</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FavoriteManager.favorite_maps_for_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager.favorite_maps_for_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">favorite_maps_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_favorite_ct_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">Map</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FavoriteManager.favorite_datasets_for_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager.favorite_datasets_for_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">favorite_datasets_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_favorite_ct_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FavoriteManager.favorite_users_for_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager.favorite_users_for_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">favorite_users_for_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_favorite_ct_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">get_user_model</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="FavoriteManager.favorite_for_user_and_content_object">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager.favorite_for_user_and_content_object">[docs]</a>
+    <span class="k">def</span> <span class="nf">favorite_for_user_and_content_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">content_object</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if Favorite exists for input user and type and pk of the input</span>
+<span class="sd">        content_object, return it.  else return None.</span>
+<span class="sd">        impl note: can only be 0 or 1, per the class&#39;s unique_together.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">content_type</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">content_object</span><span class="p">))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span> <span class="n">object_id</span><span class="o">=</span><span class="n">content_object</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="FavoriteManager.bulk_favorite_objects">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager.bulk_favorite_objects">[docs]</a>
+    <span class="k">def</span> <span class="nf">bulk_favorite_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="s2">&quot;get the actual favorite objects for a user as a dict by content_type&quot;</span>
+        <span class="n">favs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Document</span><span class="p">,</span> <span class="n">Map</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">get_user_model</span><span class="p">()):</span>
+            <span class="n">ct</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">favorites_for_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="n">ct</span><span class="p">)</span>
+            <span class="n">favs</span><span class="p">[</span><span class="n">ct</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;object_id&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">favs</span></div>
+
+
+<div class="viewcode-block" id="FavoriteManager.create_favorite">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.FavoriteManager.create_favorite">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_favorite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content_object</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content_object</span><span class="p">,</span> <span class="n">ResourceBase</span><span class="p">):</span>
+            <span class="n">geoapp_types</span> <span class="o">=</span> <span class="n">get_geonode_app_types</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">content_object</span><span class="o">.</span><span class="n">resource_type</span> <span class="ow">in</span> <span class="n">geoapp_types</span><span class="p">:</span>
+                <span class="n">content_type</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;geoapp&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">content_type</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">content_object</span><span class="o">.</span><span class="n">resource_type</span><span class="p">)</span><span class="o">.</span><span class="n">last</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">content_type</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">content_object</span><span class="p">))</span>
+
+        <span class="n">favorite</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
+            <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
+            <span class="n">object_id</span><span class="o">=</span><span class="n">content_object</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">favorite</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Favorite">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite">[docs]</a>
+<span class="k">class</span> <span class="nc">Favorite</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="Favorite.user">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.user">[docs]</a>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">AUTH_USER_MODEL</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Favorite.content_type">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.content_type">[docs]</a>
+    <span class="n">content_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">ContentType</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Favorite.object_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.object_id">[docs]</a>
+    <span class="n">object_id</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">PositiveIntegerField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Favorite.content_object">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.content_object">[docs]</a>
+    <span class="n">content_object</span> <span class="o">=</span> <span class="n">GenericForeignKey</span><span class="p">(</span><span class="s2">&quot;content_type&quot;</span><span class="p">,</span> <span class="s2">&quot;object_id&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Favorite.created_on">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.created_on">[docs]</a>
+    <span class="n">created_on</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Favorite.objects">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.objects">[docs]</a>
+    <span class="n">objects</span> <span class="o">=</span> <span class="n">FavoriteManager</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Favorite.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="Favorite.Meta.verbose_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.Meta.verbose_name">[docs]</a>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="s2">&quot;favorite&quot;</span></div>
+
+<div class="viewcode-block" id="Favorite.Meta.verbose_name_plural">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.Meta.verbose_name_plural">[docs]</a>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s2">&quot;favorites&quot;</span></div>
+
+<div class="viewcode-block" id="Favorite.Meta.unique_together">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.Meta.unique_together">[docs]</a>
+        <span class="n">unique_together</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content_type&quot;</span><span class="p">,</span> <span class="s2">&quot;object_id&quot;</span><span class="p">),)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="Favorite.__str__">
+<a class="viewcode-back" href="../../../autoapi/geonode/favorite/models/index.html#geonode.favorite.models.Favorite.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_object</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Favorite: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_object</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">content_type</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;Unknown&quot;</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
