@@ -884,7 +884,8 @@ class ResourceBaseViewSet(DynamicModelViewSet):
     )
     def resource_service_create(self, request, resource_type: str = None, *args, **kwargs):
         """Instructs the Async dispatcher to execute a 'CREATE' operation
-        **WARNING**: This will create an empty dataset; if you need to upload a resource to GeoNode, consider using the endpoint "ingest" instead
+
+        .. WARNING:: This will create an empty dataset; if you need to upload a resource to GeoNode, consider using the endpoint "ingest" instead
 
         - POST input_params: {
             uuid: "<str: UUID>",
@@ -904,33 +905,36 @@ class ResourceBaseViewSet(DynamicModelViewSet):
 
         Sample Request:
 
-        1. curl -v -X POST -u admin:admin -H "Content-Type: application/json" -d 'defaults={"owner":"admin","title":"pippo"}'
-            http://localhost:8000/api/v2/resources/create/dataset
-            OUTPUT: {
-                "status": "ready",
-                "execution_id": "90ca670d-df60-44b6-b358-d792c6aecc58",
-                "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/90ca670d-df60-44b6-b358-d792c6aecc58"
-            }
+        .. code-block:: bash
 
-        2. curl -v -X GET -u admin:admin http://localhost:8000/api/v2/resource-service/execution-status/90ca670d-df60-44b6-b358-d792c6aecc58
-            OUTPUT: {
-                "user": "admin",
-                "status": "finished",
-                "func_name": "create",
-                "created": "2021-07-22T15:32:09.096075Z",
-                "finished": "2021-07-22T15:32:26.936683Z",
-                "last_updated": "2021-07-22T15:32:09.096129Z",
-                "input_params": {
-                    "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb",
-                    "defaults": "{\"owner\":\"admin\",\"title\":\"pippo\"}",
-                    "resource_type": "dataset"
-                },
-                "output_params": {
-                    "output": {
-                        "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb"
+            1. curl -v -X POST -u admin:admin -H "Content-Type: application/json" -d 'defaults={"owner":"admin","title":"pippo"}'
+                http://localhost:8000/api/v2/resources/create/dataset
+                OUTPUT: {
+                    "status": "ready",
+                    "execution_id": "90ca670d-df60-44b6-b358-d792c6aecc58",
+                    "status_url": "http://localhost:8000/api/v2/resource-service/execution-status/90ca670d-df60-44b6-b358-d792c6aecc58"
+                }
+        .. code-block:: bash
+
+            2. curl -v -X GET -u admin:admin http://localhost:8000/api/v2/resource-service/execution-status/90ca670d-df60-44b6-b358-d792c6aecc58
+                OUTPUT: {
+                    "user": "admin",
+                    "status": "finished",
+                    "func_name": "create",
+                    "created": "2021-07-22T15:32:09.096075Z",
+                    "finished": "2021-07-22T15:32:26.936683Z",
+                    "last_updated": "2021-07-22T15:32:09.096129Z",
+                    "input_params": {
+                        "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb",
+                        "defaults": "{\"owner\":\"admin\",\"title\":\"pippo\"}",
+                        "resource_type": "dataset"
+                    },
+                    "output_params": {
+                        "output": {
+                            "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb"
+                        }
                     }
                 }
-            }
         """
         config = Configuration.load()
         if (
