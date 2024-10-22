@@ -1,0 +1,175 @@
+geonode.maps.models
+===================
+
+.. py:module:: geonode.maps.models
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.maps.models.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.maps.models.Map
+   geonode.maps.models.MapLayer
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: Map(*args, **kwargs)
+
+   Bases: :py:obj:`geonode.base.models.ResourceBase`
+
+
+   A Map aggregates several layers together and annotates them with a viewport
+   configuration.
+
+
+   .. py:attribute:: last_modified
+
+
+   .. py:attribute:: urlsuffix
+
+
+   .. py:attribute:: featuredurl
+
+
+   .. py:method:: __str__()
+
+
+   .. py:property:: datasets
+
+
+   .. py:method:: get_linked_resources(as_target: bool = False)
+
+      Get all the linked resources to this ResourceBase instance.
+      This is implemented as a method so that derived classes can override it (for instance, Maps may add
+      related datasets)
+
+
+
+   .. py:method:: json(dataset_filter)
+
+      Get a JSON representation of this map suitable for sending to geoserver
+      for creating a download of all layers
+
+
+
+   .. py:method:: keyword_list()
+
+
+   .. py:method:: get_absolute_url()
+
+
+   .. py:property:: embed_url
+
+
+   .. py:method:: get_bbox_from_datasets(layers)
+
+      Calculate the bbox from a given list of Dataset objects
+
+      bbox format: [xmin, xmax, ymin, ymax]
+
+
+
+   .. py:property:: sender
+
+
+   .. py:property:: class_name
+
+
+   .. py:property:: is_public
+      Returns True if anonymous (public) user can view map.
+
+
+   .. py:property:: dataset_group
+      Returns layer group name from local OWS for this map instance.
+
+
+   .. py:method:: publish_dataset_group()
+
+      Publishes local map layers as WMS layer group on local OWS.
+
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`geonode.base.models.ResourceBase.Meta`
+
+
+
+.. py:class:: MapLayer
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+   The MapLayer model represents a layer included in a map.  This doesn't just
+   identify the dataset, but also extra options such as which style to load
+   and the file format to use for image tiles.
+
+
+   .. py:attribute:: map
+
+
+   .. py:attribute:: dataset
+
+
+   .. py:attribute:: extra_params
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: store
+
+
+   .. py:attribute:: current_style
+
+
+   .. py:attribute:: ows_url
+
+
+   .. py:attribute:: local
+
+
+   .. py:attribute:: order
+
+
+   .. py:attribute:: visibility
+
+
+   .. py:attribute:: opacity
+
+
+   .. py:property:: dataset_title
+      Used by geonode/maps/templates/maps/map_download.html
+
+
+   .. py:property:: local_link
+      Used by geonode/maps/templates/maps/map_download.html
+
+
+   .. py:property:: get_legend
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: ordering
+         :value: ['-pk']
+
+
+
+
+   .. py:method:: __str__()
+
+

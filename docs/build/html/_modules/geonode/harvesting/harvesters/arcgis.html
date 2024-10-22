@@ -1,0 +1,870 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.harvesting.harvesters.arcgis &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../harvesting.html">geonode.harvesting</a></li>
+      <li class="breadcrumb-item active">geonode.harvesting.harvesters.arcgis</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.harvesting.harvesters.arcgis</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;Harvesters for ArcGIS based remote servers.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">urllib.error</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HTTPError</span><span class="p">,</span>
+    <span class="n">URLError</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+
+<span class="kn">import</span> <span class="nn">arcrest</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">django.contrib.gis</span> <span class="kn">import</span> <span class="n">geos</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">slugify</span>
+
+<span class="kn">from</span> <span class="nn">geonode.layers.enumerations</span> <span class="kn">import</span> <span class="n">GXP_PTYPES</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">models</span><span class="p">,</span>
+    <span class="n">resourcedescriptor</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">base</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ArcgisRestApiLayerType">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisRestApiLayerType">[docs]</a>
+<span class="k">class</span> <span class="nc">ArcgisRestApiLayerType</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="ArcgisRestApiLayerType.GROUP_LAYER">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisRestApiLayerType.GROUP_LAYER">[docs]</a>
+    <span class="n">GROUP_LAYER</span> <span class="o">=</span> <span class="s2">&quot;Group Layer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisRestApiLayerType.FEATURE_LAYER">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisRestApiLayerType.FEATURE_LAYER">[docs]</a>
+    <span class="n">FEATURE_LAYER</span> <span class="o">=</span> <span class="s2">&quot;Feature Layer&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ArcgisServiceType">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType">[docs]</a>
+<span class="k">class</span> <span class="nc">ArcgisServiceType</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="ArcgisServiceType.MAP_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.MAP_SERVICE">[docs]</a>
+    <span class="n">MAP_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;MapServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.FEATURE_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.FEATURE_SERVICE">[docs]</a>
+    <span class="n">FEATURE_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;FeatureServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.GEOCODE_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.GEOCODE_SERVICE">[docs]</a>
+    <span class="n">GEOCODE_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;GeocodeServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.GEOPROCESSING_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.GEOPROCESSING_SERVICE">[docs]</a>
+    <span class="n">GEOPROCESSING_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;GPServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.GEOMETRY_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.GEOMETRY_SERVICE">[docs]</a>
+    <span class="n">GEOMETRY_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;GeometryServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.IMAGE_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.IMAGE_SERVICE">[docs]</a>
+    <span class="n">IMAGE_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;ImageServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.NETWORK_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.NETWORK_SERVICE">[docs]</a>
+    <span class="n">NETWORK_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;NAServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.GEODATA_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.GEODATA_SERVICE">[docs]</a>
+    <span class="n">GEODATA_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;GeoDataServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.GLOBE_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.GLOBE_SERVICE">[docs]</a>
+    <span class="n">GLOBE_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;GlobeServer&quot;</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceType.MOBILE_SERVICE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.MOBILE_SERVICE">[docs]</a>
+    <span class="n">MOBILE_SERVICE</span> <span class="o">=</span> <span class="s2">&quot;MobileServer&quot;</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ArcgisServiceType.has_value">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceType.has_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_value</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_value2member_map_</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="parse_remote_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.parse_remote_url">[docs]</a>
+<span class="k">def</span> <span class="nf">parse_remote_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse the input url into the ArcGIS REST catalog URL and any service name.&quot;&quot;&quot;</span>
+    <span class="n">url_fragments</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;/rest/services&quot;</span><span class="p">)</span>
+    <span class="n">catalog_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">url_fragments</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">service_type</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">possible_service_name</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">service_type_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;.*\/(.*Server).*&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">url_fragments</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]))</span>
+    <span class="k">if</span> <span class="n">service_type_regex</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">service_type_value</span> <span class="ow">in</span> <span class="n">service_type_regex</span><span class="o">.</span><span class="n">groups</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">has_value</span><span class="p">(</span><span class="n">service_type_value</span><span class="p">):</span>
+                <span class="n">service_type</span> <span class="o">=</span> <span class="n">service_type_value</span>
+                <span class="n">possible_service_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">url_fragments</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">service_type</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+                <span class="n">other</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">possible_service_name</span><span class="p">,</span> <span class="n">other</span> <span class="o">=</span> <span class="n">url_fragments</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[::</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">possible_service_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">possible_service_name</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">service_name</span> <span class="o">=</span> <span class="n">possible_service_name</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">service_type</span> <span class="ow">and</span> <span class="n">other</span><span class="p">:</span>
+            <span class="n">service_type</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">service_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">catalog_url</span><span class="p">,</span> <span class="n">service_name</span><span class="p">,</span> <span class="n">service_type</span></div>
+
+
+
+<div class="viewcode-block" id="ArcgisServiceResourceExtractor">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceResourceExtractor">[docs]</a>
+<span class="k">class</span> <span class="nc">ArcgisServiceResourceExtractor</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class with the methods that must be reimplemented</span>
+<span class="sd">    in order to add support for additional ArcGIS REST services&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ArcgisServiceResourceExtractor.resource_name_filter">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceResourceExtractor.resource_name_filter">[docs]</a>
+    <span class="n">resource_name_filter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArcgisServiceResourceExtractor.service">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceResourceExtractor.service">[docs]</a>
+    <span class="n">service</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Type</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">,</span> <span class="n">resource_name_filter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service</span> <span class="o">=</span> <span class="n">service</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_name_filter</span> <span class="o">=</span> <span class="n">resource_name_filter</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="ArcgisServiceResourceExtractor.get_num_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceResourceExtractor.get_num_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the number of resources that can be extracted from the service.&quot;&quot;&quot;</span></div>
+
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="ArcgisServiceResourceExtractor.list_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceResourceExtractor.list_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of BriefRemoteResource with the resources exposed by the service&quot;&quot;&quot;</span></div>
+
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="ArcgisServiceResourceExtractor.get_resource">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceResourceExtractor.get_resource">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse the remote resource into a HarvestedResourceInfo&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ArcgisServiceResourceExtractor._is_relevant_layer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisServiceResourceExtractor._is_relevant_layer">[docs]</a>
+    <span class="k">def</span> <span class="nf">_is_relevant_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_name_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_name_filter</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">layer_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor">[docs]</a>
+<span class="k">class</span> <span class="nc">ArcgisMapServiceResourceExtractor</span><span class="p">(</span><span class="n">ArcgisServiceResourceExtractor</span><span class="p">):</span>
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor.service">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor.service">[docs]</a>
+    <span class="n">service</span><span class="p">:</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">MapService</span></div>
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor.http_session">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor.http_session">[docs]</a>
+    <span class="n">http_session</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span></div>
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor._cached_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor._cached_resources">[docs]</a>
+    <span class="n">_cached_resources</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">]]</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">MapService</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">http_session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_resources</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor.get_num_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor.get_num_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_resources</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_resources</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cached_resources</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor.list_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor.list_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_resources</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_resources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_resources</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_resources</span></div>
+
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor.get_resource">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor.get_resource">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="s2">&quot;json&quot;</span><span class="p">})</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">requests</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response_payload</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Could not decode response payload as valid JSON&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">resource_descriptor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource_descriptor</span><span class="p">(</span><span class="n">response_payload</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">(</span>
+                    <span class="n">resource_descriptor</span><span class="o">=</span><span class="n">resource_descriptor</span><span class="p">,</span> <span class="n">additional_information</span><span class="o">=</span><span class="kc">None</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Could not retrieve remote resource with unique &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;identifier </span><span class="si">{</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor._extract_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor._extract_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">_extract_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">arc_layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_is_relevant_layer</span><span class="p">(</span><span class="n">arc_layer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="n">arc_layer</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="n">ArcgisRestApiLayerType</span><span class="o">.</span><span class="n">GROUP_LAYER</span><span class="o">.</span><span class="n">value</span>
+                <span class="p">):</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_brief_layer</span><span class="p">(</span><span class="n">arc_layer</span><span class="p">))</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_sub_layers</span><span class="p">(</span><span class="n">arc_layer</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">HTTPError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Could not list resources&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor._list_sub_layers">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor._list_sub_layers">[docs]</a>
+    <span class="k">def</span> <span class="nf">_list_sub_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arc_layer</span><span class="p">:</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">MapLayer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sub_layer</span> <span class="ow">in</span> <span class="n">arc_layer</span><span class="o">.</span><span class="n">subLayers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_relevant_layer</span><span class="p">(</span><span class="n">arc_layer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="ow">and</span> <span class="n">arc_layer</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="n">ArcgisRestApiLayerType</span><span class="o">.</span><span class="n">GROUP_LAYER</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_brief_layer</span><span class="p">(</span><span class="n">sub_layer</span><span class="p">))</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_list_sub_layers</span><span class="p">(</span><span class="n">sub_layer</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor._get_resource_descriptor">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor._get_resource_descriptor">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_resource_descriptor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">layer_representation</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDescription</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">geonode_resource</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">resource_uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resource_uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">geonode_resource</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">service_name</span><span class="p">,</span> <span class="n">service_type</span> <span class="o">=</span> <span class="n">parse_remote_url</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">)</span>
+        <span class="n">epsg_code</span><span class="p">,</span> <span class="n">spatial_extent</span> <span class="o">=</span> <span class="n">_parse_spatial_extent</span><span class="p">(</span><span class="n">layer_representation</span><span class="p">[</span><span class="s2">&quot;extent&quot;</span><span class="p">])</span>
+        <span class="n">ows_url</span> <span class="o">=</span> <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span><span class="n">ows_url</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Undefined&quot;</span><span class="p">))</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;Undefined&quot;</span><span class="p">))</span>
+        <span class="n">workspace</span> <span class="o">=</span> <span class="s2">&quot;remoteWorkspace&quot;</span>
+        <span class="n">alternate</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">workspace</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDescription</span><span class="p">(</span>
+            <span class="n">uuid</span><span class="o">=</span><span class="n">resource_uuid</span><span class="p">,</span>
+            <span class="n">identification</span><span class="o">=</span><span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordIdentification</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">abstract</span><span class="o">=</span><span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">other_constraints</span><span class="o">=</span><span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;copyrightTest&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">spatial_extent</span><span class="o">=</span><span class="n">spatial_extent</span><span class="p">,</span>
+                <span class="n">other_keywords</span><span class="o">=</span><span class="p">[</span>
+                    <span class="s2">&quot;ESRI&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;ArcGIS REST </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">__service_type__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">],</span>
+            <span class="p">),</span>
+            <span class="n">distribution</span><span class="o">=</span><span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDistribution</span><span class="p">(</span>
+                <span class="n">link_url</span><span class="o">=</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span>
+                <span class="n">thumbnail_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">reference_systems</span><span class="o">=</span><span class="p">[</span><span class="n">epsg_code</span><span class="p">],</span>
+            <span class="n">additional_parameters</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;store&quot;</span><span class="p">:</span> <span class="n">store</span><span class="p">,</span>
+                <span class="s2">&quot;workspace&quot;</span><span class="p">:</span> <span class="n">workspace</span><span class="p">,</span>
+                <span class="s2">&quot;alternate&quot;</span><span class="p">:</span> <span class="n">alternate</span><span class="p">,</span>
+                <span class="s2">&quot;ows_url&quot;</span><span class="p">:</span> <span class="n">ows_url</span><span class="p">,</span>
+                <span class="s2">&quot;ptype&quot;</span><span class="p">:</span> <span class="n">GXP_PTYPES</span><span class="p">[</span><span class="s2">&quot;REST_MAP&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ArcgisMapServiceResourceExtractor._parse_brief_layer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisMapServiceResourceExtractor._parse_brief_layer">[docs]</a>
+    <span class="k">def</span> <span class="nf">_parse_brief_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arc_layer</span><span class="p">:</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">MapLayer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">:</span>
+        <span class="n">base_url</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">layer_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">base_url</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">arc_layer</span><span class="o">.</span><span class="n">id</span><span class="p">)))</span>
+        <span class="n">layer_url</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlunparse</span><span class="p">((</span><span class="n">base_url</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span> <span class="n">base_url</span><span class="o">.</span><span class="n">netloc</span><span class="p">,</span> <span class="n">layer_path</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">(</span>
+            <span class="n">unique_identifier</span><span class="o">=</span><span class="n">layer_url</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">arc_layer</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">resource_type</span><span class="o">=</span><span class="n">arc_layer</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ArcgisImageServiceResourceExtractor">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisImageServiceResourceExtractor">[docs]</a>
+<span class="k">class</span> <span class="nc">ArcgisImageServiceResourceExtractor</span><span class="p">(</span><span class="n">ArcgisServiceResourceExtractor</span><span class="p">):</span>
+<div class="viewcode-block" id="ArcgisImageServiceResourceExtractor.service">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisImageServiceResourceExtractor.service">[docs]</a>
+    <span class="n">service</span><span class="p">:</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">ImageService</span></div>
+
+<div class="viewcode-block" id="ArcgisImageServiceResourceExtractor.http_session">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisImageServiceResourceExtractor.http_session">[docs]</a>
+    <span class="n">http_session</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">ImageService</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">http_session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ArcgisImageServiceResourceExtractor.get_num_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisImageServiceResourceExtractor.get_num_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">list_resources</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ArcgisImageServiceResourceExtractor.list_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisImageServiceResourceExtractor.list_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">]:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource_name</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_relevant_layer</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">unique_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">(</span>
+                    <span class="n">unique_identifier</span><span class="o">=</span><span class="n">unique_id</span><span class="p">,</span>
+                    <span class="n">title</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">resource_type</span><span class="o">=</span><span class="s2">&quot;raster&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisImageServiceResourceExtractor.get_resource">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisImageServiceResourceExtractor.get_resource">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">http_session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="s2">&quot;json&quot;</span><span class="p">})</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="n">requests</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response_payload</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Could not decode response payload as valid JSON&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">resource_descriptor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource_descriptor</span><span class="p">(</span><span class="n">response_payload</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">(</span>
+                    <span class="n">resource_descriptor</span><span class="o">=</span><span class="n">resource_descriptor</span><span class="p">,</span> <span class="n">additional_information</span><span class="o">=</span><span class="kc">None</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Could not retrieve remote resource with unique &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;identifier </span><span class="si">{</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisImageServiceResourceExtractor._get_resource_name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisImageServiceResourceExtractor._get_resource_name">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_resource_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;/rest/services/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;/ImageServer&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ArcgisImageServiceResourceExtractor._get_resource_descriptor">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisImageServiceResourceExtractor._get_resource_descriptor">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_resource_descriptor</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">layer_representation</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDescription</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">geonode_resource</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">resource_uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">resource_uuid</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">geonode_resource</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">service_name</span><span class="p">,</span> <span class="n">service_type</span> <span class="o">=</span> <span class="n">parse_remote_url</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">)</span>
+        <span class="n">epsg_code</span><span class="p">,</span> <span class="n">spatial_extent</span> <span class="o">=</span> <span class="n">_parse_spatial_extent</span><span class="p">(</span><span class="n">layer_representation</span><span class="p">[</span><span class="s2">&quot;extent&quot;</span><span class="p">])</span>
+        <span class="n">ows_url</span> <span class="o">=</span> <span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span><span class="n">ows_url</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;Undefined&quot;</span><span class="p">))</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;Undefined&quot;</span><span class="p">))</span>
+        <span class="n">workspace</span> <span class="o">=</span> <span class="s2">&quot;remoteWorkspace&quot;</span>
+        <span class="n">alternate</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">workspace</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDescription</span><span class="p">(</span>
+            <span class="n">uuid</span><span class="o">=</span><span class="n">resource_uuid</span><span class="p">,</span>
+            <span class="n">identification</span><span class="o">=</span><span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordIdentification</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                <span class="n">abstract</span><span class="o">=</span><span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">other_constraints</span><span class="o">=</span><span class="n">layer_representation</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;copyrightTest&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="n">spatial_extent</span><span class="o">=</span><span class="n">spatial_extent</span><span class="p">,</span>
+                <span class="n">other_keywords</span><span class="o">=</span><span class="p">[</span>
+                    <span class="s2">&quot;ESRI&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;ArcGIS REST </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">__service_type__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">],</span>
+            <span class="p">),</span>
+            <span class="n">distribution</span><span class="o">=</span><span class="n">resourcedescriptor</span><span class="o">.</span><span class="n">RecordDistribution</span><span class="p">(</span>
+                <span class="n">link_url</span><span class="o">=</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span>
+                <span class="n">thumbnail_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">reference_systems</span><span class="o">=</span><span class="p">[</span><span class="n">epsg_code</span><span class="p">],</span>
+            <span class="n">additional_parameters</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;store&quot;</span><span class="p">:</span> <span class="n">store</span><span class="p">,</span>
+                <span class="s2">&quot;workspace&quot;</span><span class="p">:</span> <span class="n">workspace</span><span class="p">,</span>
+                <span class="s2">&quot;alternate&quot;</span><span class="p">:</span> <span class="n">alternate</span><span class="p">,</span>
+                <span class="s2">&quot;ows_url&quot;</span><span class="p">:</span> <span class="n">ows_url</span><span class="p">,</span>
+                <span class="s2">&quot;ptype&quot;</span><span class="p">:</span> <span class="n">GXP_PTYPES</span><span class="p">[</span><span class="s2">&quot;REST_IMG&quot;</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_resource_extractor">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.get_resource_extractor">[docs]</a>
+<span class="k">def</span> <span class="nf">get_resource_extractor</span><span class="p">(</span><span class="n">resource_unique_identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">ArcgisServiceResourceExtractor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A factory for instantiating the correct extractor for the resource&quot;&quot;&quot;</span>
+    <span class="n">service_type_name</span> <span class="o">=</span> <span class="n">parse_remote_url</span><span class="p">(</span><span class="n">resource_unique_identifier</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">service_type</span> <span class="o">=</span> <span class="n">ArcgisServiceType</span><span class="p">(</span><span class="n">service_type_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">service_type</span> <span class="o">==</span> <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">MAP_SERVICE</span><span class="p">:</span>
+        <span class="n">service</span> <span class="o">=</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">MapService</span><span class="p">(</span><span class="n">resource_unique_identifier</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">ArcgisMapServiceResourceExtractor</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">service_type</span> <span class="o">==</span> <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">IMAGE_SERVICE</span><span class="p">:</span>
+        <span class="n">service</span> <span class="o">=</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">ImageService</span><span class="p">(</span><span class="n">resource_unique_identifier</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">ArcgisImageServiceResourceExtractor</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported ArcGIS REST service </span><span class="si">{</span><span class="n">service_type</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker">[docs]</a>
+<span class="k">class</span> <span class="nc">ArcgisHarvesterWorker</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">BaseHarvesterWorker</span><span class="p">):</span>
+<div class="viewcode-block" id="ArcgisHarvesterWorker.harvest_map_services">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.harvest_map_services">[docs]</a>
+    <span class="n">harvest_map_services</span><span class="p">:</span> <span class="nb">bool</span></div>
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.harvest_image_services">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.harvest_image_services">[docs]</a>
+    <span class="n">harvest_image_services</span><span class="p">:</span> <span class="nb">bool</span></div>
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.resource_name_filter">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.resource_name_filter">[docs]</a>
+    <span class="n">resource_name_filter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.service_names_filter">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.service_names_filter">[docs]</a>
+    <span class="n">service_names_filter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.http_session">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.http_session">[docs]</a>
+    <span class="n">http_session</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span></div>
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker._arc_catalog">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker._arc_catalog">[docs]</a>
+    <span class="n">_arc_catalog</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">arcrest</span><span class="o">.</span><span class="n">Catalog</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker._relevant_service_extractors">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker._relevant_service_extractors">[docs]</a>
+    <span class="n">_relevant_service_extractors</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span>
+        <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">ArcgisMapServiceResourceExtractor</span><span class="p">,</span> <span class="n">ArcgisImageServiceResourceExtractor</span><span class="p">]]</span>
+    <span class="p">]</span></div>
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker._supported_service_types">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker._supported_service_types">[docs]</a>
+    <span class="n">_supported_service_types</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">MAP_SERVICE</span><span class="p">:</span> <span class="n">ArcgisMapServiceResourceExtractor</span><span class="p">,</span>
+        <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">IMAGE_SERVICE</span><span class="p">:</span> <span class="n">ArcgisImageServiceResourceExtractor</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">remote_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">harvester_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">harvest_map_services</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">harvest_image_services</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">resource_name_filter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">service_names_filter</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">catalog_url</span><span class="p">,</span> <span class="n">service_name</span><span class="p">,</span> <span class="n">service_type_name</span> <span class="o">=</span> <span class="n">parse_remote_url</span><span class="p">(</span><span class="n">remote_url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">service_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">names_filter</span> <span class="o">=</span> <span class="p">[</span><span class="n">service_name</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">service_names_filter</span> <span class="ow">or</span> <span class="p">[])</span>
+            <span class="n">service_type</span> <span class="o">=</span> <span class="n">ArcgisServiceType</span><span class="p">(</span><span class="n">service_type_name</span><span class="p">)</span>
+            <span class="n">harvest_maps</span> <span class="o">=</span> <span class="p">(</span><span class="n">service_type</span> <span class="o">==</span> <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">MAP_SERVICE</span><span class="p">)</span> <span class="ow">or</span> <span class="n">harvest_map_services</span>
+            <span class="n">harvest_images</span> <span class="o">=</span> <span class="p">(</span><span class="n">service_type</span> <span class="o">==</span> <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">IMAGE_SERVICE</span><span class="p">)</span> <span class="ow">or</span> <span class="n">harvest_image_services</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">names_filter</span> <span class="o">=</span> <span class="n">service_names_filter</span> <span class="ow">or</span> <span class="p">[]</span>
+            <span class="n">harvest_maps</span> <span class="o">=</span> <span class="n">harvest_map_services</span>
+            <span class="n">harvest_images</span> <span class="o">=</span> <span class="n">harvest_image_services</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">catalog_url</span><span class="p">,</span> <span class="n">harvester_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">http_session</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvest_map_services</span> <span class="o">=</span> <span class="n">harvest_maps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvest_image_services</span> <span class="o">=</span> <span class="n">harvest_images</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_name_filter</span> <span class="o">=</span> <span class="n">resource_name_filter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_names_filter</span> <span class="o">=</span> <span class="n">names_filter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arc_catalog</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relevant_service_extractors</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ArcgisHarvesterWorker.allows_copying_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.allows_copying_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">allows_copying_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ArcgisHarvesterWorker.arc_catalog">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.arc_catalog">[docs]</a>
+    <span class="k">def</span> <span class="nf">arc_catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arc_catalog</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_arc_catalog</span> <span class="o">=</span> <span class="n">arcrest</span><span class="o">.</span><span class="n">Catalog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="n">URLError</span><span class="p">,</span> <span class="n">HTTPError</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not connect to ArcGIS REST server at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arc_catalog</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ArcgisHarvesterWorker.from_django_record">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.from_django_record">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_django_record</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">harvester</span><span class="p">:</span> <span class="s2">&quot;Harvester&quot;</span><span class="p">):</span>  <span class="c1"># noqa</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">remote_url</span><span class="o">=</span><span class="n">harvester</span><span class="o">.</span><span class="n">remote_url</span><span class="p">,</span>
+            <span class="n">harvester_id</span><span class="o">=</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+            <span class="n">harvest_map_services</span><span class="o">=</span><span class="n">harvester</span><span class="o">.</span><span class="n">harvester_type_specific_configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;harvest_map_services&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+            <span class="n">harvest_image_services</span><span class="o">=</span><span class="n">harvester</span><span class="o">.</span><span class="n">harvester_type_specific_configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;harvest_image_services&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+            <span class="n">resource_name_filter</span><span class="o">=</span><span class="n">harvester</span><span class="o">.</span><span class="n">harvester_type_specific_configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resource_name_filter&quot;</span><span class="p">),</span>
+            <span class="n">service_names_filter</span><span class="o">=</span><span class="n">harvester</span><span class="o">.</span><span class="n">harvester_type_specific_configuration</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;service_names_filter&quot;</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ArcgisHarvesterWorker.get_extra_config_schema">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.get_extra_config_schema">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_extra_config_schema</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;$schema&quot;</span><span class="p">:</span> <span class="s2">&quot;https://json-schema.org/draft/2020-12/schema&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;$id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;https://geonode.org/harvesting/geonode-arcgis-rest-harvester.schema.json&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;ArcGIS REST harvester config&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">&quot;A jsonschema for validating configuration option for GeoNode&#39;s &quot;</span>
+                <span class="s2">&quot;remote ArcGIS REST services harvester&quot;</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;harvest_map_services&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="s2">&quot;harvest_image_services&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="s2">&quot;resource_name_filter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;service_names_filter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.get_num_available_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.get_num_available_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_num_available_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">service_extractor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_relevant_services</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">service_extractor</span><span class="o">.</span><span class="n">get_num_resources</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.list_resources">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.list_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">list_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">BriefRemoteResource</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># NOTE: Since ArcGIS REST services work in a nested fashion we are</span>
+        <span class="c1"># not able to paginate the underlying results. As such, we resort to</span>
+        <span class="c1"># processing all resources sequentially. This means we only care about</span>
+        <span class="c1"># `offset=0` and explicitly return an empty list when the supplied</span>
+        <span class="c1"># offset is different.</span>
+        <span class="k">if</span> <span class="n">offset</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">service_extractor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_relevant_services</span><span class="p">():</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">service_extractor</span><span class="o">.</span><span class="n">list_resources</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.check_availability">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.check_availability">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_availability</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout_seconds</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">arc_catalog</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.get_geonode_resource_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.get_geonode_resource_type">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_geonode_resource_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_resource_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Type</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Dataset</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.get_geonode_resource_defaults">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.get_geonode_resource_defaults">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_geonode_resource_defaults</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">harvested_info</span><span class="p">:</span> <span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">,</span>
+        <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">:</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_geonode_resource_defaults</span><span class="p">(</span><span class="n">harvested_info</span><span class="p">,</span> <span class="n">harvestable_resource</span><span class="p">)</span>
+        <span class="n">defaults</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">harvested_info</span><span class="o">.</span><span class="n">resource_descriptor</span><span class="o">.</span><span class="n">identification</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">harvested_info</span><span class="o">.</span><span class="n">resource_descriptor</span><span class="o">.</span><span class="n">additional_parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">defaults</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker.get_resource">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker.get_resource">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_resource</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">harvestable_resource</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">base</span><span class="o">.</span><span class="n">HarvestedResourceInfo</span><span class="p">]:</span>
+        <span class="n">extractor</span> <span class="o">=</span> <span class="n">get_resource_extractor</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">)</span>
+        <span class="n">extractor</span><span class="o">.</span><span class="n">resource_name_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_name_filter</span>
+        <span class="k">return</span> <span class="n">extractor</span><span class="o">.</span><span class="n">get_resource</span><span class="p">(</span><span class="n">harvestable_resource</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker._get_extractor_class">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker._get_extractor_class">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_extractor_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service_type</span><span class="p">:</span> <span class="n">ArcgisServiceType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Type</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">service_type</span> <span class="o">==</span> <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">MAP_SERVICE</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvest_map_services</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ArcgisMapServiceResourceExtractor</span>
+        <span class="k">elif</span> <span class="n">service_type</span> <span class="o">==</span> <span class="n">ArcgisServiceType</span><span class="o">.</span><span class="n">IMAGE_SERVICE</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvest_image_services</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ArcgisImageServiceResourceExtractor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker._get_service_extractors">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker._get_service_extractors">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_service_extractors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">:</span>
+        <span class="c1"># This method is fugly. Unfortunately, when multiple services share the</span>
+        <span class="c1"># same name, arcrest just instantiates an `AmbiguousService` instance and</span>
+        <span class="c1"># shoves the concrete services as attributes of this instance.</span>
+        <span class="c1"># To make matters more unpleasant, the arcrest `AmbiguousService` class is</span>
+        <span class="c1"># defined inside the `__getitem__` method of another class, so it cannot be</span>
+        <span class="c1"># imported outside of it. Thus we resort to checking if there is a</span>
+        <span class="c1"># `__service_type__` attribute on the service in order to deduct whether this is a</span>
+        <span class="c1"># legit service or an ambiguous one and then deal with it</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="s2">&quot;__service_type__&quot;</span><span class="p">):</span>
+            <span class="c1"># this is an arcrest AmbiguousService instance</span>
+            <span class="k">for</span> <span class="n">sub_service_type</span> <span class="ow">in</span> <span class="n">service</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">type_</span> <span class="o">=</span> <span class="n">ArcgisServiceType</span><span class="p">(</span><span class="n">sub_service_type</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unrecognized service type: </span><span class="si">{</span><span class="n">sub_service_type</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">extractor_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_extractor_class</span><span class="p">(</span><span class="n">type_</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">extractor_class</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">sub_service</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">service</span><span class="p">,</span> <span class="n">sub_service_type</span><span class="p">)</span>
+                        <span class="n">extractor</span> <span class="o">=</span> <span class="n">extractor_class</span><span class="p">(</span><span class="n">sub_service</span><span class="p">)</span>
+                        <span class="n">extractor</span><span class="o">.</span><span class="n">resource_name_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_name_filter</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extractor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">type_</span> <span class="o">=</span> <span class="n">ArcgisServiceType</span><span class="p">(</span><span class="n">service</span><span class="o">.</span><span class="n">__service_type__</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unrecognized service type: </span><span class="si">{</span><span class="n">service</span><span class="o">.</span><span class="n">__service_type__</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">extractor_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_extractor_class</span><span class="p">(</span><span class="n">type_</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">extractor_class</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">extractor</span> <span class="o">=</span> <span class="n">extractor_class</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+                    <span class="n">extractor</span><span class="o">.</span><span class="n">resource_name_filter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource_name_filter</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extractor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="ArcgisHarvesterWorker._get_relevant_services">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis.ArcgisHarvesterWorker._get_relevant_services">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_relevant_services</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">ArcgisMapServiceResourceExtractor</span><span class="p">,</span> <span class="n">ArcgisImageServiceResourceExtractor</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relevant_service_extractors</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">relevant_service_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_names_filter</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">arc_catalog</span><span class="o">.</span><span class="n">servicenames</span>
+            <span class="k">for</span> <span class="n">service_name</span> <span class="ow">in</span> <span class="n">relevant_service_names</span><span class="p">:</span>
+                <span class="n">service</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">_folder</span> <span class="ow">in</span> <span class="n">service_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">service</span><span class="p">:</span>
+                        <span class="n">service</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">arc_catalog</span><span class="p">[</span><span class="n">_folder</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">service</span> <span class="o">=</span> <span class="n">service</span><span class="p">[</span><span class="n">_folder</span><span class="p">]</span>
+                <span class="n">extractors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_service_extractors</span><span class="p">(</span><span class="n">service</span><span class="p">)</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extractors</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_relevant_service_extractors</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relevant_service_extractors</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="_parse_spatial_extent">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/harvesters/arcgis/index.html#geonode.harvesting.harvesters.arcgis._parse_spatial_extent">[docs]</a>
+<span class="k">def</span> <span class="nf">_parse_spatial_extent</span><span class="p">(</span><span class="n">raw_extent</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">geos</span><span class="o">.</span><span class="n">Polygon</span><span class="p">]:</span>
+    <span class="n">spatial_reference</span> <span class="o">=</span> <span class="n">raw_extent</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;spatialReference&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">epsg_code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;EPSG:</span><span class="si">{</span><span class="n">spatial_reference</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;latestWkid&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">spatial_reference</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;wkid&#39;</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="n">geos</span><span class="o">.</span><span class="n">Polygon</span><span class="o">.</span><span class="n">from_bbox</span><span class="p">((</span><span class="n">raw_extent</span><span class="p">[</span><span class="s2">&quot;xmin&quot;</span><span class="p">],</span> <span class="n">raw_extent</span><span class="p">[</span><span class="s2">&quot;ymin&quot;</span><span class="p">],</span> <span class="n">raw_extent</span><span class="p">[</span><span class="s2">&quot;xmax&quot;</span><span class="p">],</span> <span class="n">raw_extent</span><span class="p">[</span><span class="s2">&quot;ymax&quot;</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">epsg_code</span><span class="p">,</span> <span class="n">extent</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

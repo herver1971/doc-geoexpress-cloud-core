@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.client.templatetags.client_lib_tags &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../client.html">geonode.client</a></li>
+      <li class="breadcrumb-item active">geonode.client.templatetags.client_lib_tags</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.client.templatetags.client_lib_tags</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2018 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">template</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.template.base</span> <span class="kn">import</span> <span class="n">FilterExpression</span><span class="p">,</span> <span class="n">kwarg_re</span>
+<span class="kn">from</span> <span class="nn">..hooks</span> <span class="kn">import</span> <span class="n">hookset</span>
+
+<div class="viewcode-block" id="register">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.register">[docs]</a>
+<span class="n">register</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">Library</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="mapbox_access_token">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.mapbox_access_token">[docs]</a>
+<span class="k">def</span> <span class="nf">mapbox_access_token</span><span class="p">():</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;MAPBOX_ACCESS_TOKEN&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="bing_api_key">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.bing_api_key">[docs]</a>
+<span class="k">def</span> <span class="nf">bing_api_key</span><span class="p">():</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;BING_API_KEY&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="google_api_key">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.google_api_key">[docs]</a>
+<span class="k">def</span> <span class="nf">google_api_key</span><span class="p">():</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;GOOGLE_API_KEY&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># For client single page links</span>
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="dataset_list_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.dataset_list_url">[docs]</a>
+<span class="k">def</span> <span class="nf">dataset_list_url</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">dataset_list_url</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="dataset_upload_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.dataset_upload_url">[docs]</a>
+<span class="k">def</span> <span class="nf">dataset_upload_url</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">dataset_upload_url</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="dataset_detail_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.dataset_detail_url">[docs]</a>
+<span class="k">def</span> <span class="nf">dataset_detail_url</span><span class="p">(</span><span class="n">layer</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">dataset_detail_url</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="map_list_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.map_list_url">[docs]</a>
+<span class="k">def</span> <span class="nf">map_list_url</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">map_list_url</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="map_detail_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.map_detail_url">[docs]</a>
+<span class="k">def</span> <span class="nf">map_detail_url</span><span class="p">(</span><span class="nb">map</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">map_detail_url</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="document_list_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.document_list_url">[docs]</a>
+<span class="k">def</span> <span class="nf">document_list_url</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">document_list_url</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="document_detail_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.document_detail_url">[docs]</a>
+<span class="k">def</span> <span class="nf">document_detail_url</span><span class="p">(</span><span class="n">document</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">document_detail_url</span><span class="p">(</span><span class="n">document</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="geoapp_list_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.geoapp_list_url">[docs]</a>
+<span class="k">def</span> <span class="nf">geoapp_list_url</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_list_url</span><span class="p">()</span></div>
+
+
+
+<span class="nd">@register</span><span class="o">.</span><span class="n">simple_tag</span>
+<div class="viewcode-block" id="geoapp_detail_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.geoapp_detail_url">[docs]</a>
+<span class="k">def</span> <span class="nf">geoapp_detail_url</span><span class="p">(</span><span class="n">geoapp</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_detail_url</span><span class="p">(</span><span class="n">geoapp</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="parse_tag">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.parse_tag">[docs]</a>
+<span class="k">def</span> <span class="nf">parse_tag</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generic template tag parser.</span>
+
+<span class="sd">    Returns a three-tuple: (tag_name, args, kwargs)</span>
+
+<span class="sd">    tag_name is a string, the name of the tag.</span>
+
+<span class="sd">    args is a list of FilterExpressions, from all the arguments that didn&#39;t look like kwargs,</span>
+<span class="sd">    in the order they occurred, including any that were mingled amongst kwargs.</span>
+
+<span class="sd">    kwargs is a dictionary mapping kwarg names to FilterExpressions, for all the arguments that</span>
+<span class="sd">    looked like kwargs, including any that were mingled amongst args.</span>
+
+<span class="sd">    (At rendering time, a FilterExpression f can be evaluated by calling f.resolve(context).)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Split the tag content into words, respecting quoted strings.</span>
+    <span class="n">bits</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">split_contents</span><span class="p">()</span>
+
+    <span class="c1"># Pull out the tag name.</span>
+    <span class="n">tag_name</span> <span class="o">=</span> <span class="n">bits</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Parse the rest of the args, and build FilterExpressions from them so that</span>
+    <span class="c1"># we can evaluate them later.</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">bits</span><span class="p">:</span>
+        <span class="c1"># Is this a kwarg or an arg?</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">kwarg_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">bit</span><span class="p">)</span>
+        <span class="n">kwarg_format</span> <span class="o">=</span> <span class="n">match</span> <span class="ow">and</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kwarg_format</span><span class="p">:</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">FilterExpression</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FilterExpression</span><span class="p">(</span><span class="n">bit</span><span class="p">,</span> <span class="n">parser</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">tag_name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GeoNodeClientLibraryTag">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.GeoNodeClientLibraryTag">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoNodeClientLibraryTag</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag_name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="GeoNodeClientLibraryTag.tag_name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.GeoNodeClientLibraryTag.tag_name">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">=</span> <span class="n">tag_name</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeClientLibraryTag.render">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.GeoNodeClientLibraryTag.render">[docs]</a>
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># LAYERS</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_list&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">dataset_list_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_detail&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s2">&quot;geonode-mapstore-client/legacy/dataset_detail.html&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_new&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">dataset_new_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_view&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">dataset_view_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_edit&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">dataset_edit_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_update&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">dataset_update_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_embed&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">dataset_embed_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_download&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">dataset_download_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_dataset_style_edit&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">dataset_style_edit_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+
+        <span class="c1"># MAPS</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_map_list&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">map_list_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_map_detail&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">map_detail_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_map_new&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">map_new_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_map_view&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">map_view_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_map_edit&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">map_edit_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_map_update&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">map_update_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_map_embed&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s2">&quot;geonode-mapstore-client/map_embed.html&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_map_download&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">map_download_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+
+        <span class="c1"># GEONODE_APPS</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_geoapp_list&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_list_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_geoapp_detail&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_detail_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_geoapp_new&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_new_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_geoapp_view&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_view_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_geoapp_edit&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_edit_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_geoapp_update&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_update_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_geoapp_embed&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_embed_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;get_geoapp_download&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_download_template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="do_get_client_library_template">
+<a class="viewcode-back" href="../../../../autoapi/geonode/client/templatetags/client_lib_tags/index.html#geonode.client.templatetags.client_lib_tags.do_get_client_library_template">[docs]</a>
+<span class="k">def</span> <span class="nf">do_get_client_library_template</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+    <span class="n">tag_name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_tag</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">GeoNodeClientLibraryTag</span><span class="p">(</span><span class="n">tag_name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_list&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_detail&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_new&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_view&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_edit&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_update&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_embed&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_download&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_dataset_style_edit&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_map_list&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_map_detail&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_map_new&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_map_view&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_map_edit&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_map_update&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_map_embed&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_map_download&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_geoapp_list&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_geoapp_detail&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_geoapp_new&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_geoapp_view&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_geoapp_edit&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_geoapp_update&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_geoapp_embed&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+<span class="n">register</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="s2">&quot;get_geoapp_download&quot;</span><span class="p">,</span> <span class="n">do_get_client_library_template</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

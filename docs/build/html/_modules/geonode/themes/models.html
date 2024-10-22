@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.themes.models &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../themes.html">geonode.themes</a></li>
+      <li class="breadcrumb-item active">geonode.themes.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.themes.models</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2018 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">from</span> <span class="nn">imagekit.models</span> <span class="kn">import</span> <span class="n">ImageSpecField</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.core.cache</span> <span class="kn">import</span> <span class="n">cache</span>
+<span class="kn">from</span> <span class="nn">django.dispatch</span> <span class="kn">import</span> <span class="n">receiver</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">slugify</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_noop</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.db.models.signals</span> <span class="kn">import</span> <span class="n">post_save</span><span class="p">,</span> <span class="n">post_delete</span>
+
+<div class="viewcode-block" id="THEME_CACHE_KEY">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.THEME_CACHE_KEY">[docs]</a>
+<span class="n">THEME_CACHE_KEY</span> <span class="o">=</span> <span class="s2">&quot;enabled_theme&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="JumbotronThemeSlide">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.JumbotronThemeSlide">[docs]</a>
+<span class="k">class</span> <span class="nc">JumbotronThemeSlide</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="JumbotronThemeSlide.slide_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.JumbotronThemeSlide.slide_name">[docs]</a>
+    <span class="n">slide_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="JumbotronThemeSlide.jumbotron_slide_image">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.JumbotronThemeSlide.jumbotron_slide_image">[docs]</a>
+    <span class="n">jumbotron_slide_image</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ImageField</span><span class="p">(</span><span class="n">upload_to</span><span class="o">=</span><span class="s2">&quot;img/%Y/%m&quot;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Jumbotron slide background&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="JumbotronThemeSlide.jumbotron_slide_image_thumbnail">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.JumbotronThemeSlide.jumbotron_slide_image_thumbnail">[docs]</a>
+    <span class="n">jumbotron_slide_image_thumbnail</span> <span class="o">=</span> <span class="n">ImageSpecField</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s2">&quot;jumbotron_slide_image&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;quality&quot;</span><span class="p">:</span> <span class="mi">60</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="JumbotronThemeSlide.jumbotron_slide_content">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.JumbotronThemeSlide.jumbotron_slide_content">[docs]</a>
+    <span class="n">jumbotron_slide_content</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span>
+        <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Jumbotron slide content&quot;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Fill in this section with markdown&quot;</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="JumbotronThemeSlide.hide_jumbotron_slide_content">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.JumbotronThemeSlide.hide_jumbotron_slide_content">[docs]</a>
+    <span class="n">hide_jumbotron_slide_content</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Hide text in the jumbotron slide&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Check this if the jumbotron background image already contains text&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="JumbotronThemeSlide.is_enabled">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.JumbotronThemeSlide.is_enabled">[docs]</a>
+    <span class="n">is_enabled</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Disabling this slide will hide it from the slide show&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="JumbotronThemeSlide.__str__">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.JumbotronThemeSlide.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">get_icon</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">arg</span><span class="p">:</span> <span class="s2">&quot;[✓]&quot;</span> <span class="k">if</span> <span class="n">arg</span> <span class="k">else</span> <span class="s2">&quot;[✗]&quot;</span>
+        <span class="n">_enabled_icon</span> <span class="o">=</span> <span class="n">get_icon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_enabled</span><span class="p">)</span>
+        <span class="n">_slide_content_icon</span> <span class="o">=</span> <span class="n">get_icon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hide_jumbotron_slide_content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">slide_name</span><span class="si">}</span><span class="s2"> | &lt;Enabled: </span><span class="si">{</span><span class="n">_enabled_icon</span><span class="si">}</span><span class="s2"> -- Hide Text: </span><span class="si">{</span><span class="n">_slide_content_icon</span><span class="si">}</span><span class="s2">&gt;&quot;</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoNodeThemeCustomization</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="GeoNodeThemeCustomization.date">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.date">[docs]</a>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;This will not appear anywhere.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.name">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;This will not appear anywhere.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.description">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.description">[docs]</a>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;This will not appear anywhere.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.is_enabled">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.is_enabled">[docs]</a>
+    <span class="n">is_enabled</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Set this theme as the current global theme for GeoNode. This will disable the current theme (if any)&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.logo">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.logo">[docs]</a>
+    <span class="n">logo</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ImageField</span><span class="p">(</span><span class="n">upload_to</span><span class="o">=</span><span class="s2">&quot;img/%Y/%m&quot;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.extra_css">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.extra_css">[docs]</a>
+    <span class="n">extra_css</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span>
+        <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Custom CSS rules&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;This field can be used to insert additional css rules. For example they can be used to customise the Mapstore client custom_theme.html template)&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.jumbotron_bg">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.jumbotron_bg">[docs]</a>
+    <span class="n">jumbotron_bg</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ImageField</span><span class="p">(</span><span class="n">upload_to</span><span class="o">=</span><span class="s2">&quot;img/%Y/%m&quot;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Jumbotron background&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.jumbotron_welcome_hide">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.jumbotron_welcome_hide">[docs]</a>
+    <span class="n">jumbotron_welcome_hide</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Hide text in the jumbotron&quot;</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Check this if the jumbotron backgroud image already contains text&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.welcome_theme">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.welcome_theme">[docs]</a>
+    <span class="n">welcome_theme</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;JUMBOTRON_BG&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;JUMBOTRON_BG&quot;</span><span class="p">,</span> <span class="s2">&quot;jumbotron background&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;SLIDE_SHOW&quot;</span><span class="p">,</span> <span class="s2">&quot;slide show&quot;</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Choose between using jumbotron background and slide show&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.jumbotron_slide_show">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.jumbotron_slide_show">[docs]</a>
+    <span class="n">jumbotron_slide_show</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">JumbotronThemeSlide</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.jumbotron_welcome_title">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.jumbotron_welcome_title">[docs]</a>
+    <span class="n">jumbotron_welcome_title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Jumbotron title&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.jumbotron_welcome_content">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.jumbotron_welcome_content">[docs]</a>
+    <span class="n">jumbotron_welcome_content</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Jumbotron content&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="GeoNodeThemeCustomization.theme_uuid">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.theme_uuid">[docs]</a>
+    <span class="k">def</span> <span class="nf">theme_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;theme id </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.__str__">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="GeoNodeThemeCustomization.Meta.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.Meta.ordering">[docs]</a>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="GeoNodeThemeCustomization.Meta.verbose_name_plural">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.GeoNodeThemeCustomization.Meta.verbose_name_plural">[docs]</a>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="s2">&quot;Themes&quot;</span></div>
+</div>
+</div>
+
+
+
+<span class="c1"># Disable other themes if one theme is enabled.</span>
+<span class="nd">@receiver</span><span class="p">(</span><span class="n">post_save</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">GeoNodeThemeCustomization</span><span class="p">)</span>
+<div class="viewcode-block" id="disable_other">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.disable_other">[docs]</a>
+<span class="k">def</span> <span class="nf">disable_other</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">is_enabled</span><span class="p">:</span>
+        <span class="n">GeoNodeThemeCustomization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">instance</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">is_enabled</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Invalidate the cached theme if a theme is updated.</span>
+<span class="nd">@receiver</span><span class="p">(</span><span class="n">post_save</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">GeoNodeThemeCustomization</span><span class="p">)</span>
+<span class="nd">@receiver</span><span class="p">(</span><span class="n">post_delete</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="n">GeoNodeThemeCustomization</span><span class="p">)</span>
+<div class="viewcode-block" id="invalidate_cache">
+<a class="viewcode-back" href="../../../autoapi/geonode/themes/models/index.html#geonode.themes.models.invalidate_cache">[docs]</a>
+<span class="k">def</span> <span class="nf">invalidate_cache</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">THEME_CACHE_KEY</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

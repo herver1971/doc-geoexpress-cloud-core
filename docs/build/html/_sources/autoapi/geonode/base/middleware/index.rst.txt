@@ -1,0 +1,66 @@
+geonode.base.middleware
+=======================
+
+.. py:module:: geonode.base.middleware
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.middleware.ReadOnlyMiddleware
+   geonode.base.middleware.MaintenanceMiddleware
+
+
+Module Contents
+---------------
+
+.. py:class:: ReadOnlyMiddleware(get_response)
+
+   A Middleware disabling all content modifying requests, if read-only Configuration setting is True,
+   with an exception for whitelisted url names.
+
+
+   .. py:attribute:: FORBIDDEN_HTTP_METHODS
+      :value: ['POST', 'PUT', 'DELETE']
+
+
+
+   .. py:attribute:: WHITELISTED_URL_NAMES
+      :value: ['login', 'logout', 'account_login', 'account_logout', 'ows_endpoint']
+
+
+
+   .. py:attribute:: get_response
+
+
+   .. py:method:: __call__(request)
+
+
+   .. py:method:: process_view(request, view_func, view_args, view_kwargs)
+
+
+.. py:class:: MaintenanceMiddleware(get_response)
+
+   A Middleware redirecting all requests to maintenance info page, except:
+       - admin panel login,
+       - admin panel logout,
+       - requests performed by superuser,
+   if maintenance Configuration setting is True.
+
+
+   .. py:attribute:: WHITELISTED_URL_NAMES
+      :value: ['login', 'logout', 'index']
+
+
+
+   .. py:attribute:: get_response
+
+
+   .. py:method:: __call__(request)
+
+
+   .. py:method:: process_view(request, view_func, view_args, view_kwargs)
+
+
