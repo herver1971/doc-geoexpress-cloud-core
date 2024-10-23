@@ -1367,6 +1367,7 @@ class ResourceBaseViewSet(DynamicModelViewSet):
         .. code-block:: bash
 
             curl -v -X GET -u admin:admin http://localhost:8000/api/v2/resource-service/execution-status/08846e84-eae4-11eb-84be-00155d41f2fb
+
         OUTPUT:
 
         .. code-block:: yaml
@@ -1546,7 +1547,7 @@ class ResourceBaseViewSet(DynamicModelViewSet):
     def extra_metadata(self, request, pk, *args, **kwargs):
         """
         - PUT
-        update specific metadata. The ID of the metadata is required to perform the update
+            update specific metadata. The ID of the metadata is required to perform the update
 
         .. code-block:: yaml
 
