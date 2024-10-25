@@ -1,0 +1,487 @@
+geonode.base.tests
+==================
+
+.. py:module:: geonode.base.tests
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.base.tests.test_image
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.tests.ThumbnailTests
+   geonode.base.tests.TestThumbnailUrl
+   geonode.base.tests.TestCreationOfMissingMetadataAuthorsOrPOC
+   geonode.base.tests.TestCreationOfContactRolesByDifferentInputTypes
+   geonode.base.tests.RenderMenuTagTest
+   geonode.base.tests.DeleteResourcesCommandTests
+   geonode.base.tests.ConfigurationTest
+   geonode.base.tests.TestOwnerRightsRequestUtils
+   geonode.base.tests.SanitizedHtmlTest
+   geonode.base.tests.TestGetVisibleResource
+   geonode.base.tests.TestHtmlTagRemoval
+   geonode.base.tests.TestTagThesaurus
+   geonode.base.tests.TestThesaurusAvailableForm
+   geonode.base.tests.TestFacets
+   geonode.base.tests.TestGenerateThesaurusReference
+   geonode.base.tests.TestHandleMetadataKeyword
+   geonode.base.tests.Test_HierarchicalTagManager
+   geonode.base.tests.TestRegions
+   geonode.base.tests.LinkedResourcesTest
+
+
+Module Contents
+---------------
+
+.. py:data:: test_image
+
+.. py:class:: ThumbnailTests
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: tearDown()
+
+
+   .. py:method:: test_initial_behavior()
+
+      Tests that an empty resource has a missing image as null.
+
+
+
+   .. py:method:: test_empty_image()
+
+      Tests that an empty image does not change the current resource thumbnail.
+
+
+
+   .. py:method:: test_monochromatic_image(image)
+
+      Tests that an monochromatic image does not change the current resource thumbnail.
+
+
+
+   .. py:method:: test_thumb_utils_methods(image)
+
+      Bunch of tests on thumb_utils helpers.
+
+
+
+.. py:class:: TestThumbnailUrl
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+.. py:class:: TestCreationOfMissingMetadataAuthorsOrPOC
+
+   Bases: :py:obj:`ThumbnailTests`
+
+
+   .. py:method:: test_add_missing_metadata_author_or_poc()
+
+      Test that calling add_missing_metadata_author_or_poc resource method setsa missing metadata_author and/or point of contact (poc) to resource owner
+
+
+
+.. py:class:: TestCreationOfContactRolesByDifferentInputTypes
+
+   Bases: :py:obj:`ThumbnailTests`
+
+
+   Test that contact roles can be set as people profile
+
+
+   .. py:method:: test_set_contact_role_as_people_profile()
+
+
+   .. py:method:: test_set_contact_role_as_list_of_people()
+
+
+   .. py:method:: test_set_contact_role_as_queryset()
+
+
+.. py:class:: RenderMenuTagTest
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   Test class for render_menu and render_top_menu custom tags of base_tags
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_get_menu_placeholder_0()
+
+
+   .. py:method:: test_get_menu_placeholder_1()
+
+
+   .. py:method:: test_render_nav_menu_placeholder_0()
+
+
+   .. py:method:: test_render_nav_menu_placeholder_1()
+
+
+.. py:class:: DeleteResourcesCommandTests
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: test_delete_resources_no_arguments()
+
+
+   .. py:method:: test_delete_resources_too_many_arguments()
+
+
+   .. py:method:: test_delete_resource_config_file_not_existing()
+
+
+   .. py:method:: test_delete_resource_config_file_empty()
+
+
+.. py:class:: ConfigurationTest
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: test_read_only_whitelist()
+
+
+   .. py:method:: test_read_only_casual_user_privileges()
+
+
+   .. py:method:: test_maintenance_whitelist()
+
+
+   .. py:method:: test_maintenance_false()
+
+
+   .. py:method:: test_maintenance_true()
+
+
+   .. py:method:: test_readonly_overwrite_by_env()
+
+
+   .. py:method:: test_readonly_is_not_overwrite_by_env()
+
+
+.. py:class:: TestOwnerRightsRequestUtils
+
+   Bases: :py:obj:`django.test.TestCase`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_get_concrete_resource()
+
+
+   .. py:method:: test_msg_recipients_admin_mode()
+
+
+   .. py:method:: test_msg_recipients_workflow_off()
+
+
+   .. py:method:: test_display_change_perms_button_tag_moderated()
+
+
+   .. py:method:: test_display_change_perms_button_tag_standard()
+
+
+.. py:class:: SanitizedHtmlTest
+
+   Bases: :py:obj:`django.test.TestCase`
+
+
+   .. py:method:: test_sanitized_html()
+
+
+.. py:class:: TestGetVisibleResource
+
+   Bases: :py:obj:`django.test.TestCase`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_category_data_not_shown_for_missing_resourcebase_permissions()
+
+      Test that a user without view permissions of a resource base does not see ISO category format data of the ISO category
+
+
+
+   .. py:method:: test_category_data_shown_for_with_resourcebase_permissions()
+
+      Test that a user with view permissions of a resource base can see ISO format data of the ISO category
+
+
+
+   .. py:method:: test_visible_notifications()
+
+      Test that a standard user won't be able to show ADMINS_ONLY_NOTICE_TYPES
+
+
+
+   .. py:method:: test_extent_filter_crossing_dateline()
+
+
+.. py:class:: TestHtmlTagRemoval
+
+   Bases: :py:obj:`django.test.SimpleTestCase`
+
+
+   .. py:method:: test_not_tags_in_attribute()
+
+
+   .. py:method:: test_simple_tags_in_attribute()
+
+
+   .. py:method:: test_complex_tags_in_attribute()
+
+
+   .. py:method:: test_converted_html_in_tags_with_char_references()
+
+
+   .. py:method:: test_converted_html_in_tags_with_with_multiple_tags()
+
+
+.. py:class:: TestTagThesaurus
+
+   Bases: :py:obj:`django.test.TestCase`
+
+
+   Loading test thesausurs
+
+
+   .. py:attribute:: fixtures
+      :value: ['test_thesaurus.json']
+
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_get_unique_thesaurus_list()
+
+
+   .. py:method:: test_get_thesaurus_title()
+
+
+   .. py:method:: test_get_thesaurus_date()
+
+
+   .. py:method:: test_get_name_translation_raise_exception_if_identifier_does_not_exists()
+
+
+   .. py:method:: test_get_name_translation_return_thesauro_title_if_label_for_selected_language_does_not_exists(lang)
+
+
+   .. py:method:: test_get_thesaurus_translation_by_id(lang)
+
+
+   .. py:method:: test_get_thesaurus_localized_label(lang)
+
+
+   .. py:method:: test_get_name_translation_return_label_title_if_label_for_selected_language_exists(lang)
+
+
+   .. py:method:: __get_last_thesaurus()
+      :staticmethod:
+
+
+
+.. py:class:: TestThesaurusAvailableForm
+
+   Bases: :py:obj:`django.test.TestCase`
+
+
+   Loading test thesausurs
+
+
+   .. py:attribute:: fixtures
+      :value: ['test_thesaurus.json']
+
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_form_is_valid_if_all_fields_are_missing()
+
+      Is now always true since the required is moved to the UI (like the other fields)
+
+
+
+   .. py:method:: test_form_is_invalid_if_fileds_send_unexpected_values()
+
+
+   .. py:method:: test_form_is_valid_if_fileds_send_expected_values()
+
+
+   .. py:method:: test_field_class_treq_is_correctly_set_when_field_is_required()
+
+
+   .. py:method:: test_field_class_treq_is_not_set_when_field_is_optional()
+
+
+   .. py:method:: test_will_return_thesaurus_with_the_expected_defined_order()
+
+
+   .. py:method:: test_will_return_thesaurus_with_the_defaul_order_as_0()
+
+      Update thesaurus order to 0 in order to check if the default order by id is observed
+
+
+
+   .. py:method:: test_get_thesuro_key_label_with_cmd_language_code()
+
+      In python test language code look like 'en' this test checks if key label result function returns correct results
+
+
+
+   .. py:method:: test_get_thesuro_key_label_with_browser_language_code()
+
+      In browser scenario language does not look like "it", but rather include coutry code like "it-it" this test checks if _get_thesauro_keyword_label can handle this
+
+
+
+.. py:class:: TestFacets
+
+   Bases: :py:obj:`django.test.TestCase`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_facets_filter_datasets_returns_correctly()
+
+
+.. py:class:: TestGenerateThesaurusReference
+
+   Bases: :py:obj:`django.test.TestCase`
+
+
+   .. py:attribute:: fixtures
+      :value: ['test_thesaurus.json']
+
+
+
+   .. py:method:: setUp()
+
+      If the keyword.about does not exists, the url created will have a prefix and a specifier:
+      as prefix:
+
+          - use the Keyword's thesaurus.about URI if it exists,
+          - otherwise use as prefix the geonode site URL composed with some thesaurus info: f'{settings.SITEURL}/thesaurus/{thesaurus.identifier}'
+
+      as specifier:
+
+          - we may use the ThesaurusKeyword.alt_label if it exists, otherwise its id
+
+      So the final about field value will be composed as f'{prefix}#{specifier}'
+
+
+
+   .. py:method:: test_should_return_keyword_url()
+
+      Check if the expected about has been created and that the instance is correctly updated
+
+
+
+   .. py:method:: test_should_return_as_url_thesaurus_about_and_keyword_alt_label()
+
+
+   .. py:method:: test_should_return_as_url_thesaurus_about_and_keyword_id()
+
+
+   .. py:method:: test_should_return_as_url_site_url_and_keyword_label()
+
+
+   .. py:method:: test_should_return_as_url_site_url_and_keyword_id()
+
+
+.. py:class:: TestHandleMetadataKeyword
+
+   Bases: :py:obj:`django.test.TestCase`
+
+
+   .. py:attribute:: fixtures
+      :value: ['test_thesaurus.json']
+
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_return_empty_if_keywords_is_an_empty_list()
+
+
+   .. py:method:: test_should_return_the_expected_keyword_extracted_from_raw_and_the_thesaurus_keyword()
+
+
+   .. py:method:: test_should_assign_correclty_the_keyword_to_the_dataset_object()
+
+
+   .. py:method:: test_is_thesaurus_available_should_return_queryset_with_existing_thesaurus()
+
+
+   .. py:method:: test_is_thesaurus_available_should_return_empty_queryset_for_non_existing_thesaurus()
+
+
+.. py:class:: Test_HierarchicalTagManager
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp() -> None
+
+
+   .. py:method:: tearDown() -> None
+
+
+   .. py:method:: test_keyword_are_correctly_saved()
+
+
+   .. py:method:: test_keyword_raise_integrity_error(keyword_fetch_method)
+
+
+   .. py:method:: test_keyword_raise_db_error(add_root_mocked)
+
+
+.. py:class:: TestRegions
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_region_assignment_for_extent()
+
+
+   .. py:method:: test_regions_are_assigned_if_handler_is_used()
+
+
+.. py:class:: LinkedResourcesTest
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: test_autocomplete_linked_resource()
+
+

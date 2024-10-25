@@ -1,0 +1,505 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.layers.api.serializers &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../layers.html">geonode.layers</a></li>
+      <li class="breadcrumb-item active">geonode.layers.api.serializers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.layers.api.serializers</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">serializers</span>
+
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<span class="kn">from</span> <span class="nn">dynamic_rest.serializers</span> <span class="kn">import</span> <span class="n">DynamicModelSerializer</span>
+<span class="kn">from</span> <span class="nn">dynamic_rest.fields.fields</span> <span class="kn">import</span> <span class="n">DynamicRelationField</span><span class="p">,</span> <span class="n">DynamicComputedField</span>
+
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Attribute</span>
+<span class="kn">from</span> <span class="nn">geonode.base.api.serializers</span> <span class="kn">import</span> <span class="n">ResourceBaseSerializer</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="StyleSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">StyleSerializer</span><span class="p">(</span><span class="n">DynamicModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="StyleSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="StyleSerializer.Meta.model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Style</span></div>
+
+<div class="viewcode-block" id="StyleSerializer.Meta.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer.Meta.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;style&quot;</span></div>
+
+<div class="viewcode-block" id="StyleSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;workspace&quot;</span><span class="p">,</span> <span class="s2">&quot;sld_title&quot;</span><span class="p">,</span> <span class="s2">&quot;sld_url&quot;</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="StyleSerializer.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StyleSerializer.workspace">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer.workspace">[docs]</a>
+    <span class="n">workspace</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StyleSerializer.sld_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer.sld_url">[docs]</a>
+    <span class="n">sld_url</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">SerializerMethodField</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="StyleSerializer.get_sld_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.StyleSerializer.get_sld_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_sld_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">urlparse</span><span class="p">(</span><span class="n">instance</span><span class="o">.</span><span class="n">sld_url</span><span class="p">)</span><span class="o">.</span><span class="n">netloc</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">sld_url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">settings</span><span class="o">.</span><span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;LOCATION&quot;</span><span class="p">],</span> <span class="n">settings</span><span class="o">.</span><span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">][</span><span class="s2">&quot;PUBLIC_LOCATION&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">sld_url</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AttributeSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.AttributeSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">AttributeSerializer</span><span class="p">(</span><span class="n">DynamicModelSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="AttributeSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.AttributeSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="AttributeSerializer.Meta.model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.AttributeSerializer.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Attribute</span></div>
+
+<div class="viewcode-block" id="AttributeSerializer.Meta.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.AttributeSerializer.Meta.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;attribute&quot;</span></div>
+
+<div class="viewcode-block" id="AttributeSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.AttributeSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;attribute&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;attribute_label&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;attribute_type&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;visible&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;display_order&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;featureinfo_type&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;count&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;average&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;median&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;stddev&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;unique_values&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;last_stats_updated&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="AttributeSerializer.attribute">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.AttributeSerializer.attribute">[docs]</a>
+    <span class="n">attribute</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FeatureInfoTemplateField">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.FeatureInfoTemplateField">[docs]</a>
+<span class="k">class</span> <span class="nc">FeatureInfoTemplateField</span><span class="p">(</span><span class="n">DynamicComputedField</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FeatureInfoTemplateField.get_attribute">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.FeatureInfoTemplateField.get_attribute">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">use_featureinfo_custom_template</span> <span class="ow">and</span> <span class="n">instance</span><span class="o">.</span><span class="n">featureinfo_custom_template</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">featureinfo_custom_template</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_attributes</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">visible</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;display_order&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">_attributes</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">_template</span> <span class="o">=</span> <span class="s1">&#39;&lt;div style=&quot;overflow-x:hidden&quot;&gt;&#39;</span>
+                <span class="k">for</span> <span class="n">_field</span> <span class="ow">in</span> <span class="n">_attributes</span><span class="p">:</span>
+                    <span class="n">_label</span> <span class="o">=</span> <span class="n">_field</span><span class="o">.</span><span class="n">attribute_label</span> <span class="ow">or</span> <span class="n">_field</span><span class="o">.</span><span class="n">attribute</span>
+                    <span class="n">_template</span> <span class="o">+=</span> <span class="s1">&#39;&lt;div class=&quot;row&quot;&gt;&#39;</span>
+                    <span class="k">if</span> <span class="n">_field</span><span class="o">.</span><span class="n">featureinfo_type</span> <span class="o">==</span> <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_HREF</span><span class="p">:</span>
+                        <span class="n">_template</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s1">&#39;&lt;div class=&quot;col-xs-6&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt;</span><span class="si">%s</span><span class="s1">:&lt;/div&gt; </span><span class="se">\</span>
+<span class="s1">                            &lt;div class=&quot;col-xs-6&quot; style=&quot;word-wrap: break-word;&quot;&gt;&lt;a href=&quot;$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&quot; target=&quot;_new&quot;&gt;$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&lt;/a&gt;&lt;/div&gt;&#39;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">_label</span><span class="p">,</span> <span class="n">_field</span><span class="p">,</span> <span class="n">_field</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">_field</span><span class="o">.</span><span class="n">featureinfo_type</span> <span class="o">==</span> <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_IMAGE</span><span class="p">:</span>
+                        <span class="n">_template</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s1">&#39;&lt;div class=&quot;col-xs-12&quot; align=&quot;center&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt; </span><span class="se">\</span>
+<span class="s1">                            &lt;a href=&quot;$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&quot; target=&quot;_new&quot;&gt;&lt;img width=&quot;100</span><span class="si">%%</span><span class="s1">&quot; height=&quot;auto&quot; src=&quot;$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&quot; title=&quot;</span><span class="si">%s</span><span class="s1">&quot; alt=&quot;</span><span class="si">%s</span><span class="s1">&quot;/&gt;&lt;/a&gt;&lt;/div&gt;&#39;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">_field</span><span class="o">.</span><span class="n">attribute</span><span class="p">,</span> <span class="n">_field</span><span class="o">.</span><span class="n">attribute</span><span class="p">,</span> <span class="n">_label</span><span class="p">,</span> <span class="n">_label</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">_field</span><span class="o">.</span><span class="n">featureinfo_type</span> <span class="ow">in</span> <span class="p">(</span>
+                        <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_VIDEO_3GP</span><span class="p">,</span>
+                        <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_VIDEO_FLV</span><span class="p">,</span>
+                        <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_VIDEO_MP4</span><span class="p">,</span>
+                        <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_VIDEO_OGG</span><span class="p">,</span>
+                        <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_VIDEO_WEBM</span><span class="p">,</span>
+                        <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_VIDEO_YOUTUBE</span><span class="p">,</span>
+                    <span class="p">):</span>
+                        <span class="k">if</span> <span class="s2">&quot;youtube&quot;</span> <span class="ow">in</span> <span class="n">_field</span><span class="o">.</span><span class="n">featureinfo_type</span><span class="p">:</span>
+                            <span class="n">_template</span> <span class="o">+=</span> <span class="p">(</span>
+                                <span class="s1">&#39;&lt;div class=&quot;col-xs-12&quot; align=&quot;center&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt; </span><span class="se">\</span>
+<span class="s1">                                &lt;iframe src=&quot;$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&quot; width=&quot;100</span><span class="si">%%</span><span class="s1">&quot; height=&quot;360&quot; frameborder=&quot;0&quot; allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;&#39;</span>
+                                <span class="o">%</span> <span class="p">(</span><span class="n">_field</span><span class="o">.</span><span class="n">attribute</span><span class="p">)</span>
+                            <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">_type</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;video/</span><span class="si">{</span><span class="n">_field</span><span class="o">.</span><span class="n">featureinfo_type</span><span class="p">[</span><span class="mi">11</span><span class="p">:]</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="n">_template</span> <span class="o">+=</span> <span class="p">(</span>
+                                <span class="s1">&#39;&lt;div class=&quot;col-xs-12&quot; align=&quot;center&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt; </span><span class="se">\</span>
+<span class="s1">                                &lt;video width=&quot;100</span><span class="si">%%</span><span class="s1">&quot; height=&quot;360&quot; controls&gt;&lt;source src=&quot;$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&quot; type=&quot;</span><span class="si">%s</span><span class="s1">&quot;&gt;Your browser does not support the video tag.&lt;/video&gt;&lt;/div&gt;&#39;</span>
+                                <span class="o">%</span> <span class="p">(</span><span class="n">_field</span><span class="o">.</span><span class="n">attribute</span><span class="p">,</span> <span class="n">_type</span><span class="p">)</span>
+                            <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">_field</span><span class="o">.</span><span class="n">featureinfo_type</span> <span class="o">==</span> <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_AUDIO</span><span class="p">:</span>
+                        <span class="n">_template</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s1">&#39;&lt;div class=&quot;col-xs-12&quot; align=&quot;center&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt; </span><span class="se">\</span>
+<span class="s1">                            &lt;audio controls&gt;&lt;source src=&quot;$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&quot; type=&quot;audio/mpeg&quot;&gt;Your browser does not support the audio element.&lt;/audio&gt;&lt;/div&gt;&#39;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">_field</span><span class="o">.</span><span class="n">attribute</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">_field</span><span class="o">.</span><span class="n">featureinfo_type</span> <span class="o">==</span> <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_IFRAME</span><span class="p">:</span>
+                        <span class="n">_template</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s1">&#39;&lt;div class=&quot;col-xs-12&quot; align=&quot;center&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt; </span><span class="se">\</span>
+<span class="s1">                            &lt;iframe src=&quot;/proxy/?url=$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&quot; width=&quot;100</span><span class="si">%%</span><span class="s1">&quot; height=&quot;360&quot; frameborder=&quot;0&quot; allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;&#39;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">_field</span><span class="o">.</span><span class="n">attribute</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">_field</span><span class="o">.</span><span class="n">featureinfo_type</span> <span class="o">==</span> <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_PROPERTY</span><span class="p">:</span>
+                        <span class="n">_template</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="s1">&#39;&lt;div class=&quot;col-xs-6&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt;</span><span class="si">%s</span><span class="s1">:&lt;/div&gt; </span><span class="se">\</span>
+<span class="s1">                            &lt;div class=&quot;col-xs-6&quot; style=&quot;word-wrap: break-word;&quot;&gt;$</span><span class="si">{properties[\&#39;%s\&#39;]}</span><span class="s1">&lt;/div&gt;&#39;</span>
+                            <span class="o">%</span> <span class="p">(</span><span class="n">_label</span><span class="p">,</span> <span class="n">_field</span><span class="o">.</span><span class="n">attribute</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="n">_template</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+                <span class="n">_template</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/div&gt;&quot;</span>
+                <span class="k">return</span> <span class="n">_template</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DatasetSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">DatasetSerializer</span><span class="p">(</span><span class="n">ResourceBaseSerializer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Instantiate the superclass normally</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DatasetSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="DatasetSerializer.Meta.model">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Dataset</span></div>
+
+<div class="viewcode-block" id="DatasetSerializer.Meta.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.Meta.name">[docs]</a>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;dataset&quot;</span></div>
+
+<div class="viewcode-block" id="DatasetSerializer.Meta.view_name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.Meta.view_name">[docs]</a>
+        <span class="n">view_name</span> <span class="o">=</span> <span class="s2">&quot;datasets-list&quot;</span></div>
+
+<div class="viewcode-block" id="DatasetSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;attribute_set&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;charset&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;is_mosaic&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;has_time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;has_elevation&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;time_regex&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;elevation_regex&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ows_url&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;capabilities_url&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dataset_ows_url&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;workspace&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_style&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;styles&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;store&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;subtype&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ptype&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;executions&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="DatasetSerializer.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetSerializer.workspace">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.workspace">[docs]</a>
+    <span class="n">workspace</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetSerializer.store">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.store">[docs]</a>
+    <span class="n">store</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetSerializer.charset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.charset">[docs]</a>
+    <span class="n">charset</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetSerializer.default_style">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.default_style">[docs]</a>
+    <span class="n">default_style</span> <span class="o">=</span> <span class="n">DynamicRelationField</span><span class="p">(</span><span class="n">StyleSerializer</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetSerializer.styles">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.styles">[docs]</a>
+    <span class="n">styles</span> <span class="o">=</span> <span class="n">DynamicRelationField</span><span class="p">(</span><span class="n">StyleSerializer</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetSerializer.attribute_set">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.attribute_set">[docs]</a>
+    <span class="n">attribute_set</span> <span class="o">=</span> <span class="n">DynamicRelationField</span><span class="p">(</span><span class="n">AttributeSerializer</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">many</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetSerializer.featureinfo_custom_template">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetSerializer.featureinfo_custom_template">[docs]</a>
+    <span class="n">featureinfo_custom_template</span> <span class="o">=</span> <span class="n">FeatureInfoTemplateField</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DatasetListSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetListSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">DatasetListSerializer</span><span class="p">(</span><span class="n">DatasetSerializer</span><span class="p">):</span>
+<div class="viewcode-block" id="DatasetListSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetListSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="n">DatasetSerializer</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+<div class="viewcode-block" id="DatasetListSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetListSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;pk&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;workspace&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;store&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;subtype&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;charset&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;is_mosaic&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;has_time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;has_elevation&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;time_regex&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;elevation_regex&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ptype&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;default_style&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;styles&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="DatasetListSerializer.featureinfo_custom_template">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetListSerializer.featureinfo_custom_template">[docs]</a>
+    <span class="n">featureinfo_custom_template</span> <span class="o">=</span> <span class="n">FeatureInfoTemplateField</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">DatasetReplaceAppendSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;base_file&quot;</span><span class="p">,</span> <span class="s2">&quot;dbf_file&quot;</span><span class="p">,</span> <span class="s2">&quot;shx_file&quot;</span><span class="p">,</span> <span class="s2">&quot;prj_file&quot;</span><span class="p">,</span> <span class="s2">&quot;xml_file&quot;</span><span class="p">,</span> <span class="s2">&quot;sld_file&quot;</span><span class="p">,</span> <span class="s2">&quot;store_spatial_files&quot;</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.base_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.base_file">[docs]</a>
+    <span class="n">base_file</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.dbf_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.dbf_file">[docs]</a>
+    <span class="n">dbf_file</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.shx_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.shx_file">[docs]</a>
+    <span class="n">shx_file</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.prj_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.prj_file">[docs]</a>
+    <span class="n">prj_file</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.xml_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.xml_file">[docs]</a>
+    <span class="n">xml_file</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.sld_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.sld_file">[docs]</a>
+    <span class="n">sld_file</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DatasetReplaceAppendSerializer.store_spatial_files">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetReplaceAppendSerializer.store_spatial_files">[docs]</a>
+    <span class="n">store_spatial_files</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MetadataFileField">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.MetadataFileField">[docs]</a>
+<span class="k">class</span> <span class="nc">MetadataFileField</span><span class="p">(</span><span class="n">DynamicComputedField</span><span class="p">):</span>
+<div class="viewcode-block" id="MetadataFileField.get_attribute">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.MetadataFileField.get_attribute">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">instance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata_file&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DatasetMetadataSerializer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetMetadataSerializer">[docs]</a>
+<span class="k">class</span> <span class="nc">DatasetMetadataSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+<div class="viewcode-block" id="DatasetMetadataSerializer.metadata_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetMetadataSerializer.metadata_file">[docs]</a>
+    <span class="n">metadata_file</span> <span class="o">=</span> <span class="n">MetadataFileField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetMetadataSerializer.Meta">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetMetadataSerializer.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="DatasetMetadataSerializer.Meta.fields">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/serializers/index.html#geonode.layers.api.serializers.DatasetMetadataSerializer.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="s2">&quot;metadata_file&quot;</span></div>
+</div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

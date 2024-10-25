@@ -1,0 +1,140 @@
+geonode.proxy.tests
+===================
+
+.. py:module:: geonode.proxy.tests
+
+.. autoapi-nested-parse::
+
+   This file demonstrates two different styles of tests (one doctest and one
+   unittest). These will both pass when you run "manage.py test".
+
+   Replace these with more appropriate tests for your application.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.proxy.tests.TEST_DOMAIN
+   geonode.proxy.tests.TEST_URL
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.proxy.tests.ProxyTest
+   geonode.proxy.tests.DownloadResourceTestCase
+   geonode.proxy.tests.OWSApiTestCase
+   geonode.proxy.tests.TestProxyTags
+
+
+Module Contents
+---------------
+
+.. py:data:: TEST_DOMAIN
+   :value: '.github.com'
+
+
+.. py:data:: TEST_URL
+
+.. py:class:: ProxyTest
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_validate_host_disabled_in_debug()
+
+      If PROXY_ALLOWED_HOSTS is empty and DEBUG is True, all hosts pass the proxy.
+
+
+
+   .. py:method:: test_validate_host_disabled_not_in_debug()
+
+      If PROXY_ALLOWED_HOSTS is empty and DEBUG is False requests should return 403.
+
+
+
+   .. py:method:: test_proxy_allowed_host()
+
+      If PROXY_ALLOWED_HOSTS is not empty and DEBUG is False requests should return no error.
+
+
+
+   .. py:method:: test_validate_remote_services_hosts()
+
+      If PROXY_ALLOWED_HOSTS is empty and DEBUG is False requests should return 200
+      for Remote Services hosts.
+
+
+
+   .. py:method:: test_relative_urls()
+
+      Proxying to a URL with a relative path element should normalise the path into
+      an absolute path before calling the remote URL.
+
+
+
+   .. py:method:: test_proxy_preserve_headers()
+
+      The GeoNode Proxy should preserve the original request headers.
+
+
+
+   .. py:method:: test_proxy_url_forgery()
+
+      The GeoNode Proxy should preserve the original request headers.
+
+
+
+.. py:class:: DownloadResourceTestCase
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_download_url_with_not_existing_file()
+
+
+   .. py:method:: test_download_url_with_existing_files(fopen, fexists)
+
+
+   .. py:method:: test_download_files(fopen, fexists)
+
+
+.. py:class:: OWSApiTestCase
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_ows_api()
+
+
+.. py:class:: TestProxyTags
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_tag_original_link_available_with_different_netlock_should_return_true()
+
+
+   .. py:method:: test_should_return_false_if_no_files_are_available()
+
+
+   .. py:method:: test_should_return_true_if_files_are_available(fexists)
+
+

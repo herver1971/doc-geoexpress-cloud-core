@@ -1,0 +1,736 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.admin &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../base.html">geonode.base</a></li>
+      <li class="breadcrumb-item active">geonode.base.admin</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.base.admin</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">render</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">path</span>
+<span class="kn">from</span> <span class="nn">dal</span> <span class="kn">import</span> <span class="n">autocomplete</span>
+<span class="kn">from</span> <span class="nn">taggit.forms</span> <span class="kn">import</span> <span class="n">TagField</span>
+<span class="kn">from</span> <span class="nn">django.core.management</span> <span class="kn">import</span> <span class="n">call_command</span>
+<span class="kn">from</span> <span class="nn">slugify</span> <span class="kn">import</span> <span class="n">slugify</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">messages</span>
+
+<span class="kn">from</span> <span class="nn">treebeard.admin</span> <span class="kn">import</span> <span class="n">TreeAdmin</span>
+<span class="kn">from</span> <span class="nn">treebeard.forms</span> <span class="kn">import</span> <span class="n">movenodeform_factory</span>
+
+<span class="kn">from</span> <span class="nn">modeltranslation.admin</span> <span class="kn">import</span> <span class="n">TabbedTranslationAdmin</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TopicCategory</span><span class="p">,</span>
+    <span class="n">SpatialRepresentationType</span><span class="p">,</span>
+    <span class="n">Region</span><span class="p">,</span>
+    <span class="n">RestrictionCodeType</span><span class="p">,</span>
+    <span class="n">ContactRole</span><span class="p">,</span>
+    <span class="n">Link</span><span class="p">,</span>
+    <span class="n">License</span><span class="p">,</span>
+    <span class="n">HierarchicalKeyword</span><span class="p">,</span>
+    <span class="n">MenuPlaceholder</span><span class="p">,</span>
+    <span class="n">Menu</span><span class="p">,</span>
+    <span class="n">MenuItem</span><span class="p">,</span>
+    <span class="n">Configuration</span><span class="p">,</span>
+    <span class="n">Thesaurus</span><span class="p">,</span>
+    <span class="n">ThesaurusLabel</span><span class="p">,</span>
+    <span class="n">ThesaurusKeyword</span><span class="p">,</span>
+    <span class="n">ThesaurusKeywordLabel</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.forms</span> <span class="kn">import</span> <span class="n">BatchEditForm</span><span class="p">,</span> <span class="n">ThesaurusImportForm</span><span class="p">,</span> <span class="n">UserAndGroupPermissionsForm</span>
+<span class="kn">from</span> <span class="nn">geonode.base.widgets</span> <span class="kn">import</span> <span class="n">TaggitSelect2Custom</span>
+
+
+<div class="viewcode-block" id="metadata_batch_edit">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.metadata_batch_edit">[docs]</a>
+<span class="k">def</span> <span class="nf">metadata_batch_edit</span><span class="p">(</span><span class="n">modeladmin</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">)</span>
+    <span class="n">resource</span> <span class="o">=</span> <span class="n">queryset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">class_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">BatchEditForm</span><span class="p">({</span><span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="n">ids</span><span class="p">})</span>
+    <span class="n">name_space_mapper</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;dataset_batch_metadata&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;map&quot;</span><span class="p">:</span> <span class="s2">&quot;map_batch_metadata&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;document&quot;</span><span class="p">:</span> <span class="s2">&quot;document_batch_metadata&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">name_space</span> <span class="o">=</span> <span class="n">name_space_mapper</span><span class="p">[</span><span class="n">resource</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">name_space</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span>
+        <span class="n">request</span><span class="p">,</span> <span class="s2">&quot;base/batch_edit.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;form&quot;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span> <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="n">ids</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="p">,</span> <span class="s2">&quot;name_space&quot;</span><span class="p">:</span> <span class="n">name_space</span><span class="p">}</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="n">metadata_batch_edit</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Metadata batch edit&quot;</span>
+
+
+<div class="viewcode-block" id="set_user_and_group_dataset_permission">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.set_user_and_group_dataset_permission">[docs]</a>
+<span class="k">def</span> <span class="nf">set_user_and_group_dataset_permission</span><span class="p">(</span><span class="n">modeladmin</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">)</span>
+    <span class="n">resource</span> <span class="o">=</span> <span class="n">queryset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="n">model_mapper</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;people&quot;</span><span class="p">,</span> <span class="s2">&quot;groupprofile&quot;</span><span class="p">:</span> <span class="s2">&quot;groups&quot;</span><span class="p">}</span>
+
+    <span class="n">form</span> <span class="o">=</span> <span class="n">UserAndGroupPermissionsForm</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;permission_type&quot;</span><span class="p">:</span> <span class="s2">&quot;view&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;set&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="n">ids</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span>
+        <span class="n">request</span><span class="p">,</span> <span class="s2">&quot;base/user_and_group_permissions.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;form&quot;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">model_mapper</span><span class="p">[</span><span class="n">resource</span><span class="p">]}</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="n">set_user_and_group_dataset_permission</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Set layer permissions&quot;</span>
+
+
+<div class="viewcode-block" id="LicenseAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LicenseAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">LicenseAdmin</span><span class="p">(</span><span class="n">TabbedTranslationAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="LicenseAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LicenseAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">License</span></div>
+
+<div class="viewcode-block" id="LicenseAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LicenseAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LicenseAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LicenseAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TopicCategoryAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.TopicCategoryAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">TopicCategoryAdmin</span><span class="p">(</span><span class="n">TabbedTranslationAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="TopicCategoryAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.TopicCategoryAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">TopicCategory</span></div>
+
+<div class="viewcode-block" id="TopicCategoryAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.TopicCategoryAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="TopicCategoryAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.TopicCategoryAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;gn_description&quot;</span><span class="p">,</span> <span class="s2">&quot;fa_class&quot;</span><span class="p">,</span> <span class="s2">&quot;is_choice&quot;</span><span class="p">)</span></div>
+
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">MODIFY_TOPICCATEGORY</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+<div class="viewcode-block" id="TopicCategoryAdmin.exclude">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.TopicCategoryAdmin.exclude">[docs]</a>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;identifier&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TopicCategoryAdmin.has_add_permission">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.TopicCategoryAdmin.has_add_permission">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_add_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="c1"># the records are from the standard TC 211 list, so no way to add</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">MODIFY_TOPICCATEGORY</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="TopicCategoryAdmin.has_delete_permission">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.TopicCategoryAdmin.has_delete_permission">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_delete_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># the records are from the standard TC 211 list, so no way to remove</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">MODIFY_TOPICCATEGORY</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RegionAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RegionAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">RegionAdmin</span><span class="p">(</span><span class="n">TabbedTranslationAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="RegionAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RegionAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Region</span></div>
+
+<div class="viewcode-block" id="RegionAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RegionAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="RegionAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RegionAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;parent&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegionAdmin.search_fields">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RegionAdmin.search_fields">[docs]</a>
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegionAdmin.group_fieldsets">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RegionAdmin.group_fieldsets">[docs]</a>
+    <span class="n">group_fieldsets</span> <span class="o">=</span> <span class="kc">True</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SpatialRepresentationTypeAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.SpatialRepresentationTypeAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">SpatialRepresentationTypeAdmin</span><span class="p">(</span><span class="n">TabbedTranslationAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="SpatialRepresentationTypeAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.SpatialRepresentationTypeAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">SpatialRepresentationType</span></div>
+
+<div class="viewcode-block" id="SpatialRepresentationTypeAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.SpatialRepresentationTypeAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="SpatialRepresentationTypeAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.SpatialRepresentationTypeAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;gn_description&quot;</span><span class="p">,</span> <span class="s2">&quot;is_choice&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SpatialRepresentationTypeAdmin.has_add_permission">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.SpatialRepresentationTypeAdmin.has_add_permission">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_add_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="c1"># the records are from the standard TC 211 list, so no way to add</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="SpatialRepresentationTypeAdmin.has_delete_permission">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.SpatialRepresentationTypeAdmin.has_delete_permission">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_delete_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># the records are from the standard TC 211 list, so no way to remove</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RestrictionCodeTypeAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RestrictionCodeTypeAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">RestrictionCodeTypeAdmin</span><span class="p">(</span><span class="n">TabbedTranslationAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="RestrictionCodeTypeAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RestrictionCodeTypeAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">RestrictionCodeType</span></div>
+
+<div class="viewcode-block" id="RestrictionCodeTypeAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RestrictionCodeTypeAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="RestrictionCodeTypeAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RestrictionCodeTypeAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;gn_description&quot;</span><span class="p">,</span> <span class="s2">&quot;is_choice&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RestrictionCodeTypeAdmin.has_add_permission">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RestrictionCodeTypeAdmin.has_add_permission">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_add_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="c1"># the records are from the standard TC 211 list, so no way to add</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="RestrictionCodeTypeAdmin.has_delete_permission">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.RestrictionCodeTypeAdmin.has_delete_permission">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_delete_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># the records are from the standard TC 211 list, so no way to remove</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ContactRoleAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ContactRoleAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">ContactRoleAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ContactRoleAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ContactRoleAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ContactRole</span></div>
+
+<div class="viewcode-block" id="ContactRoleAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ContactRoleAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="ContactRoleAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ContactRoleAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;contact&quot;</span><span class="p">,</span> <span class="s2">&quot;resource&quot;</span><span class="p">,</span> <span class="s2">&quot;role&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ContactRoleAdmin.list_editable">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ContactRoleAdmin.list_editable">[docs]</a>
+    <span class="n">list_editable</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;contact&quot;</span><span class="p">,</span> <span class="s2">&quot;resource&quot;</span><span class="p">,</span> <span class="s2">&quot;role&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ContactRoleAdmin.form">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ContactRoleAdmin.form">[docs]</a>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">modelform_factory</span><span class="p">(</span><span class="n">ContactRole</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="s2">&quot;__all__&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="LinkAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LinkAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">LinkAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="LinkAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LinkAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Link</span></div>
+
+<div class="viewcode-block" id="LinkAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LinkAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="LinkAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LinkAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;resource&quot;</span><span class="p">,</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span> <span class="s2">&quot;link_type&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;mime&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LinkAdmin.list_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LinkAdmin.list_filter">[docs]</a>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;resource&quot;</span><span class="p">,</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span> <span class="s2">&quot;link_type&quot;</span><span class="p">,</span> <span class="s2">&quot;mime&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LinkAdmin.search_fields">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LinkAdmin.search_fields">[docs]</a>
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;resource__title&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="LinkAdmin.form">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.LinkAdmin.form">[docs]</a>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">modelform_factory</span><span class="p">(</span><span class="n">Link</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="s2">&quot;__all__&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HierarchicalKeywordAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.HierarchicalKeywordAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">HierarchicalKeywordAdmin</span><span class="p">(</span><span class="n">TreeAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="HierarchicalKeywordAdmin.search_fields">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.HierarchicalKeywordAdmin.search_fields">[docs]</a>
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="HierarchicalKeywordAdmin.form">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.HierarchicalKeywordAdmin.form">[docs]</a>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">movenodeform_factory</span><span class="p">(</span><span class="n">HierarchicalKeyword</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MenuPlaceholderAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuPlaceholderAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">MenuPlaceholderAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="MenuPlaceholderAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuPlaceholderAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">MenuPlaceholder</span></div>
+
+<div class="viewcode-block" id="MenuPlaceholderAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuPlaceholderAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MenuAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">MenuAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="MenuAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Menu</span></div>
+
+<div class="viewcode-block" id="MenuAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;placeholder&quot;</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MenuItemAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuItemAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">MenuItemAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="MenuItemAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuItemAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">MenuItem</span></div>
+
+<div class="viewcode-block" id="MenuItemAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.MenuItemAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;menu&quot;</span><span class="p">,</span> <span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="s2">&quot;blank_target&quot;</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ConfigurationAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ConfigurationAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">ConfigurationAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ConfigurationAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ConfigurationAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Configuration</span></div>
+
+
+<div class="viewcode-block" id="ConfigurationAdmin.has_delete_permission">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ConfigurationAdmin.has_delete_permission">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_delete_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Disable delete action of Singleton model, since &quot;delete selected objects&quot; uses QuerysSet.delete()</span>
+        <span class="c1"># instead of Model.delete()</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="ConfigurationAdmin.get_form">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ConfigurationAdmin.get_form">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_form</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># allow only superusers to modify Configuration</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">form</span><span class="o">.</span><span class="n">base_fields</span><span class="p">:</span>
+                <span class="n">form</span><span class="o">.</span><span class="n">base_fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">form</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ThesaurusAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">ThesaurusAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ThesaurusAdmin.change_list_template">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusAdmin.change_list_template">[docs]</a>
+    <span class="n">change_list_template</span> <span class="o">=</span> <span class="s2">&quot;admin/thesauri/change_list.html&quot;</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Thesaurus</span></div>
+
+<div class="viewcode-block" id="ThesaurusAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;identifier&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;identifier&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusAdmin.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusAdmin.ordering">[docs]</a>
+    <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;identifier&quot;</span><span class="p">,)</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusAdmin.get_urls">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusAdmin.get_urls">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">urls</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_urls</span><span class="p">()</span>
+        <span class="n">my_urls</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;importrdf/&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">import_rdf</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;base_thesaurus_importrdf&quot;</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">my_urls</span> <span class="o">+</span> <span class="n">urls</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusAdmin.import_rdf">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusAdmin.import_rdf">[docs]</a>
+    <span class="k">def</span> <span class="nf">import_rdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rdf_file</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">FILES</span><span class="p">[</span><span class="s2">&quot;rdf_file&quot;</span><span class="p">]</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span><span class="n">rdf_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">call_command</span><span class="p">(</span><span class="s2">&quot;load_thesaurus&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">rdf_file</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">message_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;Your RDF file has been imported&quot;</span><span class="p">,</span> <span class="n">messages</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">message_user</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">messages</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+
+        <span class="n">form</span> <span class="o">=</span> <span class="n">ThesaurusImportForm</span><span class="p">()</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;form&quot;</span><span class="p">:</span> <span class="n">form</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;admin/thesauri/upload_form.html&quot;</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ThesaurusLabelAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusLabelAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">ThesaurusLabelAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ThesaurusLabelAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusLabelAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ThesaurusLabel</span></div>
+
+<div class="viewcode-block" id="ThesaurusLabelAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusLabelAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;thesaurus_id&quot;</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusLabelAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusLabelAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="ThesaurusLabelAdmin.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusLabelAdmin.ordering">[docs]</a>
+    <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;thesaurus__identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusLabelAdmin.thesaurus_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusLabelAdmin.thesaurus_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">thesaurus_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">identifier</span></div>
+
+
+    <span class="n">thesaurus_id</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Thesaurus&quot;</span>
+    <span class="n">thesaurus_id</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">&quot;thesaurus__identifier&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ThesaurusKeywordAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">ThesaurusKeywordAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ThesaurusKeywordAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ThesaurusKeyword</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;thesaurus_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;about&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;alt_label&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;about&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;alt_label&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordAdmin.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordAdmin.ordering">[docs]</a>
+    <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;thesaurus__identifier&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;alt_label&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordAdmin.list_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordAdmin.list_filter">[docs]</a>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;thesaurus_id&quot;</span><span class="p">,)</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordAdmin.thesaurus_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordAdmin.thesaurus_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">thesaurus_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">identifier</span></div>
+
+
+    <span class="n">thesaurus_id</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Thesaurus&quot;</span>
+    <span class="n">thesaurus_id</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">&quot;thesaurus__identifier&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="ThesaurusKeywordLabelAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordLabelAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">ThesaurusKeywordLabelAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ThesaurusKeywordLabelAdmin.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordLabelAdmin.model">[docs]</a>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ThesaurusKeywordLabel</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordLabelAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordLabelAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;thesaurus_id&quot;</span><span class="p">,</span> <span class="s2">&quot;keyword_id&quot;</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordLabelAdmin.list_display_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordLabelAdmin.list_display_links">[docs]</a>
+    <span class="n">list_display_links</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;lang&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordLabelAdmin.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordLabelAdmin.ordering">[docs]</a>
+    <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;keyword__thesaurus__identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;keyword__alt_label&quot;</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ThesaurusKeywordLabelAdmin.list_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordLabelAdmin.list_filter">[docs]</a>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;keyword__thesaurus__identifier&quot;</span><span class="p">,</span> <span class="s2">&quot;keyword_id&quot;</span><span class="p">,</span> <span class="s2">&quot;lang&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusKeywordLabelAdmin.thesaurus_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordLabelAdmin.thesaurus_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">thesaurus_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">keyword</span><span class="o">.</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">identifier</span></div>
+
+
+    <span class="n">thesaurus_id</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Thesaurus&quot;</span>
+    <span class="n">thesaurus_id</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">&quot;keyword__thesaurus__identifier&quot;</span>
+
+<div class="viewcode-block" id="ThesaurusKeywordLabelAdmin.keyword_id">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ThesaurusKeywordLabelAdmin.keyword_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">keyword_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">keyword</span><span class="o">.</span><span class="n">alt_label</span></div>
+
+
+    <span class="n">keyword_id</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Keyword&quot;</span>
+    <span class="n">keyword_id</span><span class="o">.</span><span class="n">admin_order_field</span> <span class="o">=</span> <span class="s2">&quot;keyword__alt_label&quot;</span></div>
+
+
+
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">TopicCategory</span><span class="p">,</span> <span class="n">TopicCategoryAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Region</span><span class="p">,</span> <span class="n">RegionAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SpatialRepresentationType</span><span class="p">,</span> <span class="n">SpatialRepresentationTypeAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">RestrictionCodeType</span><span class="p">,</span> <span class="n">RestrictionCodeTypeAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ContactRole</span><span class="p">,</span> <span class="n">ContactRoleAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Link</span><span class="p">,</span> <span class="n">LinkAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">License</span><span class="p">,</span> <span class="n">LicenseAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">HierarchicalKeyword</span><span class="p">,</span> <span class="n">HierarchicalKeywordAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">MenuPlaceholder</span><span class="p">,</span> <span class="n">MenuPlaceholderAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Menu</span><span class="p">,</span> <span class="n">MenuAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">MenuItem</span><span class="p">,</span> <span class="n">MenuItemAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Configuration</span><span class="p">,</span> <span class="n">ConfigurationAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Thesaurus</span><span class="p">,</span> <span class="n">ThesaurusAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ThesaurusLabel</span><span class="p">,</span> <span class="n">ThesaurusLabelAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ThesaurusKeyword</span><span class="p">,</span> <span class="n">ThesaurusKeywordAdmin</span><span class="p">)</span>
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ThesaurusKeywordLabel</span><span class="p">,</span> <span class="n">ThesaurusKeywordLabelAdmin</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ResourceBaseAdminForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ResourceBaseAdminForm">[docs]</a>
+<span class="k">class</span> <span class="nc">ResourceBaseAdminForm</span><span class="p">(</span><span class="n">autocomplete</span><span class="o">.</span><span class="n">FutureModelForm</span><span class="p">):</span>
+<div class="viewcode-block" id="ResourceBaseAdminForm.keywords">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ResourceBaseAdminForm.keywords">[docs]</a>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">TagField</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">TaggitSelect2Custom</span><span class="p">(</span><span class="s2">&quot;autocomplete_hierachical_keyword&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseAdminForm.delete_queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ResourceBaseAdminForm.delete_queryset">[docs]</a>
+    <span class="k">def</span> <span class="nf">delete_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        We need to invoke the &#39;ResourceBase.delete&#39; method even when deleting through the admin batch action</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">queryset</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">geonode.resource.manager</span> <span class="kn">import</span> <span class="n">resource_manager</span>
+
+            <span class="n">resource_manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">obj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseAdminForm.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/admin/index.html#geonode.base.admin.ResourceBaseAdminForm.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1403 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.geoserver.acl.gsauth_client.api.rules_api &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+    <link rel="next" title="geonode.geoserver.acl.gsauth_client.models" href="../../models/index.html" />
+    <link rel="prev" title="geonode.geoserver.acl.gsauth_client.api.authorization_api" href="../authorization_api/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../../../index.html">geonode</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../../../api/index.html">geonode.api</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../base/index.html">geonode.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../br/index.html">geonode.br</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../catalogue/index.html">geonode.catalogue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../client/index.html">geonode.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../documents/index.html">geonode.documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../facets/index.html">geonode.facets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../favorite/index.html">geonode.favorite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../geoapps/index.html">geonode.geoapps</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../../../index.html">geonode.geoserver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../groups/index.html">geonode.groups</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../harvesting/index.html">geonode.harvesting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../invitations/index.html">geonode.invitations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../layers/index.html">geonode.layers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../management_commands_http/index.html">geonode.management_commands_http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../maps/index.html">geonode.maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../messaging/index.html">geonode.messaging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../monitoring/index.html">geonode.monitoring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../people/index.html">geonode.people</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../proxy/index.html">geonode.proxy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../resource/index.html">geonode.resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../security/index.html">geonode.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../services/index.html">geonode.services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../social/index.html">geonode.social</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../storage/index.html">geonode.storage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../tasks/index.html">geonode.tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../tests/index.html">geonode.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../themes/index.html">geonode.themes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../thumbs/index.html">geonode.thumbs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../upload/index.html">geonode.upload</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../index.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">geonode.geoserver</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">geonode.geoserver.acl</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">geonode.geoserver.acl.gsauth_client</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">geonode.geoserver.acl.gsauth_client.api</a></li>
+      <li class="breadcrumb-item active">geonode.geoserver.acl.gsauth_client.api.rules_api</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../../_sources/autoapi/geonode/geoserver/acl/gsauth_client/api/rules_api/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-geonode.geoserver.acl.gsauth_client.api.rules_api">
+<span id="geonode-geoserver-acl-gsauth-client-api-rules-api"></span><h1>geonode.geoserver.acl.gsauth_client.api.rules_api<a class="headerlink" href="#module-geonode.geoserver.acl.gsauth_client.api.rules_api" title="Link to this heading"></a></h1>
+<p>GeoServer ACL</p>
+<p>GeoServer Access Control List API  # noqa: E501</p>
+<p>The version of the OpenAPI document: 1.0.0
+Generated by: <a class="reference external" href="https://openapi-generator.tech">https://openapi-generator.tech</a></p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi" title="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RulesApi</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.geoserver.acl.gsauth_client.api.rules_api.</span></span><span class="sig-name descname"><span class="pre">RulesApi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_client</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class is auto generated by OpenAPI Generator</p>
+<p>Ref: <a class="reference external" href="https://openapi-generator.tech">https://openapi-generator.tech</a></p>
+</div>
+<p>Do not edit the class manually.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.api_client">
+<span class="sig-name descname"><span class="pre">api_client</span></span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.api_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.api_client" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.count_all_rules">
+<span class="sig-name descname"><span class="pre">count_all_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.count_all_rules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.count_all_rules" title="Link to this definition"></a></dt>
+<dd><p>count_all_rules  # noqa: E501</p>
+<p>Returns the total number of rules  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">count_all_rules</span><span class="p">(</span><span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.count_all_rules_with_http_info">
+<span class="sig-name descname"><span class="pre">count_all_rules_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.count_all_rules_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.count_all_rules_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>count_all_rules  # noqa: E501</p>
+<p>Returns the total number of rules  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">count_all_rules_with_http_info</span><span class="p">(</span><span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(int, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.count_rules">
+<span class="sig-name descname"><span class="pre">count_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule_filter</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.count_rules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.count_rules" title="Link to this definition"></a></dt>
+<dd><p>count_rules  # noqa: E501</p>
+<p>Returns the number of rules that matches the search criteria  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">count_rules</span><span class="p">(</span><span class="n">rule_filter</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rule_filter</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.RuleFilter" title="geonode.geoserver.acl.gsauth_client.RuleFilter"><em>RuleFilter</em></a>) – (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.count_rules_with_http_info">
+<span class="sig-name descname"><span class="pre">count_rules_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule_filter</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.count_rules_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.count_rules_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>count_rules  # noqa: E501</p>
+<p>Returns the number of rules that matches the search criteria  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">count_rules_with_http_info</span><span class="p">(</span><span class="n">rule_filter</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rule_filter</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.RuleFilter" title="geonode.geoserver.acl.gsauth_client.RuleFilter"><em>RuleFilter</em></a>) – (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(int, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.create_rule">
+<span class="sig-name descname"><span class="pre">create_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.create_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.create_rule" title="Link to this definition"></a></dt>
+<dd><p>create_rule  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">create_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rule</strong> (<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule"><em>Rule</em></a>) – (required)</p></li>
+<li><p><strong>position</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.InsertPosition" title="geonode.geoserver.acl.gsauth_client.InsertPosition"><em>InsertPosition</em></a>) – Displacement option related to how to interpret the Rule’s priority</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.create_rule_with_http_info">
+<span class="sig-name descname"><span class="pre">create_rule_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.create_rule_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.create_rule_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>create_rule  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">create_rule_with_http_info</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rule</strong> (<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule"><em>Rule</em></a>) – (required)</p></li>
+<li><p><strong>position</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.InsertPosition" title="geonode.geoserver.acl.gsauth_client.InsertPosition"><em>InsertPosition</em></a>) – Displacement option related to how to interpret the Rule’s priority</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a>, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.delete_rule_by_id">
+<span class="sig-name descname"><span class="pre">delete_rule_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.delete_rule_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.delete_rule_by_id" title="Link to this definition"></a></dt>
+<dd><p>delete_rule_by_id  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">delete_rule_by_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.delete_rule_by_id_with_http_info">
+<span class="sig-name descname"><span class="pre">delete_rule_by_id_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.delete_rule_by_id_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.delete_rule_by_id_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>delete_rule_by_id  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">delete_rule_by_id_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.find_one_rule_by_priority">
+<span class="sig-name descname"><span class="pre">find_one_rule_by_priority</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">priority</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.find_one_rule_by_priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.find_one_rule_by_priority" title="Link to this definition"></a></dt>
+<dd><p>find_one_rule_by_priority  # noqa: E501</p>
+<p>Finds the Rule with the given priority  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">find_one_rule_by_priority</span><span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>priority</strong> (<em>int</em>) – The rule priority to search for (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.find_one_rule_by_priority_with_http_info">
+<span class="sig-name descname"><span class="pre">find_one_rule_by_priority_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">priority</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.find_one_rule_by_priority_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.find_one_rule_by_priority_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>find_one_rule_by_priority  # noqa: E501</p>
+<p>Finds the Rule with the given priority  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">find_one_rule_by_priority_with_http_info</span><span class="p">(</span><span class="n">priority</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>priority</strong> (<em>int</em>) – The rule priority to search for (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a>, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_layer_details_by_rule_id">
+<span class="sig-name descname"><span class="pre">get_layer_details_by_rule_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.get_layer_details_by_rule_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_layer_details_by_rule_id" title="Link to this definition"></a></dt>
+<dd><p>get_layer_details_by_rule_id  # noqa: E501</p>
+<p>Returns the LayerDetails for the Rule with the given identifier  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_layer_details_by_rule_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.LayerDetails" title="geonode.geoserver.acl.gsauth_client.LayerDetails">LayerDetails</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_layer_details_by_rule_id_with_http_info">
+<span class="sig-name descname"><span class="pre">get_layer_details_by_rule_id_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.get_layer_details_by_rule_id_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_layer_details_by_rule_id_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>get_layer_details_by_rule_id  # noqa: E501</p>
+<p>Returns the LayerDetails for the Rule with the given identifier  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_layer_details_by_rule_id_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.LayerDetails" title="geonode.geoserver.acl.gsauth_client.LayerDetails">LayerDetails</a>, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_rule_by_id">
+<span class="sig-name descname"><span class="pre">get_rule_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.get_rule_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_rule_by_id" title="Link to this definition"></a></dt>
+<dd><p>get_rule_by_id  # noqa: E501</p>
+<p>Returns the Rule with the given identifier  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_rule_by_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_rule_by_id_with_http_info">
+<span class="sig-name descname"><span class="pre">get_rule_by_id_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.get_rule_by_id_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_rule_by_id_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>get_rule_by_id  # noqa: E501</p>
+<p>Returns the Rule with the given identifier  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_rule_by_id_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a>, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_rules">
+<span class="sig-name descname"><span class="pre">get_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.get_rules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_rules" title="Link to this definition"></a></dt>
+<dd><p>get_rules  # noqa: E501</p>
+<p>Returns an (optionally) paginated list of rules. See also the count operation.  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_rules</span><span class="p">(</span><span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>limit</strong> (<em>int</em>) – Maximum number of rules to return from the query. If there are more rules, the response will return an X-ACL-NEXTCURSOR header with a value that can be used for the nextCursor parameter on a subsequent request, until X-ACL-NEXTCURSOR is null</p></li>
+<li><p><strong>next_cursor</strong> (<em>str</em>) – The next cursor identifier when doing cursor paging, as returned by the X-ACL-NEXTCURSOR response header</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_rules_with_http_info">
+<span class="sig-name descname"><span class="pre">get_rules_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.get_rules_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.get_rules_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>get_rules  # noqa: E501</p>
+<p>Returns an (optionally) paginated list of rules. See also the count operation.  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">get_rules_with_http_info</span><span class="p">(</span><span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>limit</strong> (<em>int</em>) – Maximum number of rules to return from the query. If there are more rules, the response will return an X-ACL-NEXTCURSOR header with a value that can be used for the nextCursor parameter on a subsequent request, until X-ACL-NEXTCURSOR is null</p></li>
+<li><p><strong>next_cursor</strong> (<em>str</em>) – The next cursor identifier when doing cursor paging, as returned by the X-ACL-NEXTCURSOR response header</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(list[<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a>], status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.query_rules">
+<span class="sig-name descname"><span class="pre">query_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.query_rules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.query_rules" title="Link to this definition"></a></dt>
+<dd><p>query_rules  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">query_rules</span><span class="p">(</span><span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>limit</strong> (<em>int</em>) – Maximum number of rules to return from the query. If there are more rules, the response will return an X-ACL-NEXTCURSOR header with a value that can be used for the nextCursor parameter on a subsequent request, until X-ACL-NEXTCURSOR is null</p></li>
+<li><p><strong>next_cursor</strong> (<em>str</em>) – The next cursor identifier when doing cursor paging, as returned by the X-ACL-NEXTCURSOR response header</p></li>
+<li><p><strong>rule_filter</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.RuleFilter" title="geonode.geoserver.acl.gsauth_client.RuleFilter"><em>RuleFilter</em></a>)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.query_rules_with_http_info">
+<span class="sig-name descname"><span class="pre">query_rules_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.query_rules_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.query_rules_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>query_rules  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">query_rules_with_http_info</span><span class="p">(</span><span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>limit</strong> (<em>int</em>) – Maximum number of rules to return from the query. If there are more rules, the response will return an X-ACL-NEXTCURSOR header with a value that can be used for the nextCursor parameter on a subsequent request, until X-ACL-NEXTCURSOR is null</p></li>
+<li><p><strong>next_cursor</strong> (<em>str</em>) – The next cursor identifier when doing cursor paging, as returned by the X-ACL-NEXTCURSOR response header</p></li>
+<li><p><strong>rule_filter</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.RuleFilter" title="geonode.geoserver.acl.gsauth_client.RuleFilter"><em>RuleFilter</em></a>)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(list[<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a>], status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.rule_exists_by_id">
+<span class="sig-name descname"><span class="pre">rule_exists_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.rule_exists_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.rule_exists_by_id" title="Link to this definition"></a></dt>
+<dd><p>rule_exists_by_id  # noqa: E501</p>
+<p>Returns the Rule with the given identifier  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">rule_exists_by_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.rule_exists_by_id_with_http_info">
+<span class="sig-name descname"><span class="pre">rule_exists_by_id_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.rule_exists_by_id_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.rule_exists_by_id_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>rule_exists_by_id  # noqa: E501</p>
+<p>Returns the Rule with the given identifier  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">rule_exists_by_id_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(bool, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_allowed_styles">
+<span class="sig-name descname"><span class="pre">set_rule_allowed_styles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.set_rule_allowed_styles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_allowed_styles" title="Link to this definition"></a></dt>
+<dd><p>set_rule_allowed_styles  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">set_rule_allowed_styles</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>request_body</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_allowed_styles_with_http_info">
+<span class="sig-name descname"><span class="pre">set_rule_allowed_styles_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.set_rule_allowed_styles_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_allowed_styles_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>set_rule_allowed_styles  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">set_rule_allowed_styles_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>request_body</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_layer_details">
+<span class="sig-name descname"><span class="pre">set_rule_layer_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.set_rule_layer_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_layer_details" title="Link to this definition"></a></dt>
+<dd><p>set_rule_layer_details  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">set_rule_layer_details</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>layer_details</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.LayerDetails" title="geonode.geoserver.acl.gsauth_client.LayerDetails"><em>LayerDetails</em></a>)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_layer_details_with_http_info">
+<span class="sig-name descname"><span class="pre">set_rule_layer_details_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.set_rule_layer_details_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_layer_details_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>set_rule_layer_details  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">set_rule_layer_details_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>layer_details</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.LayerDetails" title="geonode.geoserver.acl.gsauth_client.LayerDetails"><em>LayerDetails</em></a>)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_limits">
+<span class="sig-name descname"><span class="pre">set_rule_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.set_rule_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_limits" title="Link to this definition"></a></dt>
+<dd><p>set_rule_limits  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">set_rule_limits</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>rule_limits</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.RuleLimits" title="geonode.geoserver.acl.gsauth_client.RuleLimits"><em>RuleLimits</em></a>)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_limits_with_http_info">
+<span class="sig-name descname"><span class="pre">set_rule_limits_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.set_rule_limits_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.set_rule_limits_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>set_rule_limits  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">set_rule_limits_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>rule_limits</strong> (<a class="reference internal" href="../../index.html#geonode.geoserver.acl.gsauth_client.RuleLimits" title="geonode.geoserver.acl.gsauth_client.RuleLimits"><em>RuleLimits</em></a>)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.shift_rules_by_priority">
+<span class="sig-name descname"><span class="pre">shift_rules_by_priority</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">priority_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.shift_rules_by_priority"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.shift_rules_by_priority" title="Link to this definition"></a></dt>
+<dd><p>shift_rules_by_priority  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">shift_rules_by_priority</span><span class="p">(</span><span class="n">priority_start</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>priority_start</strong> (<em>int</em>) – The minimum priority to start shifting at (inclusive) (required)</p></li>
+<li><p><strong>offset</strong> (<em>int</em>) – The priority offset to apply to all rules from priorityStart onwards (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.shift_rules_by_priority_with_http_info">
+<span class="sig-name descname"><span class="pre">shift_rules_by_priority_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">priority_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.shift_rules_by_priority_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.shift_rules_by_priority_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>shift_rules_by_priority  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">shift_rules_by_priority_with_http_info</span><span class="p">(</span><span class="n">priority_start</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>priority_start</strong> (<em>int</em>) – The minimum priority to start shifting at (inclusive) (required)</p></li>
+<li><p><strong>offset</strong> (<em>int</em>) – The priority offset to apply to all rules from priorityStart onwards (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(int, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.swap_rules">
+<span class="sig-name descname"><span class="pre">swap_rules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.swap_rules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.swap_rules" title="Link to this definition"></a></dt>
+<dd><p>swap_rules  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swap_rules</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">id2</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>id2</strong> (<em>str</em>) – The rule identifier to swap priorities with (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.swap_rules_with_http_info">
+<span class="sig-name descname"><span class="pre">swap_rules_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.swap_rules_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.swap_rules_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>swap_rules  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">swap_rules_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">id2</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>id2</strong> (<em>str</em>) – The rule identifier to swap priorities with (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.update_rule_by_id">
+<span class="sig-name descname"><span class="pre">update_rule_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.update_rule_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.update_rule_by_id" title="Link to this definition"></a></dt>
+<dd><p>update_rule_by_id  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">update_rule_by_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>rule</strong> (<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule"><em>Rule</em></a>) – (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.update_rule_by_id_with_http_info">
+<span class="sig-name descname"><span class="pre">update_rule_by_id_with_http_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rule</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/geonode/geoserver/acl/gsauth_client/api/rules_api.html#RulesApi.update_rule_by_id_with_http_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.acl.gsauth_client.api.rules_api.RulesApi.update_rule_by_id_with_http_info" title="Link to this definition"></a></dt>
+<dd><p>update_rule_by_id  # noqa: E501</p>
+<p>This method makes a synchronous HTTP request by default. To make an asynchronous HTTP request, please pass async_req=True</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thread</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">update_rule_by_id_with_http_info</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">async_req</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">thread</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>str</em>) – The rule identifier (required)</p></li>
+<li><p><strong>rule</strong> (<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule"><em>Rule</em></a>) – (required)</p></li>
+<li><p><strong>async_req</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to execute the request asynchronously.</p></li>
+<li><p><strong>_return_http_data_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – response data without head status code
+and headers</p></li>
+<li><p><strong>_preload_content</strong> (<em>bool</em><em>, </em><em>optional</em>) – if False, the urllib3.HTTPResponse object will
+be returned without reading/decoding response
+data. Default is True.</p></li>
+<li><p><strong>_request_timeout</strong> – timeout setting for this request. If one
+number provided, it will be total request
+timeout. It can also be a pair (tuple) of
+(connection, read) timeouts.</p></li>
+<li><p><strong>_request_auth</strong> (<em>dict</em><em>, </em><em>optional</em>) – set to override the auth_settings for an a single
+request; this effectively ignores the authentication
+in the spec for a single request.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the result object.
+If the method is called asynchronously,
+returns the request thread.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(<a class="reference internal" href="../../../acl_client/index.html#geonode.geoserver.acl.acl_client.Rule" title="geonode.geoserver.acl.acl_client.Rule">Rule</a>, status_code(int), headers(HTTPHeaderDict))</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../authorization_api/index.html" class="btn btn-neutral float-left" title="geonode.geoserver.acl.gsauth_client.api.authorization_api" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../models/index.html" class="btn btn-neutral float-right" title="geonode.geoserver.acl.gsauth_client.models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

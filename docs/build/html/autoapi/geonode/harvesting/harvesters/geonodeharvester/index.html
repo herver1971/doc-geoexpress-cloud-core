@@ -1,0 +1,877 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.harvesting.harvesters.geonodeharvester &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="geonode.harvesting.harvesters.wms" href="../wms/index.html" />
+    <link rel="prev" title="geonode.harvesting.harvesters.base" href="../base/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">geonode</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../api/index.html">geonode.api</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../base/index.html">geonode.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../br/index.html">geonode.br</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../catalogue/index.html">geonode.catalogue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../client/index.html">geonode.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../documents/index.html">geonode.documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../facets/index.html">geonode.facets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../favorite/index.html">geonode.favorite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../geoapps/index.html">geonode.geoapps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../geoserver/index.html">geonode.geoserver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../groups/index.html">geonode.groups</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">geonode.harvesting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../invitations/index.html">geonode.invitations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../layers/index.html">geonode.layers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../management_commands_http/index.html">geonode.management_commands_http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../maps/index.html">geonode.maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../messaging/index.html">geonode.messaging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../monitoring/index.html">geonode.monitoring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../people/index.html">geonode.people</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../proxy/index.html">geonode.proxy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resource/index.html">geonode.resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../security/index.html">geonode.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../services/index.html">geonode.services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../social/index.html">geonode.social</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../storage/index.html">geonode.storage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tasks/index.html">geonode.tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../tests/index.html">geonode.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../themes/index.html">geonode.themes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../thumbs/index.html">geonode.thumbs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../upload/index.html">geonode.upload</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">geonode.harvesting</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">geonode.harvesting.harvesters</a></li>
+      <li class="breadcrumb-item active">geonode.harvesting.harvesters.geonodeharvester</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/geonode/harvesting/harvesters/geonodeharvester/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-geonode.harvesting.harvesters.geonodeharvester">
+<span id="geonode-harvesting-harvesters-geonodeharvester"></span><h1>geonode.harvesting.harvesters.geonodeharvester<a class="headerlink" href="#module-geonode.harvesting.harvesters.geonodeharvester" title="Link to this heading"></a></h1>
+<p>Harvesters GeoNode remote servers.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.logger" title="geonode.harvesting.harvesters.geonodeharvester.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeDatasetType" title="geonode.harvesting.harvesters.geonodeharvester.GeoNodeDatasetType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoNodeDatasetType</span></code></a></p></td>
+<td><p>Generic enumeration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.RemoteDatasetType" title="geonode.harvesting.harvesters.geonodeharvester.RemoteDatasetType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RemoteDatasetType</span></code></a></p></td>
+<td><p>Generic enumeration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType" title="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoNodeResourceType</span></code></a></p></td>
+<td><p>Generic enumeration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceTypeCurrent" title="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceTypeCurrent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeoNodeResourceTypeCurrent</span></code></a></p></td>
+<td><p>Generic enumeration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeonodeCurrentHarvester</span></code></a></p></td>
+<td><p>A harvester for modern (v3.2+) GeoNode versions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeonodeLegacyHarvester</span></code></a></p></td>
+<td><p>A harvester for older (v &lt;= 3.2) GeoNode versions</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GeonodeUnifiedHarvesterWorker</span></code></a></p></td>
+<td><p>A harvester worker that is able to retrieve details from most GeoNode deployments.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.get_contact_descriptor" title="geonode.harvesting.harvesters.geonodeharvester.get_contact_descriptor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_contact_descriptor</span></code></a>(contact)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.get_identification_descriptor" title="geonode.harvesting.harvesters.geonodeharvester.get_identification_descriptor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_identification_descriptor</span></code></a>(csw_identification, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester._get_native_format" title="geonode.harvesting.harvesters.geonodeharvester._get_native_format"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_native_format</span></code></a>(→ Optional[str])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.get_spatial_extent_4326" title="geonode.harvesting.harvesters.geonodeharvester.get_spatial_extent_4326"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_spatial_extent_4326</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.get_spatial_extent_native" title="geonode.harvesting.harvesters.geonodeharvester.get_spatial_extent_native"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_spatial_extent_native</span></code></a>(api_record)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.get_temporal_extent" title="geonode.harvesting.harvesters.geonodeharvester.get_temporal_extent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_temporal_extent</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester._get_optional_attribute_value" title="geonode.harvesting.harvesters.geonodeharvester._get_optional_attribute_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_optional_attribute_value</span></code></a>(→ Optional[str])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester._get_extra_config_schema" title="geonode.harvesting.harvesters.geonodeharvester._get_extra_config_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_get_extra_config_schema</span></code></a>(→ Dict)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester._from_django_record" title="geonode.harvesting.harvesters.geonodeharvester._from_django_record"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_from_django_record</span></code></a>(target_class, record)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester._check_availability" title="geonode.harvesting.harvesters.geonodeharvester._check_availability"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_check_availability</span></code></a>(→ bool)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.logger">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeDatasetType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">GeoNodeDatasetType</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeDatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeDatasetType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Generic enumeration.</p>
+<p>Derive from this class to define new enumerations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeDatasetType.VECTOR">
+<span class="sig-name descname"><span class="pre">VECTOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'vector'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeDatasetType.VECTOR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeDatasetType.VECTOR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeDatasetType.RASTER">
+<span class="sig-name descname"><span class="pre">RASTER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'raster'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeDatasetType.RASTER"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeDatasetType.RASTER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.RemoteDatasetType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">RemoteDatasetType</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#RemoteDatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.RemoteDatasetType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Generic enumeration.</p>
+<p>Derive from this class to define new enumerations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.RemoteDatasetType.VECTOR">
+<span class="sig-name descname"><span class="pre">VECTOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'shapefile'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#RemoteDatasetType.VECTOR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.RemoteDatasetType.VECTOR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.RemoteDatasetType.RASTER">
+<span class="sig-name descname"><span class="pre">RASTER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'geotiff'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#RemoteDatasetType.RASTER"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.RemoteDatasetType.RASTER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">GeoNodeResourceType</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeResourceType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Generic enumeration.</p>
+<p>Derive from this class to define new enumerations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType.DOCUMENT">
+<span class="sig-name descname"><span class="pre">DOCUMENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'documents'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeResourceType.DOCUMENT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType.DOCUMENT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType.DATASET">
+<span class="sig-name descname"><span class="pre">DATASET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'layers'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeResourceType.DATASET"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType.DATASET" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType.MAP">
+<span class="sig-name descname"><span class="pre">MAP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'maps'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeResourceType.MAP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType.MAP" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceTypeCurrent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">GeoNodeResourceTypeCurrent</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeResourceTypeCurrent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceTypeCurrent" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Generic enumeration.</p>
+<p>Derive from this class to define new enumerations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceTypeCurrent.DOCUMENT">
+<span class="sig-name descname"><span class="pre">DOCUMENT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'document'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeResourceTypeCurrent.DOCUMENT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceTypeCurrent.DOCUMENT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceTypeCurrent.DATASET">
+<span class="sig-name descname"><span class="pre">DATASET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'dataset'</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeoNodeResourceTypeCurrent.DATASET"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceTypeCurrent.DATASET" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">GeonodeCurrentHarvester</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvest_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvest_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_title_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keywords_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BaseHarvesterWorker" title="geonode.harvesting.harvesters.base.BaseHarvesterWorker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.harvesting.harvesters.base.BaseHarvesterWorker</span></code></a></p>
+<p>A harvester for modern (v3.2+) GeoNode versions.</p>
+<p>GeoNode versions above 3.2 introduced the concept of <cite>datasets</cite> to replace the older
+<cite>layers</cite> concept. The API also has some significative differences.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.harvest_documents">
+<span class="sig-name descname"><span class="pre">harvest_documents</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.harvest_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.harvest_documents" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.harvest_datasets">
+<span class="sig-name descname"><span class="pre">harvest_datasets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.harvest_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.harvest_datasets" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.harvest_maps">
+<span class="sig-name descname"><span class="pre">harvest_maps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.harvest_maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.harvest_maps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.copy_documents">
+<span class="sig-name descname"><span class="pre">copy_documents</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.copy_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.copy_documents" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.copy_datasets">
+<span class="sig-name descname"><span class="pre">copy_datasets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.copy_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.copy_datasets" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.resource_title_filter">
+<span class="sig-name descname"><span class="pre">resource_title_filter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.resource_title_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.resource_title_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.start_date_filter">
+<span class="sig-name descname"><span class="pre">start_date_filter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.start_date_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.start_date_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.end_date_filter">
+<span class="sig-name descname"><span class="pre">end_date_filter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.end_date_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.end_date_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.keywords_filter">
+<span class="sig-name descname"><span class="pre">keywords_filter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.keywords_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.keywords_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.categories_filter">
+<span class="sig-name descname"><span class="pre">categories_filter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.categories_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.categories_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.http_session">
+<span class="sig-name descname"><span class="pre">http_session</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">requests.Session</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.http_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.http_session" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.page_size">
+<span class="sig-name descname"><span class="pre">page_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.page_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.page_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.remote_url">
+<span class="sig-name descname"><span class="pre">remote_url</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.remote_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.remote_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.base_api_url">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_api_url</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.base_api_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.base_api_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.allows_copying_resources">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">allows_copying_resources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.allows_copying_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.allows_copying_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.from_django_record">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_django_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.Harvester" title="geonode.harvesting.models.Harvester"><span class="pre">geonode.harvesting.models.Harvester</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.from_django_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.from_django_record" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_extra_config_schema">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_extra_config_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.get_extra_config_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_extra_config_schema" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_num_available_resources">
+<span class="sig-name descname"><span class="pre">get_num_available_resources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.get_num_available_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_num_available_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.list_resources">
+<span class="sig-name descname"><span class="pre">list_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BriefRemoteResource" title="geonode.harvesting.harvesters.base.BriefRemoteResource"><span class="pre">geonode.harvesting.harvesters.base.BriefRemoteResource</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.list_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.list_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.check_availability">
+<span class="sig-name descname"><span class="pre">check_availability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.check_availability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.check_availability" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_geonode_resource_type">
+<span class="sig-name descname"><span class="pre">get_geonode_resource_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remote_resource_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../layers/models/index.html#geonode.layers.models.Dataset" title="geonode.layers.models.Dataset"><span class="pre">geonode.layers.models.Dataset</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../../../documents/models/index.html#geonode.documents.models.Document" title="geonode.documents.models.Document"><span class="pre">geonode.documents.models.Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.get_geonode_resource_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_geonode_resource_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_resource">
+<span class="sig-name descname"><span class="pre">get_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.HarvestedResourceInfo" title="geonode.harvesting.harvesters.base.HarvestedResourceInfo"><span class="pre">geonode.harvesting.harvesters.base.HarvestedResourceInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.get_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.should_copy_resource">
+<span class="sig-name descname"><span class="pre">should_copy_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.should_copy_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.should_copy_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_geonode_resource_defaults">
+<span class="sig-name descname"><span class="pre">get_geonode_resource_defaults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvested_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.HarvestedResourceInfo" title="geonode.harvesting.harvesters.base.HarvestedResourceInfo"><span class="pre">geonode.harvesting.harvesters.base.HarvestedResourceInfo</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester.get_geonode_resource_defaults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester.get_geonode_resource_defaults" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_contact_descriptor">
+<span class="sig-name descname"><span class="pre">_get_contact_descriptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">role</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contact_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester._get_contact_descriptor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_contact_descriptor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_related_name">
+<span class="sig-name descname"><span class="pre">_get_related_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contact_details</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester._get_related_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_related_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_document_link_info">
+<span class="sig-name descname"><span class="pre">_get_document_link_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester._get_document_link_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_document_link_info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_dataset_link_info">
+<span class="sig-name descname"><span class="pre">_get_dataset_link_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">django.contrib.gis.geos.Polygon</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester._get_dataset_link_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_dataset_link_info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_resource_link_info">
+<span class="sig-name descname"><span class="pre">_get_resource_link_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_resource_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">django.contrib.gis.geos.Polygon</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester._get_resource_link_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_resource_link_info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_resource_descriptor">
+<span class="sig-name descname"><span class="pre">_get_resource_descriptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_resource_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../resourcedescriptor/index.html#geonode.harvesting.resourcedescriptor.RecordDescription" title="geonode.harvesting.resourcedescriptor.RecordDescription"><span class="pre">geonode.harvesting.resourcedescriptor.RecordDescription</span></a></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester._get_resource_descriptor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_resource_descriptor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_resource_list_params">
+<span class="sig-name descname"><span class="pre">_get_resource_list_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeCurrentHarvester._get_resource_list_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester._get_resource_list_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">GeonodeLegacyHarvester</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvest_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvest_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_title_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keywords_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BaseHarvesterWorker" title="geonode.harvesting.harvesters.base.BaseHarvesterWorker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.harvesting.harvesters.base.BaseHarvesterWorker</span></code></a></p>
+<p>A harvester for older (v &lt;= 3.2) GeoNode versions</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.harvest_documents">
+<span class="sig-name descname"><span class="pre">harvest_documents</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.harvest_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.harvest_documents" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.harvest_datasets">
+<span class="sig-name descname"><span class="pre">harvest_datasets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.harvest_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.harvest_datasets" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.harvest_maps">
+<span class="sig-name descname"><span class="pre">harvest_maps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.harvest_maps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.harvest_maps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.copy_documents">
+<span class="sig-name descname"><span class="pre">copy_documents</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.copy_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.copy_documents" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.copy_datasets">
+<span class="sig-name descname"><span class="pre">copy_datasets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.copy_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.copy_datasets" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.resource_title_filter">
+<span class="sig-name descname"><span class="pre">resource_title_filter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.resource_title_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.resource_title_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.http_session">
+<span class="sig-name descname"><span class="pre">http_session</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">requests.Session</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.http_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.http_session" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.page_size">
+<span class="sig-name descname"><span class="pre">page_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.page_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.page_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.remote_url">
+<span class="sig-name descname"><span class="pre">remote_url</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.remote_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.remote_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.start_date_filter">
+<span class="sig-name descname"><span class="pre">start_date_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.start_date_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.start_date_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.end_date_filter">
+<span class="sig-name descname"><span class="pre">end_date_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.end_date_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.end_date_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.keywords_filter">
+<span class="sig-name descname"><span class="pre">keywords_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.keywords_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.keywords_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.categories_filter">
+<span class="sig-name descname"><span class="pre">categories_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.categories_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.categories_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.base_api_url">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_api_url</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.base_api_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.base_api_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.allows_copying_resources">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">allows_copying_resources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.allows_copying_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.allows_copying_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.from_django_record">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_django_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.Harvester" title="geonode.harvesting.models.Harvester"><span class="pre">geonode.harvesting.models.Harvester</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.from_django_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.from_django_record" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_extra_config_schema">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_extra_config_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.get_extra_config_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_extra_config_schema" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_num_available_resources">
+<span class="sig-name descname"><span class="pre">get_num_available_resources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.get_num_available_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_num_available_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.list_resources">
+<span class="sig-name descname"><span class="pre">list_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BriefRemoteResource" title="geonode.harvesting.harvesters.base.BriefRemoteResource"><span class="pre">geonode.harvesting.harvesters.base.BriefRemoteResource</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.list_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.list_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.check_availability">
+<span class="sig-name descname"><span class="pre">check_availability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.check_availability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.check_availability" title="Link to this definition"></a></dt>
+<dd><p>Check whether the remote GeoNode is online.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_geonode_resource_type">
+<span class="sig-name descname"><span class="pre">get_geonode_resource_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remote_resource_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../layers/models/index.html#geonode.layers.models.Dataset" title="geonode.layers.models.Dataset"><span class="pre">geonode.layers.models.Dataset</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../../../documents/models/index.html#geonode.documents.models.Document" title="geonode.documents.models.Document"><span class="pre">geonode.documents.models.Document</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../../../maps/models/index.html#geonode.maps.models.Map" title="geonode.maps.models.Map"><span class="pre">geonode.maps.models.Map</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.get_geonode_resource_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_geonode_resource_type" title="Link to this definition"></a></dt>
+<dd><p>Return resource type class from resource type string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_resource">
+<span class="sig-name descname"><span class="pre">get_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.HarvestedResourceInfo" title="geonode.harvesting.harvesters.base.HarvestedResourceInfo"><span class="pre">geonode.harvesting.harvesters.base.HarvestedResourceInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.get_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.should_copy_resource">
+<span class="sig-name descname"><span class="pre">should_copy_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.should_copy_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.should_copy_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_geonode_resource_defaults">
+<span class="sig-name descname"><span class="pre">get_geonode_resource_defaults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvested_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.HarvestedResourceInfo" title="geonode.harvesting.harvesters.base.HarvestedResourceInfo"><span class="pre">geonode.harvesting.harvesters.base.HarvestedResourceInfo</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.get_geonode_resource_defaults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_geonode_resource_defaults" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_num_available_resources_by_type">
+<span class="sig-name descname"><span class="pre">_get_num_available_resources_by_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType" title="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType"><span class="pre">GeoNodeResourceType</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._get_num_available_resources_by_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_num_available_resources_by_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._list_document_resources">
+<span class="sig-name descname"><span class="pre">_list_document_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BriefRemoteResource" title="geonode.harvesting.harvesters.base.BriefRemoteResource"><span class="pre">geonode.harvesting.harvesters.base.BriefRemoteResource</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._list_document_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._list_document_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._list_dataset_resources">
+<span class="sig-name descname"><span class="pre">_list_dataset_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BriefRemoteResource" title="geonode.harvesting.harvesters.base.BriefRemoteResource"><span class="pre">geonode.harvesting.harvesters.base.BriefRemoteResource</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._list_dataset_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._list_dataset_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._list_map_resources">
+<span class="sig-name descname"><span class="pre">_list_map_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BriefRemoteResource" title="geonode.harvesting.harvesters.base.BriefRemoteResource"><span class="pre">geonode.harvesting.harvesters.base.BriefRemoteResource</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._list_map_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._list_map_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._list_resources_by_type">
+<span class="sig-name descname"><span class="pre">_list_resources_by_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType" title="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType"><span class="pre">GeoNodeResourceType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BriefRemoteResource" title="geonode.harvesting.harvesters.base.BriefRemoteResource"><span class="pre">geonode.harvesting.harvesters.base.BriefRemoteResource</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._list_resources_by_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._list_resources_by_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._extract_unique_identifier">
+<span class="sig-name descname"><span class="pre">_extract_unique_identifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_remote_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._extract_unique_identifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._extract_unique_identifier" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_resource_details">
+<span class="sig-name descname"><span class="pre">_get_resource_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../resourcedescriptor/index.html#geonode.harvesting.resourcedescriptor.RecordDescription" title="geonode.harvesting.resourcedescriptor.RecordDescription"><span class="pre">geonode.harvesting.resourcedescriptor.RecordDescription</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._get_resource_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_resource_details" title="Link to this definition"></a></dt>
+<dd><p>Produce a record description from the response provided by the remote GeoNode.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_resource_list_params">
+<span class="sig-name descname"><span class="pre">_get_resource_list_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._get_resource_list_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_resource_list_params" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_total_records">
+<span class="sig-name descname"><span class="pre">_get_total_records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType" title="geonode.harvesting.harvesters.geonodeharvester.GeoNodeResourceType"><span class="pre">GeoNodeResourceType</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._get_total_records"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_total_records" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_resource_descriptor">
+<span class="sig-name descname"><span class="pre">_get_resource_descriptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csw_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lxml.etree.Element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../resourcedescriptor/index.html#geonode.harvesting.resourcedescriptor.RecordDescription" title="geonode.harvesting.resourcedescriptor.RecordDescription"><span class="pre">geonode.harvesting.resourcedescriptor.RecordDescription</span></a></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._get_resource_descriptor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_resource_descriptor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_dataset_additional_parameters">
+<span class="sig-name descname"><span class="pre">_get_dataset_additional_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descriptor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../resourcedescriptor/index.html#geonode.harvesting.resourcedescriptor.RecordDescription" title="geonode.harvesting.resourcedescriptor.RecordDescription"><span class="pre">geonode.harvesting.resourcedescriptor.RecordDescription</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._get_dataset_additional_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_dataset_additional_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_document_additional_parameters">
+<span class="sig-name descname"><span class="pre">_get_document_additional_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descriptor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../resourcedescriptor/index.html#geonode.harvesting.resourcedescriptor.RecordDescription" title="geonode.harvesting.resourcedescriptor.RecordDescription"><span class="pre">geonode.harvesting.resourcedescriptor.RecordDescription</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._get_document_additional_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_document_additional_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_map_additional_parameters">
+<span class="sig-name descname"><span class="pre">_get_map_additional_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descriptor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../resourcedescriptor/index.html#geonode.harvesting.resourcedescriptor.RecordDescription" title="geonode.harvesting.resourcedescriptor.RecordDescription"><span class="pre">geonode.harvesting.resourcedescriptor.RecordDescription</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._get_map_additional_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._get_map_additional_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_distribution_info">
+<span class="sig-name descname"><span class="pre">get_distribution_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csw_distribution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lxml.etree.Element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">identification_descriptor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../resourcedescriptor/index.html#geonode.harvesting.resourcedescriptor.RecordIdentification" title="geonode.harvesting.resourcedescriptor.RecordIdentification"><span class="pre">geonode.harvesting.resourcedescriptor.RecordIdentification</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../resourcedescriptor/index.html#geonode.harvesting.resourcedescriptor.RecordDistribution" title="geonode.harvesting.resourcedescriptor.RecordDistribution"><span class="pre">geonode.harvesting.resourcedescriptor.RecordDistribution</span></a></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester.get_distribution_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester.get_distribution_info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._retrieve_thumbnail_url">
+<span class="sig-name descname"><span class="pre">_retrieve_thumbnail_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeLegacyHarvester._retrieve_thumbnail_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester._retrieve_thumbnail_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">GeonodeUnifiedHarvesterWorker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvest_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvest_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_datasets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_documents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resource_title_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_date_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_date_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keywords_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BaseHarvesterWorker" title="geonode.harvesting.harvesters.base.BaseHarvesterWorker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">geonode.harvesting.harvesters.base.BaseHarvesterWorker</span></code></a></p>
+<p>A harvester worker that is able to retrieve details from most GeoNode deployments.</p>
+<p>This harvester type relies on the <cite>GeonodeCurrentHarvester</cite> and <cite>GeonodeLegacyHarvester</cite> for most
+operations. It simply determines which concrete harvester to use based on the remote’s response
+for the availability check and then uses it.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker._concrete_harvester_worker">
+<span class="sig-name descname"><span class="pre">_concrete_harvester_worker</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester"><span class="pre">GeonodeCurrentHarvester</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester"><span class="pre">GeonodeLegacyHarvester</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker._concrete_harvester_worker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker._concrete_harvester_worker" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.remote_url">
+<span class="sig-name descname"><span class="pre">remote_url</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.remote_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.remote_url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.http_session">
+<span class="sig-name descname"><span class="pre">http_session</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.http_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.http_session" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.harvest_documents">
+<span class="sig-name descname"><span class="pre">harvest_documents</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.harvest_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.harvest_documents" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.harvest_datasets">
+<span class="sig-name descname"><span class="pre">harvest_datasets</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.harvest_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.harvest_datasets" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.copy_datasets">
+<span class="sig-name descname"><span class="pre">copy_datasets</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.copy_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.copy_datasets" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.copy_documents">
+<span class="sig-name descname"><span class="pre">copy_documents</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.copy_documents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.copy_documents" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.resource_title_filter">
+<span class="sig-name descname"><span class="pre">resource_title_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.resource_title_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.resource_title_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.start_date_filter">
+<span class="sig-name descname"><span class="pre">start_date_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.start_date_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.start_date_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.end_date_filter">
+<span class="sig-name descname"><span class="pre">end_date_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.end_date_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.end_date_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.keywords_filter">
+<span class="sig-name descname"><span class="pre">keywords_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.keywords_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.keywords_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.categories_filter">
+<span class="sig-name descname"><span class="pre">categories_filter</span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.categories_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.categories_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.concrete_worker">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">concrete_worker</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester"><span class="pre">GeonodeCurrentHarvester</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester"><span class="pre">GeonodeLegacyHarvester</span></a></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.concrete_worker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.concrete_worker" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.allows_copying_resources">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">allows_copying_resources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.allows_copying_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.allows_copying_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.from_django_record">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_django_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.Harvester" title="geonode.harvesting.models.Harvester"><span class="pre">geonode.harvesting.models.Harvester</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.from_django_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.from_django_record" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_extra_config_schema">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_extra_config_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.get_extra_config_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_extra_config_schema" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_num_available_resources">
+<span class="sig-name descname"><span class="pre">get_num_available_resources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.get_num_available_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_num_available_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.list_resources">
+<span class="sig-name descname"><span class="pre">list_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.BriefRemoteResource" title="geonode.harvesting.harvesters.base.BriefRemoteResource"><span class="pre">geonode.harvesting.harvesters.base.BriefRemoteResource</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.list_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.list_resources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.check_availability">
+<span class="sig-name descname"><span class="pre">check_availability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.check_availability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.check_availability" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_geonode_resource_type">
+<span class="sig-name descname"><span class="pre">get_geonode_resource_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">remote_resource_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../layers/models/index.html#geonode.layers.models.Dataset" title="geonode.layers.models.Dataset"><span class="pre">geonode.layers.models.Dataset</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../../../documents/models/index.html#geonode.documents.models.Document" title="geonode.documents.models.Document"><span class="pre">geonode.documents.models.Document</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.get_geonode_resource_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_geonode_resource_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_resource">
+<span class="sig-name descname"><span class="pre">get_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.HarvestedResourceInfo" title="geonode.harvesting.harvesters.base.HarvestedResourceInfo"><span class="pre">geonode.harvesting.harvesters.base.HarvestedResourceInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.get_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.should_copy_resource">
+<span class="sig-name descname"><span class="pre">should_copy_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.should_copy_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.should_copy_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_geonode_resource_defaults">
+<span class="sig-name descname"><span class="pre">get_geonode_resource_defaults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">harvested_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../base/index.html#geonode.harvesting.harvesters.base.HarvestedResourceInfo" title="geonode.harvesting.harvesters.base.HarvestedResourceInfo"><span class="pre">geonode.harvesting.harvesters.base.HarvestedResourceInfo</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">harvestable_resource</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.HarvestableResource" title="geonode.harvesting.models.HarvestableResource"><span class="pre">geonode.harvesting.models.HarvestableResource</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker.get_geonode_resource_defaults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker.get_geonode_resource_defaults" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker._get_concrete_worker">
+<span class="sig-name descname"><span class="pre">_get_concrete_worker</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeCurrentHarvester"><span class="pre">GeonodeCurrentHarvester</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester" title="geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester"><span class="pre">GeonodeLegacyHarvester</span></a></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#GeonodeUnifiedHarvesterWorker._get_concrete_worker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker._get_concrete_worker" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.get_contact_descriptor">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">get_contact_descriptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contact</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lxml.etree.Element</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#get_contact_descriptor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.get_contact_descriptor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.get_identification_descriptor">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">get_identification_descriptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csw_identification</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lxml.etree.Element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#get_identification_descriptor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.get_identification_descriptor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester._get_native_format">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">_get_native_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csw_identification</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lxml.etree.Element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#_get_native_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester._get_native_format" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.get_spatial_extent_4326">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">get_spatial_extent_4326</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identification_el</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lxml.etree.Element</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">django.contrib.gis.geos.Polygon</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#get_spatial_extent_4326"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.get_spatial_extent_4326" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.get_spatial_extent_native">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">get_spatial_extent_native</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#get_spatial_extent_native"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.get_spatial_extent_native" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester.get_temporal_extent">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">get_temporal_extent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">identification_el</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lxml.etree.Element</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#get_temporal_extent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester.get_temporal_extent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester._get_optional_attribute_value">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">_get_optional_attribute_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">lxml.etree.Element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xpath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#_get_optional_attribute_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester._get_optional_attribute_value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester._get_extra_config_schema">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">_get_extra_config_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#_get_extra_config_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester._get_extra_config_schema" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester._from_django_record">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">_from_django_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../models/index.html#geonode.harvesting.models.Harvester" title="geonode.harvesting.models.Harvester"><span class="pre">geonode.harvesting.models.Harvester</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#_from_django_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester._from_django_record" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.harvesting.harvesters.geonodeharvester._check_availability">
+<span class="sig-prename descclassname"><span class="pre">geonode.harvesting.harvesters.geonodeharvester.</span></span><span class="sig-name descname"><span class="pre">_check_availability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">http_session</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload_key_to_check</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/geonode/harvesting/harvesters/geonodeharvester.html#_check_availability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.harvesting.harvesters.geonodeharvester._check_availability" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../base/index.html" class="btn btn-neutral float-left" title="geonode.harvesting.harvesters.base" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../wms/index.html" class="btn btn-neutral float-right" title="geonode.harvesting.harvesters.wms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

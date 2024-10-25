@@ -1,0 +1,113 @@
+geonode.security.middleware
+===========================
+
+.. py:module:: geonode.security.middleware
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.security.middleware.login_url
+   geonode.security.middleware.login_url
+   geonode.security.middleware.white_list_paths
+   geonode.security.middleware.white_list
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.security.middleware.LoginRequiredMiddleware
+   geonode.security.middleware.LoginFromApiKeyMiddleware
+   geonode.security.middleware.SessionControlMiddleware
+   geonode.security.middleware.AdminAllowedMiddleware
+
+
+Module Contents
+---------------
+
+.. py:data:: login_url
+
+.. py:data:: login_url
+
+.. py:data:: white_list_paths
+
+.. py:data:: white_list
+
+.. py:class:: LoginRequiredMiddleware(get_response)
+
+   Bases: :py:obj:`django.utils.deprecation.MiddlewareMixin`
+
+
+   Requires a user to be logged in to access any page that is not white-listed.
+
+   This middleware simply checks user property of a request, to determine whether the query is authenticated or not,
+   but since DRF assumes correlation between session authentication and presence of user property in the request,
+   an additional check was introduced in the middleware, to allow Basic authenticated requests without additional
+   middleware setting this property (otherwise, all DRF views configured with:
+   `authentication_classes = [SessionAuthentication,]`
+   would accept Basic authenticated requests (regardless of presence of `BasicAuthentication` in view's
+   authentication_classes).
+
+
+   .. py:attribute:: redirect_to
+
+
+   .. py:attribute:: get_response
+
+
+   .. py:method:: process_request(request)
+
+
+.. py:class:: LoginFromApiKeyMiddleware(get_response)
+
+   Bases: :py:obj:`django.utils.deprecation.MiddlewareMixin`
+
+
+   .. py:attribute:: get_response
+
+
+   .. py:method:: process_request(request)
+
+      If an api key is provided and validated, the user can access to the page even without the login
+      This middleware is deactivated by default, to activate it set ENABLE_APIKEY_LOGIN=True
+
+
+
+.. py:class:: SessionControlMiddleware(get_response)
+
+   Bases: :py:obj:`django.utils.deprecation.MiddlewareMixin`
+
+
+   Middleware that checks if session variables have been correctly set.
+
+
+   .. py:attribute:: redirect_to
+
+
+   .. py:attribute:: get_response
+
+
+   .. py:method:: process_request(request)
+
+
+   .. py:method:: do_logout(request)
+
+
+.. py:class:: AdminAllowedMiddleware(get_response)
+
+   Bases: :py:obj:`django.utils.deprecation.MiddlewareMixin`
+
+
+   Middleware that checks if admin is making requests from allowed IPs.
+
+
+   .. py:attribute:: get_response
+
+
+   .. py:method:: process_request(request)
+
+
