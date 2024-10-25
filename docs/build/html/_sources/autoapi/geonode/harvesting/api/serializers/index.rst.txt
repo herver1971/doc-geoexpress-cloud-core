@@ -1,0 +1,187 @@
+geonode.harvesting.api.serializers
+==================================
+
+.. py:module:: geonode.harvesting.api.serializers
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.harvesting.api.serializers.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.harvesting.api.serializers.CurrentUserDefault
+   geonode.harvesting.api.serializers.BriefHarvesterSerializer
+   geonode.harvesting.api.serializers.HarvesterSerializer
+   geonode.harvesting.api.serializers.BriefAsynchronousHarvestingSessionSerializer
+   geonode.harvesting.api.serializers.HarvestableResourceSerializer
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: CurrentUserDefault
+
+   .. py:attribute:: requires_context
+      :value: True
+
+
+
+   .. py:method:: __call__(serializer_field)
+
+
+.. py:class:: BriefHarvesterSerializer
+
+   Bases: :py:obj:`dynamic_rest.serializers.DynamicModelSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ('id', 'name', 'status', 'remote_url', 'remote_available', 'scheduling_enabled',...
+
+
+
+
+   .. py:attribute:: default_owner
+
+
+   .. py:attribute:: links
+
+
+   .. py:method:: get_links(obj)
+
+
+.. py:class:: HarvesterSerializer
+
+   Bases: :py:obj:`BriefHarvesterSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ('id', 'name', 'status', 'remote_url', 'remote_available', 'scheduling_enabled',...
+
+
+
+
+   .. py:method:: validate(data)
+
+      Perform object-level validation
+
+      In this method we implement validation of the following:
+
+      - Check that the worker configuration is valid for the current worker type.
+        This is done by validating the config against the worker's extra config
+        jsonschema (if it exists)
+      - Check that the client does not try to change the object's and worker config
+        at the same time, as that could lead to invalid internal state (for example,
+        if the worker config changes we need to regenerate the list of harvestable
+        resources before allowing a new harvesting session to take place).
+
+
+
+
+   .. py:method:: create(validated_data)
+
+
+   .. py:method:: update(instance: geonode.harvesting.models.Harvester, validated_data)
+
+      Update harvester and perform any required business logic as a side-effect.
+
+      Updating the harvester's `status` attribute triggers additional work:
+
+      - If `status` is set to
+        `models.Harvester.STATUS_UPDATING_HARVESTABLE_RESOURCES`, then we
+        proceed to refresh all harvestable resources related to the harvester
+
+      - If `status` is set to `models.Harvester.STATUS_PERFORM_HARVESTING`
+        then we proceed by starting a new harvesting session
+
+      - If `status` is set to `models.Harvester.STATUS_CHECKING_AVAILABILITY`
+        then we proceed to check the availability of the remote service
+
+      Note that it is not possible for an API client to set a status of
+      `models.Harvester.STATUS_READY`. This status is set internally.
+
+      Additional work can also be triggered when a change to the harvester worker
+      configuration is requested. In that case GeoNode must regenerate the list of
+      harvestable resources.
+
+      Also note that all of these additional work items are carried out
+      asynchronously via celery tasks.
+
+
+
+
+.. py:class:: BriefAsynchronousHarvestingSessionSerializer
+
+   Bases: :py:obj:`dynamic_rest.serializers.DynamicModelSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ('id', 'started', 'updated', 'ended', 'total_records_to_process', 'records_done')
+
+
+
+
+.. py:class:: HarvestableResourceSerializer
+
+   Bases: :py:obj:`dynamic_rest.serializers.DynamicModelSerializer`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ['unique_identifier', 'title', 'should_be_harvested', 'last_updated', 'status', 'remote_resource_type']
+
+
+
+      .. py:attribute:: read_only_fields
+         :value: ['title', 'last_updated', 'status', 'remote_resource_type']
+
+
+
+
+   .. py:method:: create(validated_data)
+
+
+   .. py:method:: to_internal_value(data)
+
+      Verbatim copy of the original drf `to_internal_value()` method.
+
+      This method replicates the implementation found on
+      `restframework.serializers.Serializer.to_internal_value` method because the
+      dynamic-rest package (which we are using, and which overrides the base
+      implementation) adds some custom stuff on top of it which depends on the input
+      data containing the instance's `id` property, which we are not requiring.
+
+      A HarvestableResource's `id` is an implementation detail that is not exposed
+      publicly. We rely on the instance's `unique_identifier` instead.
+
+
+
+

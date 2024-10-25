@@ -1,0 +1,407 @@
+geonode.tests.suite.runner
+==========================
+
+.. py:module:: geonode.tests.suite.runner
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.tests.suite.runner.WORKER_MAX
+   geonode.tests.suite.runner.WORKER_COUNT
+   geonode.tests.suite.runner.NOT_THREAD_SAFE
+   geonode.tests.suite.runner.PARENT_TIMEOUT
+   geonode.tests.suite.runner.WORKER_TIMEOUT
+   geonode.tests.suite.runner.logger
+   geonode.tests.suite.runner.null_file
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner
+   geonode.tests.suite.runner.BufferWritesDevice
+   geonode.tests.suite.runner.ParallelTestSuiteRunner
+   geonode.tests.suite.runner.DjangoParallelTestSuiteRunner
+   geonode.tests.suite.runner.DjangoParallelTestRunner
+   geonode.tests.suite.runner.TwistedParallelTestSuiteRunner
+   geonode.tests.suite.runner.TestResult
+   geonode.tests.suite.runner.NullTimeKeeper
+   geonode.tests.suite.runner.TimeKeeper
+
+
+Module Contents
+---------------
+
+.. py:data:: WORKER_MAX
+
+.. py:data:: WORKER_COUNT
+
+.. py:data:: NOT_THREAD_SAFE
+
+.. py:data:: PARENT_TIMEOUT
+
+.. py:data:: WORKER_TIMEOUT
+
+.. py:data:: logger
+
+.. py:data:: null_file
+
+.. py:class:: GeoNodeBaseSuiteDiscoverRunner(pattern=None, top_level=None, verbosity=1, interactive=True, failfast=True, keepdb=False, reverse=False, debug_mode=False, debug_sql=False, parallel=0, tags=None, exclude_tags=None, test_name_patterns=None, pdb=False, buffer=False, enable_faulthandler=True, timing=False, **kwargs)
+
+   Bases: :py:obj:`django.test.runner.DiscoverRunner`
+
+
+   .. py:attribute:: pattern
+
+
+   .. py:attribute:: top_level
+
+
+   .. py:attribute:: verbosity
+
+
+   .. py:attribute:: interactive
+
+
+   .. py:attribute:: failfast
+
+
+   .. py:attribute:: keepdb
+
+
+   .. py:attribute:: reverse
+
+
+   .. py:attribute:: debug_mode
+
+
+   .. py:attribute:: debug_sql
+
+
+   .. py:attribute:: parallel
+
+
+   .. py:attribute:: tags
+
+
+   .. py:attribute:: exclude_tags
+
+
+   .. py:attribute:: pdb
+
+
+   .. py:attribute:: buffer
+
+
+   .. py:attribute:: test_name_patterns
+      :value: None
+
+
+
+   .. py:attribute:: time_keeper
+
+
+.. py:class:: BufferWritesDevice
+
+   .. py:attribute:: _data
+      :value: []
+
+
+
+   .. py:method:: write(string)
+
+
+   .. py:method:: read()
+
+
+   .. py:method:: flush(*args, **kwargs)
+
+
+   .. py:method:: isatty()
+
+
+.. py:class:: ParallelTestSuiteRunner(pattern=None, top_level=None, verbosity=1, interactive=True, failfast=True, keepdb=False, reverse=False, debug_mode=False, debug_sql=False, parallel=0, tags=None, exclude_tags=None, **kwargs)
+
+   .. py:attribute:: pattern
+
+
+   .. py:attribute:: top_level
+
+
+   .. py:attribute:: verbosity
+
+
+   .. py:attribute:: interactive
+
+
+   .. py:attribute:: failfast
+
+
+   .. py:attribute:: keepdb
+
+
+   .. py:attribute:: reverse
+
+
+   .. py:attribute:: debug_mode
+
+
+   .. py:attribute:: debug_sql
+
+
+   .. py:attribute:: parallel
+
+
+   .. py:attribute:: tags
+
+
+   .. py:attribute:: exclude_tags
+
+
+   .. py:attribute:: _keyboard_interrupt_intercepted
+      :value: False
+
+
+
+   .. py:attribute:: _worker_max
+
+
+   .. py:attribute:: _worker_count
+
+
+   .. py:attribute:: _not_thread_safe
+
+
+   .. py:attribute:: _parent_timeout
+
+
+   .. py:attribute:: _worker_timeout
+
+
+   .. py:attribute:: _database_names
+
+
+   .. py:method:: _get_database_names()
+
+
+   .. py:method:: run_tests(test_labels, **kwargs)
+
+
+   .. py:method:: _run_tests(tests, **kwargs)
+
+
+   .. py:method:: _run_tests_worker(index, tests_queue, results_queue, stop_event)
+
+
+   .. py:method:: _pre_tests_func()
+
+
+   .. py:method:: _post_tests_func()
+
+
+   .. py:method:: _tests_func(worker_index)
+
+
+   .. py:method:: _print_result(result)
+
+
+   .. py:method:: _exit(start_time, end_time, failure_count, error_count)
+
+
+   .. py:method:: _group_by_app(test_labels)
+
+      Groups tests by an app. This helps to partition tests so they can be run
+      in separate worker processes.
+
+      @TODO: Better partitioning of tests based on the previous runs - measure
+      test suite run time and partition tests so we can spawn as much workers as
+      it makes sense to get the maximum performance benefits.
+
+
+
+   .. py:method:: _group_by_file(test_names)
+
+
+   .. py:method:: _create_worker_pool(pool_size, target_func, worker_args)
+
+
+   .. py:method:: log(string)
+
+
+.. py:class:: DjangoParallelTestSuiteRunner(pattern=None, top_level=None, verbosity=1, interactive=True, failfast=True, keepdb=False, reverse=False, debug_mode=False, debug_sql=False, parallel=0, tags=None, exclude_tags=None, **kwargs)
+
+   Bases: :py:obj:`ParallelTestSuiteRunner`, :py:obj:`django.test.runner.DiscoverRunner`
+
+
+   .. py:attribute:: pattern
+
+
+   .. py:attribute:: top_level
+
+
+   .. py:attribute:: verbosity
+
+
+   .. py:attribute:: interactive
+
+
+   .. py:attribute:: failfast
+
+
+   .. py:attribute:: keepdb
+
+
+   .. py:attribute:: reverse
+
+
+   .. py:attribute:: debug_mode
+
+
+   .. py:attribute:: debug_sql
+
+
+   .. py:attribute:: parallel
+
+
+   .. py:attribute:: tags
+
+
+   .. py:attribute:: exclude_tags
+
+
+   .. py:attribute:: _keyboard_interrupt_intercepted
+      :value: False
+
+
+
+   .. py:attribute:: _worker_max
+
+
+   .. py:attribute:: _worker_count
+
+
+   .. py:attribute:: _not_thread_safe
+
+
+   .. py:attribute:: _parent_timeout
+
+
+   .. py:attribute:: _worker_timeout
+
+
+   .. py:attribute:: _database_names
+
+
+   .. py:method:: run_tests(test_labels, extra_tests=None, **kwargs)
+
+
+   .. py:method:: run_suite(suite, **kwargs)
+
+
+   .. py:method:: setup_databases(**kwargs)
+
+
+   .. py:method:: dependency_ordered(test_databases, dependencies)
+
+      Reorder test_databases into an order that honors the dependencies
+      described in TEST[DEPENDENCIES].
+
+
+
+   .. py:method:: setup_databases_18(**kwargs)
+
+
+   .. py:method:: _tests_func(tests, worker_index)
+
+
+.. py:class:: DjangoParallelTestRunner(verbosity=2, failfast=True, **kwargs)
+
+   Bases: :py:obj:`django.test.runner.DiscoverRunner`
+
+
+   .. py:attribute:: stream
+
+
+.. py:class:: TwistedParallelTestSuiteRunner(config, verbosity=1, interactive=False, failfast=True, **kwargs)
+
+   Bases: :py:obj:`ParallelTestSuiteRunner`
+
+
+   .. py:attribute:: config
+
+
+   .. py:method:: run_tests(test_labels, extra_tests=None, **kwargs)
+
+
+   .. py:method:: run_suite()
+
+
+   .. py:method:: _tests_func(tests, worker_index)
+
+
+   .. py:method:: _make_runner(config, stream)
+
+
+.. py:class:: TestResult
+
+   .. py:attribute:: dots
+      :value: False
+
+
+
+   .. py:attribute:: errors
+      :value: None
+
+
+
+   .. py:attribute:: failures
+      :value: None
+
+
+
+   .. py:attribute:: exception
+      :value: None
+
+
+
+   .. py:attribute:: output
+      :value: None
+
+
+
+   .. py:method:: from_django_result(result_obj)
+
+
+   .. py:method:: from_trial_result(result_obj)
+
+
+   .. py:method:: from_exception(exception)
+
+
+   .. py:method:: _format_failures(failures)
+
+
+.. py:class:: NullTimeKeeper
+
+   .. py:method:: timed(name)
+
+
+   .. py:method:: print_results()
+
+
+.. py:class:: TimeKeeper
+
+   .. py:attribute:: records
+
+
+   .. py:method:: timed(name)
+
+
+   .. py:method:: print_results()
+
+

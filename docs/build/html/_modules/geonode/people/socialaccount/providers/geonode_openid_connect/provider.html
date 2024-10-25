@@ -1,0 +1,240 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.people.socialaccount.providers.geonode_openid_connect.provider &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../../../people.html">geonode.people</a></li>
+      <li class="breadcrumb-item active">geonode.people.socialaccount.providers.geonode_openid_connect.provider</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.people.socialaccount.providers.geonode_openid_connect.provider</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2023 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;Custom account providers for django-allauth.</span>
+
+<span class="sd">These are used in order to extend the default authorization provided by</span>
+<span class="sd">django-allauth.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.utils.module_loading</span> <span class="kn">import</span> <span class="n">import_string</span>
+
+<span class="kn">from</span> <span class="nn">allauth.account.models</span> <span class="kn">import</span> <span class="n">EmailAddress</span>
+<span class="kn">from</span> <span class="nn">allauth.socialaccount.providers.base</span> <span class="kn">import</span> <span class="n">AuthAction</span><span class="p">,</span> <span class="n">ProviderAccount</span>
+<span class="kn">from</span> <span class="nn">allauth.socialaccount.providers.oauth2.provider</span> <span class="kn">import</span> <span class="n">OAuth2Provider</span>
+
+<div class="viewcode-block" id="PROVIDER_ID">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.PROVIDER_ID">[docs]</a>
+<span class="n">PROVIDER_ID</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_OIDC_PROVIDER&quot;</span><span class="p">,</span> <span class="s2">&quot;geonode_openid_connect&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectProviderAccount">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProviderAccount">[docs]</a>
+<span class="k">class</span> <span class="nc">GenericOpenIDConnectProviderAccount</span><span class="p">(</span><span class="n">ProviderAccount</span><span class="p">):</span>
+<div class="viewcode-block" id="GenericOpenIDConnectProviderAccount.to_str">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProviderAccount.to_str">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dflt</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">GenericOpenIDConnectProviderAccount</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">to_str</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">extra_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">dflt</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectProvider">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider">[docs]</a>
+<span class="k">class</span> <span class="nc">GenericOpenIDConnectProvider</span><span class="p">(</span><span class="n">OAuth2Provider</span><span class="p">):</span>
+<div class="viewcode-block" id="GenericOpenIDConnectProvider.id">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider.id">[docs]</a>
+    <span class="nb">id</span> <span class="o">=</span> <span class="s2">&quot;geonode_openid_connect&quot;</span></div>
+
+<div class="viewcode-block" id="GenericOpenIDConnectProvider.name">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;GeoNode OpenIDConnect&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericOpenIDConnectProvider.account_class">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider.account_class">[docs]</a>
+    <span class="n">account_class</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;ACCOUNT_CLASS&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProviderAccount&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectProvider.get_default_scope">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider.get_default_scope">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_default_scope</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">scope</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SCOPE&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scope</span></div>
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectProvider.get_auth_params">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider.get_auth_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_auth_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">GenericOpenIDConnectProvider</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_auth_params</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="n">AuthAction</span><span class="o">.</span><span class="n">REAUTHENTICATE</span><span class="p">:</span>
+            <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AUTH_PARAMS&quot;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prompt&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectProvider.extract_uid">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider.extract_uid">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_uid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">_uid_field</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;UID_FIELD&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_uid_field</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_uid_field</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uid&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sub&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectProvider.extract_common_fields">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider.extract_common_fields">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_common_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">_common_fields</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;SOCIALACCOUNT_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PROVIDER_ID</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;COMMON_FIELDS&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">__common_fields_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">_common_field</span> <span class="ow">in</span> <span class="n">_common_fields</span><span class="p">:</span>
+            <span class="n">__common_fields_data</span><span class="p">[</span><span class="n">_common_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_common_fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_common_field</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">__common_fields_data</span></div>
+
+
+<div class="viewcode-block" id="GenericOpenIDConnectProvider.extract_email_addresses">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.GenericOpenIDConnectProvider.extract_email_addresses">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract_email_addresses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">addresses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">email</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">email</span><span class="p">:</span>
+            <span class="n">addresses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">EmailAddress</span><span class="p">(</span>
+                    <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span>
+                    <span class="n">verified</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;email_verified&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+                    <span class="n">primary</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">addresses</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="provider_classes">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/people/socialaccount/providers/geonode_openid_connect/provider/index.html#geonode.people.socialaccount.providers.geonode_openid_connect.provider.provider_classes">[docs]</a>
+<span class="n">provider_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">GenericOpenIDConnectProvider</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

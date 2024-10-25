@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.harvesting.api.views &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../harvesting.html">geonode.harvesting</a></li>
+      <li class="breadcrumb-item active">geonode.harvesting.api.views</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.harvesting.api.views</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">rest_framework.permissions</span>
+
+<span class="kn">from</span> <span class="nn">dynamic_rest.viewsets</span> <span class="kn">import</span> <span class="n">DynamicModelViewSet</span><span class="p">,</span> <span class="n">WithDynamicViewSetMixin</span>
+<span class="kn">from</span> <span class="nn">rest_framework.authentication</span> <span class="kn">import</span> <span class="n">BasicAuthentication</span><span class="p">,</span> <span class="n">SessionAuthentication</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">mixins</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">viewsets</span>
+<span class="kn">from</span> <span class="nn">rest_framework_extensions.mixins</span> <span class="kn">import</span> <span class="n">NestedViewSetMixin</span>
+<span class="kn">from</span> <span class="nn">oauth2_provider.contrib.rest_framework</span> <span class="kn">import</span> <span class="n">OAuth2Authentication</span>
+<span class="kn">from</span> <span class="nn">geonode.base.api.pagination</span> <span class="kn">import</span> <span class="n">GeoNodeApiPagination</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">.mixins</span> <span class="kn">import</span> <span class="n">UpdateListModelMixin</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="IsAdminOrListOnly">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.IsAdminOrListOnly">[docs]</a>
+<span class="k">class</span> <span class="nc">IsAdminOrListOnly</span><span class="p">(</span><span class="n">rest_framework</span><span class="o">.</span><span class="n">permissions</span><span class="o">.</span><span class="n">BasePermission</span><span class="p">):</span>
+<div class="viewcode-block" id="IsAdminOrListOnly.has_permission">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.IsAdminOrListOnly.has_permission">[docs]</a>
+    <span class="k">def</span> <span class="nf">has_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">view</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">view</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;list&quot;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HarvesterViewSet">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvesterViewSet">[docs]</a>
+<span class="k">class</span> <span class="nc">HarvesterViewSet</span><span class="p">(</span><span class="n">NestedViewSetMixin</span><span class="p">,</span> <span class="n">DynamicModelViewSet</span><span class="p">):</span>
+<div class="viewcode-block" id="HarvesterViewSet.authentication_classes">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvesterViewSet.authentication_classes">[docs]</a>
+    <span class="n">authentication_classes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">BasicAuthentication</span><span class="p">,</span>
+        <span class="n">SessionAuthentication</span><span class="p">,</span>
+        <span class="n">OAuth2Authentication</span><span class="p">,</span>
+    <span class="p">]</span></div>
+
+<div class="viewcode-block" id="HarvesterViewSet.permission_classes">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvesterViewSet.permission_classes">[docs]</a>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">IsAdminOrListOnly</span><span class="p">,</span>
+    <span class="p">]</span></div>
+
+<div class="viewcode-block" id="HarvesterViewSet.queryset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvesterViewSet.queryset">[docs]</a>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="HarvesterViewSet.serializer_class">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvesterViewSet.serializer_class">[docs]</a>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span></div>
+
+<div class="viewcode-block" id="HarvesterViewSet.pagination_class">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvesterViewSet.pagination_class">[docs]</a>
+    <span class="n">pagination_class</span> <span class="o">=</span> <span class="n">GeoNodeApiPagination</span></div>
+
+
+<div class="viewcode-block" id="HarvesterViewSet.get_serializer_class">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvesterViewSet.get_serializer_class">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_serializer_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">==</span> <span class="s2">&quot;list&quot;</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BriefHarvesterSerializer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HarvestableResourceViewSet">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvestableResourceViewSet">[docs]</a>
+<span class="k">class</span> <span class="nc">HarvestableResourceViewSet</span><span class="p">(</span>
+    <span class="n">UpdateListModelMixin</span><span class="p">,</span>
+    <span class="n">NestedViewSetMixin</span><span class="p">,</span>
+    <span class="n">WithDynamicViewSetMixin</span><span class="p">,</span>
+    <span class="n">mixins</span><span class="o">.</span><span class="n">ListModelMixin</span><span class="p">,</span>
+    <span class="n">viewsets</span><span class="o">.</span><span class="n">GenericViewSet</span><span class="p">,</span>
+<span class="p">):</span>
+<div class="viewcode-block" id="HarvestableResourceViewSet.queryset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvestableResourceViewSet.queryset">[docs]</a>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceViewSet.pagination_class">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvestableResourceViewSet.pagination_class">[docs]</a>
+    <span class="n">pagination_class</span> <span class="o">=</span> <span class="n">GeoNodeApiPagination</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceViewSet.serializer_class">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvestableResourceViewSet.serializer_class">[docs]</a>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvestableResourceSerializer</span></div>
+
+
+<div class="viewcode-block" id="HarvestableResourceViewSet.get_serializer_context">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.HarvestableResourceViewSet.get_serializer_context">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_serializer_context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_serializer_context</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;serializer_context: </span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;self.request: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;harvester_id&quot;</span><span class="p">])</span>
+        <span class="n">context</span><span class="p">[</span><span class="s2">&quot;harvester&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">harvester</span>
+        <span class="k">return</span> <span class="n">context</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionViewSet">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.AsynchronousHarvestingSessionViewSet">[docs]</a>
+<span class="k">class</span> <span class="nc">AsynchronousHarvestingSessionViewSet</span><span class="p">(</span><span class="n">WithDynamicViewSetMixin</span><span class="p">,</span> <span class="n">viewsets</span><span class="o">.</span><span class="n">ReadOnlyModelViewSet</span><span class="p">):</span>
+<div class="viewcode-block" id="AsynchronousHarvestingSessionViewSet.queryset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.AsynchronousHarvestingSessionViewSet.queryset">[docs]</a>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionViewSet.serializer_class">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.AsynchronousHarvestingSessionViewSet.serializer_class">[docs]</a>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BriefAsynchronousHarvestingSessionSerializer</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionViewSet.pagination_class">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/api/views/index.html#geonode.harvesting.api.views.AsynchronousHarvestingSessionViewSet.pagination_class">[docs]</a>
+    <span class="n">pagination_class</span> <span class="o">=</span> <span class="n">GeoNodeApiPagination</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
