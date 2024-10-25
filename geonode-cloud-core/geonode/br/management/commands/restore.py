@@ -514,7 +514,7 @@ class Command(BaseCommand):
 
     def validate_backup_file_hash(self, backup_file: str) -> str:
         """
-        Method calculating the hash of the backup file and validating it if the proper *.md5 file exists in the backup_file directory.
+        Method calculating the hash of the backup file and validating it if the proper \*.md5 file exists in the backup_file directory.
 
         :param backup_file: path to the backup_file
         :return: backup_file hash
