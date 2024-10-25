@@ -163,7 +163,7 @@ def has_perm_or_basicauth(perm, realm=""):
 
     @logged_in_or_basicauth('asforums.view_forumcollection')
     def your_view:
-        ...
+    ...
 
     """
 
