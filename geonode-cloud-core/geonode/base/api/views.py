@@ -1219,7 +1219,7 @@ class ResourceBaseViewSet(DynamicModelViewSet):
 
         OUTPUT:
 
-        .. code-block:: json
+        .. code-block:: yaml
 
             {
                 "user": "admin",
