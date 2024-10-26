@@ -1,0 +1,1089 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.tests.suite.runner &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+      <li class="breadcrumb-item active">geonode.tests.suite.runner</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.tests.suite.runner</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">import</span> <span class="nn">faulthandler</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Event</span>
+<span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Empty</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Collection</span>
+
+<span class="kn">from</span> <span class="nn">twisted.scripts.trial</span> <span class="kn">import</span> <span class="n">Options</span><span class="p">,</span> <span class="n">_getSuite</span>
+<span class="kn">from</span> <span class="nn">twisted.trial.runner</span> <span class="kn">import</span> <span class="n">TrialRunner</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<span class="kn">from</span> <span class="nn">django.test.runner</span> <span class="kn">import</span> <span class="n">DiscoverRunner</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">connections</span><span class="p">,</span> <span class="n">DEFAULT_DB_ALIAS</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ImproperlyConfigured</span>
+
+<span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">setup_test_db</span>
+
+<span class="c1"># &quot;auto&quot; - one worker per Django application</span>
+<span class="c1"># &quot;cpu&quot; - one worker per process core</span>
+<div class="viewcode-block" id="WORKER_MAX">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.WORKER_MAX">[docs]</a>
+<span class="n">WORKER_MAX</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;TEST_RUNNER_WORKER_MAX&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WORKER_COUNT">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.WORKER_COUNT">[docs]</a>
+<span class="n">WORKER_COUNT</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;TEST_RUNNER_WORKER_COUNT&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NOT_THREAD_SAFE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.NOT_THREAD_SAFE">[docs]</a>
+<span class="n">NOT_THREAD_SAFE</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;TEST_RUNNER_NOT_THREAD_SAFE&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PARENT_TIMEOUT">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.PARENT_TIMEOUT">[docs]</a>
+<span class="n">PARENT_TIMEOUT</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;TEST_RUNNER_PARENT_TIMEOUT&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WORKER_TIMEOUT">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.WORKER_TIMEOUT">[docs]</a>
+<span class="n">WORKER_TIMEOUT</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;TEST_RUNNER_WORKER_TIMEOUT&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span></div>
+
+
+<span class="c1"># amqplib spits out a lot of log messages which just add a lot of noise.</span>
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="null_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.null_file">[docs]</a>
+<span class="n">null_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/dev/null&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner">[docs]</a>
+<span class="k">class</span> <span class="nc">GeoNodeBaseSuiteDiscoverRunner</span><span class="p">(</span><span class="n">DiscoverRunner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">top_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">failfast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">keepdb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">debug_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">debug_sql</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">parallel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">test_name_patterns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pdb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">buffer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">enable_faulthandler</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">timing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.pattern">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.pattern">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.top_level">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.top_level">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_level</span> <span class="o">=</span> <span class="n">top_level</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.verbosity">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.verbosity">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.interactive">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.interactive">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span> <span class="o">=</span> <span class="n">interactive</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.failfast">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.failfast">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failfast</span> <span class="o">=</span> <span class="n">failfast</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.keepdb">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.keepdb">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keepdb</span> <span class="o">=</span> <span class="n">keepdb</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.reverse">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.reverse">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span> <span class="o">=</span> <span class="n">reverse</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.debug_mode">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.debug_mode">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_mode</span> <span class="o">=</span> <span class="n">debug_mode</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.debug_sql">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.debug_sql">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_sql</span> <span class="o">=</span> <span class="n">debug_sql</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.parallel">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.parallel">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="n">parallel</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.tags">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.tags">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tags</span> <span class="ow">or</span> <span class="p">[])</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.exclude_tags">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.exclude_tags">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">exclude_tags</span> <span class="ow">or</span> <span class="p">[])</span></div>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">faulthandler</span><span class="o">.</span><span class="n">is_enabled</span><span class="p">()</span> <span class="ow">and</span> <span class="n">enable_faulthandler</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">faulthandler</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="n">io</span><span class="o">.</span><span class="n">UnsupportedOperation</span><span class="p">):</span>
+                <span class="n">faulthandler</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">__stderr__</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.pdb">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.pdb">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span> <span class="o">=</span> <span class="n">pdb</span></div>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdb</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You cannot use --pdb with parallel tests; pass --parallel=1 to use it.&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.buffer">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.buffer">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">buffer</span></div>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You cannot use -b/--buffer with parallel tests; pass &quot;</span> <span class="s2">&quot;--parallel=1 to use it.&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.test_name_patterns">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.test_name_patterns">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_name_patterns</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="GeoNodeBaseSuiteDiscoverRunner.time_keeper">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.GeoNodeBaseSuiteDiscoverRunner.time_keeper">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_keeper</span> <span class="o">=</span> <span class="n">TimeKeeper</span><span class="p">()</span> <span class="k">if</span> <span class="n">timing</span> <span class="k">else</span> <span class="n">NullTimeKeeper</span><span class="p">()</span></div>
+
+        <span class="k">if</span> <span class="n">test_name_patterns</span><span class="p">:</span>
+            <span class="c1"># unittest does not export the _convert_select_pattern function</span>
+            <span class="c1"># that converts command-line arguments to patterns.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">test_name_patterns</span> <span class="o">=</span> <span class="p">{</span><span class="n">pattern</span> <span class="k">if</span> <span class="s2">&quot;*&quot;</span> <span class="ow">in</span> <span class="n">pattern</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;*</span><span class="si">{</span><span class="n">pattern</span><span class="si">}</span><span class="s2">*&quot;</span> <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">test_name_patterns</span><span class="p">}</span></div>
+
+
+
+<div class="viewcode-block" id="BufferWritesDevice">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.BufferWritesDevice">[docs]</a>
+<span class="k">class</span> <span class="nc">BufferWritesDevice</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BufferWritesDevice._data">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.BufferWritesDevice._data">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="BufferWritesDevice.write">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.BufferWritesDevice.write">[docs]</a>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">string</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BufferWritesDevice.read">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.BufferWritesDevice.read">[docs]</a>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BufferWritesDevice.flush">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.BufferWritesDevice.flush">[docs]</a>
+    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="BufferWritesDevice.isatty">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.BufferWritesDevice.isatty">[docs]</a>
+    <span class="k">def</span> <span class="nf">isatty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<span class="c1"># Redirect stdout to /dev/null because we don&#39;t want to see all the repeated</span>
+<span class="c1"># &quot;database creation&quot; logging statements from all the workers.</span>
+<span class="c1"># All the test output is printed to stderr to this is not problematic.</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">null_file</span>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner">[docs]</a>
+<span class="k">class</span> <span class="nc">ParallelTestSuiteRunner</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">top_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">failfast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">keepdb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">debug_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">debug_sql</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">parallel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<div class="viewcode-block" id="ParallelTestSuiteRunner.pattern">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.pattern">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.top_level">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.top_level">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_level</span> <span class="o">=</span> <span class="n">top_level</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.verbosity">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.verbosity">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.interactive">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.interactive">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span> <span class="o">=</span> <span class="n">interactive</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.failfast">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.failfast">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failfast</span> <span class="o">=</span> <span class="n">failfast</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.keepdb">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.keepdb">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keepdb</span> <span class="o">=</span> <span class="n">keepdb</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.reverse">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.reverse">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span> <span class="o">=</span> <span class="n">reverse</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.debug_mode">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.debug_mode">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_mode</span> <span class="o">=</span> <span class="n">debug_mode</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.debug_sql">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.debug_sql">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_sql</span> <span class="o">=</span> <span class="n">debug_sql</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.parallel">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.parallel">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="n">parallel</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.tags">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.tags">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tags</span> <span class="ow">or</span> <span class="p">[])</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.exclude_tags">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.exclude_tags">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">exclude_tags</span> <span class="ow">or</span> <span class="p">[])</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._keyboard_interrupt_intercepted">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._keyboard_interrupt_intercepted">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keyboard_interrupt_intercepted</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._worker_max">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._worker_max">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker_max</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;worker_max&quot;</span><span class="p">,</span> <span class="n">WORKER_MAX</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._worker_count">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._worker_count">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker_count</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;worker_count&quot;</span><span class="p">,</span> <span class="n">WORKER_COUNT</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._not_thread_safe">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._not_thread_safe">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_not_thread_safe</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;not_thread_safe&quot;</span><span class="p">,</span> <span class="n">NOT_THREAD_SAFE</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._parent_timeout">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._parent_timeout">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent_timeout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;parent_timeout&quot;</span><span class="p">,</span> <span class="n">PARENT_TIMEOUT</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._worker_timeout">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._worker_timeout">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker_timeout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;worker_timeout&quot;</span><span class="p">,</span> <span class="n">WORKER_TIMEOUT</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._database_names">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._database_names">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_database_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_database_names</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._get_database_names">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._get_database_names">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_database_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">database_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="n">connections</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span>
+            <span class="n">database_name</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span>
+            <span class="n">database_names</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">database_name</span>
+        <span class="k">return</span> <span class="n">database_names</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.run_tests">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.run_tests">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_labels</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_tests</span><span class="p">(</span><span class="n">tests</span><span class="o">=</span><span class="n">test_labels</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._run_tests">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._run_tests">[docs]</a>
+    <span class="k">def</span> <span class="nf">_run_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># tests = dict where the key is a test group name and the value are</span>
+        <span class="c1"># the tests to run</span>
+        <span class="n">tests_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="n">results_queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="n">stop_event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
+
+        <span class="n">pending_tests</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">pending_not_thread_safe_tests</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">completed_tests</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">failures</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="c1"># First tun tests which are not thread safe in the main process</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_not_thread_safe</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tests</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">continue</span>
+
+            <span class="n">group_tests</span> <span class="o">=</span> <span class="n">tests</span><span class="p">[</span><span class="n">group</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">tests</span><span class="p">[</span><span class="n">group</span><span class="p">]</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running tests in a main process: </span><span class="si">{</span><span class="n">group_tests</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">pending_not_thread_safe_tests</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">group_tests</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tests_func</span><span class="p">(</span><span class="n">tests</span><span class="o">=</span><span class="n">group_tests</span><span class="p">,</span> <span class="n">worker_index</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">results_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">group</span><span class="p">,</span> <span class="n">result</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="n">tests</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">tests_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">group</span><span class="p">,</span> <span class="n">tests</span><span class="p">),</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">pending_tests</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">tests</span>
+
+        <span class="n">worker_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_worker_count</span>
+        <span class="k">if</span> <span class="n">worker_count</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+            <span class="n">worker_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pending_tests</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">worker_count</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+            <span class="n">worker_count</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">worker_count</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pending_tests</span><span class="p">):</span>
+            <span class="c1"># No need to spawn more workers then there are tests.</span>
+            <span class="n">worker_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pending_tests</span><span class="p">)</span>
+
+        <span class="n">worker_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_worker_max</span>
+        <span class="k">if</span> <span class="n">worker_max</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+            <span class="n">worker_max</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pending_tests</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">worker_max</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+            <span class="n">worker_max</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">worker_count</span> <span class="o">&gt;</span> <span class="n">worker_max</span><span class="p">:</span>
+            <span class="c1"># No need to spawn more workers then there are tests.</span>
+            <span class="n">worker_count</span> <span class="o">=</span> <span class="n">worker_max</span>
+
+        <span class="n">worker_args</span> <span class="o">=</span> <span class="p">(</span><span class="n">tests_queue</span><span class="p">,</span> <span class="n">results_queue</span><span class="p">,</span> <span class="n">stop_event</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of workers </span><span class="si">{</span><span class="n">worker_count</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="n">workers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_worker_pool</span><span class="p">(</span>
+            <span class="n">pool_size</span><span class="o">=</span><span class="n">worker_count</span><span class="p">,</span> <span class="n">target_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_tests_worker</span><span class="p">,</span> <span class="n">worker_args</span><span class="o">=</span><span class="n">worker_args</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">worker</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">workers</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Staring worker </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">workers</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">pending_tests</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">group</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="n">results_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_timeout</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">Empty</span>
+
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pending_not_thread_safe_tests</span><span class="p">:</span>
+                            <span class="n">pending_tests</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">pending_not_thread_safe_tests</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Got a result for unknown group: </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">completed_tests</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_print_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">failures</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
+                            <span class="n">failures</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">failures</span><span class="p">)</span>
+                            <span class="n">errors</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">failfast</span><span class="p">:</span>
+                                <span class="c1"># failfast is enabled, kill all the active workers</span>
+                                <span class="c1"># and stop</span>
+                                <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="n">workers</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="n">worker</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                                        <span class="n">worker</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                                <span class="k">break</span>
+                <span class="k">except</span> <span class="n">Empty</span><span class="p">:</span>
+                    <span class="n">worker_left</span> <span class="o">=</span> <span class="kc">False</span>
+
+                    <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="n">workers</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">worker</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                            <span class="n">worker_left</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="k">break</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">worker_left</span><span class="p">:</span>
+                        <span class="k">break</span>
+
+        <span class="c1"># We are done, signalize all the workers to stop</span>
+        <span class="n">stop_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exit</span><span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">failures</span><span class="p">,</span> <span class="n">errors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._run_tests_worker">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._run_tests_worker">[docs]</a>
+    <span class="k">def</span> <span class="nf">_run_tests_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">tests_queue</span><span class="p">,</span> <span class="n">results_queue</span><span class="p">,</span> <span class="n">stop_event</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">pop_item</span><span class="p">():</span>
+            <span class="n">group</span><span class="p">,</span> <span class="n">tests</span> <span class="o">=</span> <span class="n">tests_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_worker_timeout</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">group</span><span class="p">,</span> <span class="n">tests</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">pop_item</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">stop_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+                        <span class="c1"># We should stop</span>
+                        <span class="k">break</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Worker </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> is running tests </span><span class="si">{</span><span class="n">tests</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tests_func</span><span class="p">(</span><span class="n">tests</span><span class="o">=</span><span class="n">tests</span><span class="p">,</span> <span class="n">worker_index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+                        <span class="n">results_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">group</span><span class="p">,</span> <span class="n">result</span><span class="p">))</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Worker </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> has finished running tests </span><span class="si">{</span><span class="n">tests</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">,</span> <span class="ne">SystemExit</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">TwistedParallelTestSuiteRunner</span><span class="p">):</span>
+                            <span class="c1"># Twisted raises KeyboardInterrupt when the tests</span>
+                            <span class="c1"># have completed</span>
+                            <span class="k">pass</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running tests failed, reason: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="n">TestResult</span><span class="p">()</span><span class="o">.</span><span class="n">from_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                        <span class="n">results_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">group</span><span class="p">,</span> <span class="n">result</span><span class="p">))</span>
+            <span class="k">except</span> <span class="n">Empty</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Worker </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> timed out while waiting for tests to run&quot;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">tests_queue</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">results_queue</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Worker </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> is stopping&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._pre_tests_func">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._pre_tests_func">[docs]</a>
+    <span class="k">def</span> <span class="nf">_pre_tests_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># This method gets called before _tests_func is called</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._post_tests_func">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._post_tests_func">[docs]</a>
+    <span class="k">def</span> <span class="nf">_post_tests_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># This method gets called after _tests_func has completed and _print_result</span>
+        <span class="c1"># function is called</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._tests_func">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._tests_func">[docs]</a>
+    <span class="k">def</span> <span class="nf">_tests_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">worker_index</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;_tests_func not implements&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._print_result">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._print_result">[docs]</a>
+    <span class="k">def</span> <span class="nf">_print_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._exit">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._exit">[docs]</a>
+    <span class="k">def</span> <span class="nf">_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">failure_count</span><span class="p">,</span> <span class="n">error_count</span><span class="p">):</span>
+        <span class="n">time_difference</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total run time: </span><span class="si">{</span><span class="n">time_difference</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">failure_count</span> <span class="o">+</span> <span class="n">error_count</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._group_by_app">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._group_by_app">[docs]</a>
+    <span class="k">def</span> <span class="nf">_group_by_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_labels</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Groups tests by an app. This helps to partition tests so they can be run</span>
+<span class="sd">        in separate worker processes.</span>
+
+<span class="sd">        @TODO: Better partitioning of tests based on the previous runs - measure</span>
+<span class="sd">        test suite run time and partition tests so we can spawn as much workers as</span>
+<span class="sd">        it makes sense to get the maximum performance benefits.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tests</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">test_label</span> <span class="ow">in</span> <span class="n">test_labels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">test_label</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+                <span class="n">app</span> <span class="o">=</span> <span class="n">test_label</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">app</span> <span class="o">=</span> <span class="n">test_label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">test_label</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+                <span class="n">tests</span><span class="p">[</span><span class="n">app</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">test_label</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tests</span><span class="p">[</span><span class="n">app</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_label</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tests</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._group_by_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._group_by_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">_group_by_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_names</span><span class="p">):</span>
+        <span class="n">tests</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">test_name</span> <span class="ow">in</span> <span class="n">test_names</span><span class="p">:</span>
+            <span class="n">tests</span><span class="p">[</span><span class="n">test_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_name</span>
+
+        <span class="k">return</span> <span class="n">tests</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner._create_worker_pool">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner._create_worker_pool">[docs]</a>
+    <span class="k">def</span> <span class="nf">_create_worker_pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool_size</span><span class="p">,</span> <span class="n">target_func</span><span class="p">,</span> <span class="n">worker_args</span><span class="p">):</span>
+        <span class="n">workers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pool_size</span><span class="p">):</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">index</span><span class="p">,)</span> <span class="o">+</span> <span class="n">worker_args</span>
+            <span class="n">worker</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target_func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+            <span class="n">workers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">workers</span></div>
+
+
+<div class="viewcode-block" id="ParallelTestSuiteRunner.log">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.ParallelTestSuiteRunner.log">[docs]</a>
+    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">string</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner">[docs]</a>
+<span class="k">class</span> <span class="nc">DjangoParallelTestSuiteRunner</span><span class="p">(</span><span class="n">ParallelTestSuiteRunner</span><span class="p">,</span> <span class="n">DiscoverRunner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pattern</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">top_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">interactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">failfast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">keepdb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">debug_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">debug_sql</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">parallel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">exclude_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.pattern">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.pattern">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.top_level">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.top_level">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_level</span> <span class="o">=</span> <span class="n">top_level</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.verbosity">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.verbosity">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.interactive">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.interactive">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span> <span class="o">=</span> <span class="n">interactive</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.failfast">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.failfast">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failfast</span> <span class="o">=</span> <span class="n">failfast</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.keepdb">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.keepdb">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keepdb</span> <span class="o">=</span> <span class="n">keepdb</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.reverse">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.reverse">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span> <span class="o">=</span> <span class="n">reverse</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.debug_mode">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.debug_mode">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_mode</span> <span class="o">=</span> <span class="n">debug_mode</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.debug_sql">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.debug_sql">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_sql</span> <span class="o">=</span> <span class="n">debug_sql</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.parallel">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.parallel">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallel</span> <span class="o">=</span> <span class="n">parallel</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.tags">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.tags">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tags</span> <span class="ow">or</span> <span class="p">[])</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.exclude_tags">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.exclude_tags">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude_tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">exclude_tags</span> <span class="ow">or</span> <span class="p">[])</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner._keyboard_interrupt_intercepted">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner._keyboard_interrupt_intercepted">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keyboard_interrupt_intercepted</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner._worker_max">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner._worker_max">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker_max</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;worker_max&quot;</span><span class="p">,</span> <span class="n">WORKER_MAX</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner._worker_count">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner._worker_count">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker_count</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;worker_count&quot;</span><span class="p">,</span> <span class="n">WORKER_COUNT</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner._not_thread_safe">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner._not_thread_safe">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_not_thread_safe</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;not_thread_safe&quot;</span><span class="p">,</span> <span class="n">NOT_THREAD_SAFE</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner._parent_timeout">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner._parent_timeout">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent_timeout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;parent_timeout&quot;</span><span class="p">,</span> <span class="n">PARENT_TIMEOUT</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner._worker_timeout">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner._worker_timeout">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_worker_timeout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;worker_timeout&quot;</span><span class="p">,</span> <span class="n">WORKER_TIMEOUT</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner._database_names">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner._database_names">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_database_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_database_names</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.run_tests">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.run_tests">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_labels</span><span class="p">,</span> <span class="n">extra_tests</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">app_tests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_group_by_app</span><span class="p">(</span><span class="n">test_labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_tests</span><span class="p">(</span><span class="n">tests</span><span class="o">=</span><span class="n">app_tests</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.run_suite">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.run_suite">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_suite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suite</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DjangoParallelTestRunner</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span><span class="p">,</span> <span class="n">failfast</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">failfast</span><span class="p">)</span><span class="o">.</span><span class="n">run_suite</span><span class="p">(</span><span class="n">suite</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.setup_databases">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.setup_databases">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_databases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup_databases_18</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.dependency_ordered">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.dependency_ordered">[docs]</a>
+    <span class="k">def</span> <span class="nf">dependency_ordered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_databases</span><span class="p">,</span> <span class="n">dependencies</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reorder test_databases into an order that honors the dependencies</span>
+<span class="sd">        described in TEST[DEPENDENCIES].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ordered_test_databases</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">resolved_databases</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="c1"># Maps db signature to dependencies of all its aliases</span>
+        <span class="n">dependencies_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Check that no database depends on its own alias</span>
+        <span class="k">for</span> <span class="n">sig</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">aliases</span><span class="p">)</span> <span class="ow">in</span> <span class="n">test_databases</span><span class="p">:</span>
+            <span class="n">all_deps</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">aliases</span><span class="p">:</span>
+                <span class="n">all_deps</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dependencies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_deps</span><span class="o">.</span><span class="n">isdisjoint</span><span class="p">(</span><span class="n">aliases</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">ImproperlyConfigured</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Circular dependency: databases </span><span class="si">{</span><span class="n">aliases</span><span class="si">!r}</span><span class="s2"> depend on each other, but are aliases.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">dependencies_map</span><span class="p">[</span><span class="n">sig</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_deps</span>
+
+        <span class="k">while</span> <span class="n">test_databases</span><span class="p">:</span>
+            <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">deferred</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># Try to find a DB that has all its dependencies met</span>
+            <span class="k">for</span> <span class="n">signature</span><span class="p">,</span> <span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">aliases</span><span class="p">)</span> <span class="ow">in</span> <span class="n">test_databases</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dependencies_map</span><span class="p">[</span><span class="n">signature</span><span class="p">]</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">resolved_databases</span><span class="p">):</span>
+                    <span class="n">resolved_databases</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">aliases</span><span class="p">)</span>
+                    <span class="n">ordered_test_databases</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">signature</span><span class="p">,</span> <span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">aliases</span><span class="p">)))</span>
+                    <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">deferred</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">signature</span><span class="p">,</span> <span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">aliases</span><span class="p">)))</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">changed</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ImproperlyConfigured</span><span class="p">(</span><span class="s2">&quot;Circular dependency in TEST[DEPENDENCIES]&quot;</span><span class="p">)</span>
+            <span class="n">test_databases</span> <span class="o">=</span> <span class="n">deferred</span>
+        <span class="k">return</span> <span class="n">ordered_test_databases</span></div>
+
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner.setup_databases_18">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner.setup_databases_18">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_databases_18</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mirrored_aliases</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">test_databases</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">dependencies</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">worker_index</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;worker_index&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">connections</span><span class="p">:</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="n">connections</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span>
+            <span class="n">database_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;test_</span><span class="si">{</span><span class="n">worker_index</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s1">&#39;NAME&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;TEST_NAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">database_name</span>
+
+            <span class="n">item</span> <span class="o">=</span> <span class="n">test_databases</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">creation</span><span class="o">.</span><span class="n">test_db_signature</span><span class="p">(),</span> <span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">],</span> <span class="p">[])</span>
+            <span class="p">)</span>
+            <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alias</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">alias</span> <span class="o">!=</span> <span class="n">DEFAULT_DB_ALIAS</span><span class="p">:</span>
+                <span class="n">dependencies</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">settings_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TEST_DEPENDENCIES&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">DEFAULT_DB_ALIAS</span><span class="p">])</span>
+
+        <span class="n">old_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">mirrors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">signature</span><span class="p">,</span> <span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">aliases</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dependency_ordered</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">test_databases</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">dependencies</span><span class="p">):</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="n">connections</span><span class="p">[</span><span class="n">aliases</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="n">old_names</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">connection</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+            <span class="n">test_db_name</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">creation</span><span class="o">.</span><span class="n">create_test_db</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">autoclobber</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">alias</span> <span class="ow">in</span> <span class="n">aliases</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">connection</span> <span class="o">=</span> <span class="n">connections</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">db_name</span><span class="p">:</span>
+                    <span class="n">old_names</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">connection</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_db_name</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">old_names</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">connection</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">creation</span><span class="o">.</span><span class="n">create_test_db</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">autoclobber</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">alias</span><span class="p">,</span> <span class="n">mirror_alias</span> <span class="ow">in</span> <span class="n">mirrored_aliases</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">mirrors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">alias</span><span class="p">,</span> <span class="n">connections</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">]))</span>
+            <span class="n">connections</span><span class="p">[</span><span class="n">alias</span><span class="p">]</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">connections</span><span class="p">[</span><span class="n">mirror_alias</span><span class="p">]</span><span class="o">.</span><span class="n">settings_dict</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">old_names</span><span class="p">,</span> <span class="n">mirrors</span></div>
+
+
+<div class="viewcode-block" id="DjangoParallelTestSuiteRunner._tests_func">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestSuiteRunner._tests_func">[docs]</a>
+    <span class="k">def</span> <span class="nf">_tests_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">worker_index</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_test_environment</span><span class="p">()</span>
+        <span class="n">suite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_suite</span><span class="p">(</span><span class="n">tests</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">old_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup_databases</span><span class="p">(</span><span class="n">worker_index</span><span class="o">=</span><span class="n">worker_index</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_suite</span><span class="p">(</span><span class="n">suite</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teardown_databases</span><span class="p">(</span><span class="n">old_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teardown_test_environment</span><span class="p">()</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">TestResult</span><span class="p">()</span><span class="o">.</span><span class="n">from_django_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DjangoParallelTestRunner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestRunner">[docs]</a>
+<span class="k">class</span> <span class="nc">DjangoParallelTestRunner</span><span class="p">(</span><span class="n">DiscoverRunner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">failfast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="DjangoParallelTestRunner.stream">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.DjangoParallelTestRunner.stream">[docs]</a>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">BufferWritesDevice</span><span class="p">()</span></div>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span> <span class="n">failfast</span><span class="o">=</span><span class="n">failfast</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="TwistedParallelTestSuiteRunner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TwistedParallelTestSuiteRunner">[docs]</a>
+<span class="k">class</span> <span class="nc">TwistedParallelTestSuiteRunner</span><span class="p">(</span><span class="n">ParallelTestSuiteRunner</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">interactive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">failfast</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="TwistedParallelTestSuiteRunner.config">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TwistedParallelTestSuiteRunner.config">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span></div>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">verbosity</span><span class="p">,</span> <span class="n">interactive</span><span class="p">,</span> <span class="n">failfast</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TwistedParallelTestSuiteRunner.run_tests">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TwistedParallelTestSuiteRunner.run_tests">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_tests</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_labels</span><span class="p">,</span> <span class="n">extra_tests</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">app_tests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_group_by_app</span><span class="p">(</span><span class="n">test_labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_tests</span><span class="p">(</span><span class="n">tests</span><span class="o">=</span><span class="n">app_tests</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TwistedParallelTestSuiteRunner.run_suite">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TwistedParallelTestSuiteRunner.run_suite">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_suite</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># config = self.config</span>
+        <span class="n">tests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;tests&quot;</span><span class="p">]</span>
+
+        <span class="n">tests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_group_by_file</span><span class="p">(</span><span class="n">tests</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_tests</span><span class="p">(</span><span class="n">tests</span><span class="o">=</span><span class="n">tests</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TwistedParallelTestSuiteRunner._tests_func">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TwistedParallelTestSuiteRunner._tests_func">[docs]</a>
+    <span class="k">def</span> <span class="nf">_tests_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tests</span><span class="p">,</span> <span class="n">worker_index</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tests</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+            <span class="n">tests</span> <span class="o">=</span> <span class="p">[</span><span class="n">tests</span><span class="p">]</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;-e&quot;</span><span class="p">]</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tests</span><span class="p">)</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="n">Options</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">parseOptions</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">BufferWritesDevice</span><span class="p">()</span>
+        <span class="n">runner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_runner</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
+        <span class="n">suite</span> <span class="o">=</span> <span class="n">_getSuite</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">setup_test_db</span><span class="p">(</span><span class="n">worker_index</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">suite</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">TestResult</span><span class="p">()</span><span class="o">.</span><span class="n">from_trial_result</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="TwistedParallelTestSuiteRunner._make_runner">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TwistedParallelTestSuiteRunner._make_runner">[docs]</a>
+    <span class="k">def</span> <span class="nf">_make_runner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+        <span class="c1"># Based on twisted.scripts.trial._makeRunner</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;debug&quot;</span><span class="p">]:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">TrialRunner</span><span class="o">.</span><span class="n">DEBUG</span>
+        <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;dry-run&quot;</span><span class="p">]:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">TrialRunner</span><span class="o">.</span><span class="n">DRY_RUN</span>
+        <span class="k">return</span> <span class="n">TrialRunner</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;reporter&quot;</span><span class="p">],</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span>
+            <span class="n">profile</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;profile&quot;</span><span class="p">],</span>
+            <span class="n">logfile</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;logfile&quot;</span><span class="p">],</span>
+            <span class="n">tracebackFormat</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;tbformat&quot;</span><span class="p">],</span>
+            <span class="n">realTimeErrors</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;rterrors&quot;</span><span class="p">],</span>
+            <span class="n">uncleanWarnings</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;unclean-warnings&quot;</span><span class="p">],</span>
+            <span class="n">workingDirectory</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;temp-directory&quot;</span><span class="p">],</span>
+            <span class="n">forceGarbageCollection</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;force-gc&quot;</span><span class="p">],</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TestResult">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult">[docs]</a>
+<span class="k">class</span> <span class="nc">TestResult</span><span class="p">:</span>
+<div class="viewcode-block" id="TestResult.dots">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult.dots">[docs]</a>
+    <span class="n">dots</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="TestResult.errors">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult.errors">[docs]</a>
+    <span class="n">errors</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="TestResult.failures">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult.failures">[docs]</a>
+    <span class="n">failures</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="TestResult.exception">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult.exception">[docs]</a>
+    <span class="n">exception</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="TestResult.output">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult.output">[docs]</a>
+    <span class="n">output</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="TestResult.from_django_result">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult.from_django_result">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_django_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dots</span> <span class="o">=</span> <span class="n">result_obj</span><span class="o">.</span><span class="n">dots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="n">result_obj</span><span class="o">.</span><span class="n">errors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_failures</span><span class="p">(</span><span class="n">result_obj</span><span class="o">.</span><span class="n">failures</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">result_obj</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="TestResult.from_trial_result">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult.from_trial_result">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_trial_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result_obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_failures</span><span class="p">(</span><span class="n">result_obj</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failures</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_failures</span><span class="p">(</span><span class="n">result_obj</span><span class="o">.</span><span class="n">failures</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">result_obj</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="TestResult.from_exception">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult.from_exception">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="TestResult._format_failures">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TestResult._format_failures">[docs]</a>
+    <span class="k">def</span> <span class="nf">_format_failures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">failures</span><span class="p">):</span>
+        <span class="c1"># errors and failures attributes by default contain values which are not</span>
+        <span class="c1"># pickable (class instance)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">failures</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">failures</span>
+
+        <span class="n">formatted</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">failure</span> <span class="ow">in</span> <span class="n">failures</span><span class="p">:</span>
+            <span class="n">klass</span><span class="p">,</span> <span class="n">message</span> <span class="o">=</span> <span class="n">failure</span>
+            <span class="n">formatted</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">str</span><span class="p">(</span><span class="n">klass</span><span class="p">),</span> <span class="n">message</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">formatted</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NullTimeKeeper">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.NullTimeKeeper">[docs]</a>
+<span class="k">class</span> <span class="nc">NullTimeKeeper</span><span class="p">:</span>
+    <span class="nd">@contextmanager</span>
+<div class="viewcode-block" id="NullTimeKeeper.timed">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.NullTimeKeeper.timed">[docs]</a>
+    <span class="k">def</span> <span class="nf">timed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">yield</span></div>
+
+
+<div class="viewcode-block" id="NullTimeKeeper.print_results">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.NullTimeKeeper.print_results">[docs]</a>
+    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TimeKeeper">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TimeKeeper">[docs]</a>
+<span class="k">class</span> <span class="nc">TimeKeeper</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TimeKeeper.records">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TimeKeeper.records">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">records</span> <span class="o">=</span> <span class="n">Collection</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span></div>
+
+
+    <span class="nd">@contextmanager</span>
+<div class="viewcode-block" id="TimeKeeper.timed">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TimeKeeper.timed">[docs]</a>
+    <span class="k">def</span> <span class="nf">timed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end_time</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TimeKeeper.print_results">
+<a class="viewcode-back" href="../../../../autoapi/geonode/tests/suite/runner/index.html#geonode.tests.suite.runner.TimeKeeper.print_results">[docs]</a>
+    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">end_times</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">record_time</span> <span class="ow">in</span> <span class="n">end_times</span><span class="p">:</span>
+                <span class="n">record</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> took </span><span class="si">{</span><span class="n">record_time</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s&quot;</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">record</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">linesep</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

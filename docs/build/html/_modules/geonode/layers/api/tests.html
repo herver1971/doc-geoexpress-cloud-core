@@ -1,0 +1,942 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.layers.api.tests &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../layers.html">geonode.layers</a></li>
+      <li class="breadcrumb-item active">geonode.layers.api.tests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.layers.api.tests</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">patch</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urljoin</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">rest_framework.test</span> <span class="kn">import</span> <span class="n">APITestCase</span>
+
+<span class="kn">from</span> <span class="nn">guardian.shortcuts</span> <span class="kn">import</span> <span class="n">assign_perm</span><span class="p">,</span> <span class="n">get_anonymous_user</span>
+<span class="kn">from</span> <span class="nn">geonode.geoserver.createlayer.utils</span> <span class="kn">import</span> <span class="n">create_dataset</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">Link</span>
+<span class="kn">from</span> <span class="nn">geonode.base.populate_test_data</span> <span class="kn">import</span> <span class="n">create_models</span><span class="p">,</span> <span class="n">create_single_dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Attribute</span><span class="p">,</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.maps.models</span> <span class="kn">import</span> <span class="n">Map</span><span class="p">,</span> <span class="n">MapLayer</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DatasetsApiTests">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests">[docs]</a>
+<span class="k">class</span> <span class="nc">DatasetsApiTests</span><span class="p">(</span><span class="n">APITestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="DatasetsApiTests.fixtures">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.fixtures">[docs]</a>
+    <span class="n">fixtures</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;initial_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;group_test_data.json&quot;</span><span class="p">,</span> <span class="s2">&quot;default_oauth_apps.json&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.setUp">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exml_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">PROJECT_ROOT</span><span class="si">}</span><span class="s2">/base/fixtures/test_xml.xml&quot;</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;document&quot;</span><span class="p">)</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;map&quot;</span><span class="p">)</span>
+        <span class="n">create_models</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_datasets">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_datasets">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensure we can access the Layers list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-list&quot;</span><span class="p">)</span>
+        <span class="c1"># Anonymous</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;total&quot;</span><span class="p">],</span> <span class="mi">8</span><span class="p">)</span>
+
+        <span class="c1"># Pagination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;datasets&quot;</span><span class="p">]),</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_l</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;datasets&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">_l</span><span class="p">[</span><span class="s2">&quot;resource_type&quot;</span><span class="p">],</span> <span class="s2">&quot;dataset&quot;</span><span class="p">)</span>
+        <span class="c1"># Test list response doesn&#39;t have attribute_set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;datasets&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ptype&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;datasets&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;attribute_set&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;datasets&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">))</span>
+
+        <span class="n">_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">assign_perm</span><span class="p">(</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="n">get_anonymous_user</span><span class="p">(),</span> <span class="n">_dataset</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
+
+        <span class="c1"># Test detail response has attribute_set</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_dataset</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ptype&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subtype&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;attribute_set&quot;</span><span class="p">))</span>
+
+        <span class="c1"># Test &quot;featureinfo_custom_template&quot;</span>
+        <span class="n">_attribute</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Attribute</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">_dataset</span><span class="p">,</span> <span class="n">attribute</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_attribute</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">_attribute</span><span class="o">.</span><span class="n">attribute_type</span> <span class="o">=</span> <span class="n">Attribute</span><span class="o">.</span><span class="n">TYPE_PROPERTY</span>
+            <span class="n">_attribute</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;The Name&quot;</span>
+            <span class="n">_attribute</span><span class="o">.</span><span class="n">attribute_label</span> <span class="o">=</span> <span class="s2">&quot;Name&quot;</span>
+            <span class="n">_attribute</span><span class="o">.</span><span class="n">display_order</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">_attribute</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+            <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_dataset</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">),</span>
+                <span class="s1">&#39;&lt;div style=&quot;overflow-x:hidden&quot;&gt;&lt;div class=&quot;row&quot;&gt;&lt;div class=&quot;col-xs-6&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt;Name:&lt;/div&gt;</span><span class="se">\</span>
+<span class="s1">                             &lt;div class=&quot;col-xs-6&quot; style=&quot;word-wrap: break-word;&quot;&gt;$</span><span class="si">{properties[\&#39;name\&#39;]}</span><span class="s1">&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">featureinfo_custom_template</span> <span class="o">=</span> <span class="s2">&quot;&lt;div&gt;Foo Bar&lt;/div&gt;&quot;</span>
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_dataset</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">),</span>
+                <span class="s1">&#39;&lt;div style=&quot;overflow-x:hidden&quot;&gt;&lt;div class=&quot;row&quot;&gt;&lt;div class=&quot;col-xs-6&quot; style=&quot;font-weight: bold; word-wrap: break-word;&quot;&gt;Name:&lt;/div&gt;</span><span class="se">\</span>
+<span class="s1">                             &lt;div class=&quot;col-xs-6&quot; style=&quot;word-wrap: break-word;&quot;&gt;$</span><span class="si">{properties[\&#39;name\&#39;]}</span><span class="s1">&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">use_featureinfo_custom_template</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_dataset</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;featureinfo_custom_template&quot;</span><span class="p">),</span> <span class="s2">&quot;&lt;div&gt;Foo Bar&lt;/div&gt;&quot;</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">_attribute</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">featureinfo_custom_template</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">use_featureinfo_custom_template</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_extra_metadata_included_with_param">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_extra_metadata_included_with_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_extra_metadata_included_with_param</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_dataset</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;include[]&quot;</span><span class="p">:</span> <span class="s2">&quot;metadata&quot;</span><span class="p">}</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">))</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_get_dataset_related_maps_and_maplayers">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_get_dataset_related_maps_and_maplayers">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_get_dataset_related_maps_and_maplayers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">assign_perm</span><span class="p">(</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="n">get_anonymous_user</span><span class="p">(),</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">dataset</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">/maplayers&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">/maplayers&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">/maps&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="nb">map</span> <span class="o">=</span> <span class="n">Map</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">map_layer</span> <span class="o">=</span> <span class="n">MapLayer</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="nb">map</span><span class="o">=</span><span class="nb">map</span><span class="p">,</span>
+            <span class="n">extra_params</span><span class="o">=</span><span class="p">{},</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">alternate</span><span class="p">,</span>
+            <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">current_style</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">ows_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">/maplayers&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;pk&quot;</span><span class="p">],</span> <span class="n">map_layer</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">/maps&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;pk&quot;</span><span class="p">],</span> <span class="nb">map</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_raw_HTML_stripped_properties">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_raw_HTML_stripped_properties">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_raw_HTML_stripped_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensure &quot;raw_*&quot; properties returns no HTML or carriage-return tag</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">abstract</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;&lt;p&gt;&lt;em&gt;No abstract provided&lt;/em&gt;.&lt;/p&gt;</span><span class="se">\r\n</span><span class="s1">&lt;p&gt;&lt;img src=&quot;data:image/jpeg;base64,/9j/4AAQSkZJR/&gt;&#39;</span>
+        <span class="p">)</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">constraints_other</span> <span class="o">=</span> <span class="s1">&#39;&lt;p&gt;&lt;span style=&quot;text-decoration: underline;&quot;&gt;None&lt;/span&gt;&lt;/p&gt;&#39;</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">supplemental_information</span> <span class="o">=</span> <span class="s2">&quot;&lt;p&gt;No information provided &amp;iacute;&lt;/p&gt; &lt;p&gt;&amp;pound;682m&lt;/p&gt;&quot;</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">data_quality_statement</span> <span class="o">=</span> <span class="s1">&#39;&lt;p&gt;&lt;strong&gt;OK&lt;/strong&gt;&lt;/p&gt;</span><span class="se">\r\n</span><span class="s1">&lt;table style=&quot;border-collapse: collapse; width:</span><span class="se">\</span>
+<span class="s1">            85.2071%;&quot; border=&quot;1&quot;&gt;</span><span class="se">\r\n</span><span class="s1">&lt;tbody&gt;</span><span class="se">\r\n</span><span class="s1">&lt;tr&gt;</span><span class="se">\r\n</span><span class="s1">&lt;td style=&quot;width: 49.6528%;&quot;&gt;1&lt;/td&gt;</span><span class="se">\r\n</span><span class="s1">&lt;td style=&quot;width:</span><span class="se">\</span>
+<span class="s1">            50%;&quot;&gt;2&lt;/td&gt;</span><span class="se">\r\n</span><span class="s1">&lt;/tr&gt;</span><span class="se">\r\n</span><span class="s1">&lt;tr&gt;</span><span class="se">\r\n</span><span class="s1">&lt;td style=&quot;width: 49.6528%;&quot;&gt;a&lt;/td&gt;</span><span class="se">\r\n</span><span class="s1">&lt;td style=&quot;width: 50%;&quot;&gt;b&lt;/td&gt;</span><span class="se">\</span>
+<span class="s1">            </span><span class="se">\r\n</span><span class="s1">&lt;/tr&gt;</span><span class="se">\r\n</span><span class="s1">&lt;/tbody&gt;</span><span class="se">\r\n</span><span class="s1">&lt;/table&gt;&#39;</span>
+        <span class="n">dataset</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="c1"># Admin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">))</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">dataset</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">][</span><span class="s2">&quot;pk&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">pk</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">][</span><span class="s2">&quot;raw_abstract&quot;</span><span class="p">],</span> <span class="s2">&quot;No abstract provided.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">][</span><span class="s2">&quot;raw_constraints_other&quot;</span><span class="p">],</span> <span class="s2">&quot;None&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">][</span><span class="s2">&quot;raw_supplemental_information&quot;</span><span class="p">],</span> <span class="s2">&quot;No information provided í £682m&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">][</span><span class="s2">&quot;raw_data_quality_statement&quot;</span><span class="p">],</span> <span class="s2">&quot;OK    1 2   a b&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_layer_replace_anonymous_should_raise_error">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_layer_replace_anonymous_should_raise_error">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_layer_replace_anonymous_should_raise_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-dataset&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Authentication credentials were not provided.&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;not_authenticated&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertDictEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_layer_replace_should_redirect_for_not_accepted_method">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_layer_replace_should_redirect_for_not_accepted_method">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_layer_replace_should_redirect_for_not_accepted_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-dataset&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">405</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">405</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_layer_replace_should_raise_error_if_layer_does_not_exists">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_layer_replace_should_raise_error_if_layer_does_not_exists">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_layer_replace_should_raise_error_if_layer_does_not_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-dataset&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">999999999999999</span><span class="p">,))</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Layer with ID 999999999999999 is not available&quot;</span><span class="p">],</span> <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;not_found&quot;</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertDictEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_dataset_append_anonymous_should_raise_error">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_dataset_append_anonymous_should_raise_error">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_dataset_append_anonymous_should_raise_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-append-dataset&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Authentication credentials were not provided.&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;not_authenticated&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertDictEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_dataset_append_should_redirect_for_not_accepted_method">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_dataset_append_should_redirect_for_not_accepted_method">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_dataset_append_should_redirect_for_not_accepted_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-append-dataset&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">405</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">405</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_dataset_append_should_raise_error_if_layer_does_not_exists">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_dataset_append_should_raise_error_if_layer_does_not_exists">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_dataset_append_should_raise_error_if_layer_does_not_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-append-dataset&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">999999999999999</span><span class="p">,))</span>
+
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Layer with ID 999999999999999 is not available&quot;</span><span class="p">],</span> <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;not_found&quot;</span><span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertDictEqual</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span></div>
+
+
+    <span class="nd">@patch</span><span class="p">(</span><span class="s2">&quot;geonode.layers.api.views.validate_input_source&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="DatasetsApiTests.test_layer_replace_should_work">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_layer_replace_should_work">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_layer_replace_should_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_validate_input_source</span><span class="p">):</span>
+        <span class="n">_validate_input_source</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">admin</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;single_point&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            If the dataset already exists in the test env, we dont want that the test fail</span>
+<span class="sd">            so we rename it and then we will rollback the cnahge</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;single_point&quot;</span><span class="p">)</span>
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;single_point_2&quot;</span>
+            <span class="n">_dataset</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">layer</span> <span class="o">=</span> <span class="n">create_dataset</span><span class="p">(</span>
+                <span class="s2">&quot;single_point&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;single_point&quot;</span><span class="p">,</span>
+                <span class="n">admin</span><span class="p">,</span>
+                <span class="s2">&quot;Point&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;There is already a layer named&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="n">e</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">layer</span> <span class="o">=</span> <span class="n">create_single_dataset</span><span class="p">(</span><span class="s2">&quot;single_point&quot;</span><span class="p">)</span>
+
+        <span class="n">cnt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+        <span class="n">layer</span><span class="o">.</span><span class="n">refresh_from_db</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">alternate</span><span class="p">)</span>
+        <span class="c1"># renaming the file in the same way as the lasyer name</span>
+        <span class="c1"># the filename must be consiste with the layer name</span>
+
+        <span class="n">github_path</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/GeoNode/gisdata/tree/master/gisdata/data/good/vector/&quot;</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;store_spatial_files&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;base_file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">github_path</span><span class="si">}</span><span class="s2">/single_point.shp&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dbf_file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">github_path</span><span class="si">}</span><span class="s2">/single_point.dbf&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;shx_file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">github_path</span><span class="si">}</span><span class="s2">/single_point.shx&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;prj_file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">github_path</span><span class="si">}</span><span class="s2">/single_point.prj&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-dataset&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+
+        <span class="n">layer</span><span class="o">.</span><span class="n">refresh_from_db</span><span class="p">()</span>
+        <span class="c1"># evaluate that the number of available layer is not changed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="n">cnt</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_point_of_contact">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_point_of_contact">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_point_of_contact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;poc&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span><span class="n">user_id</span> <span class="ow">in</span> <span class="p">[</span><span class="n">poc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">poc</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;poc&quot;</span><span class="p">)]</span> <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all point of contact</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;poc&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">poc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">poc</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;poc&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_metadata_author">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_metadata_author">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_metadata_author</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;metadata_author&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">metadata_author</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">metadata_author</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata_author&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all metadata authors</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;metadata_author&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">metadata_author</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">metadata_author</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata_author&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_processor">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_processor">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;processor&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">in</span> <span class="p">[</span><span class="n">processor</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">processor</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;processor&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all processors</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;processor&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">processor</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">processor</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;processor&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_publisher">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_publisher">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_publisher</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;publisher&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">in</span> <span class="p">[</span><span class="n">publisher</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">publisher</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;publisher&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all publishers</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;publisher&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">publisher</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">publisher</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;publisher&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_custodian">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_custodian">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_custodian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;custodian&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">in</span> <span class="p">[</span><span class="n">custodian</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">custodian</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custodian&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all custodians</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;custodian&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">custodian</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">custodian</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;custodian&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_distributor">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_distributor">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_distributor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;distributor&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">in</span> <span class="p">[</span><span class="n">distributor</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">distributor</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;distributor&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all distributers</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;distributor&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">distributor</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">distributor</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;distributor&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_resource_user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_resource_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_resource_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;resource_user&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">in</span> <span class="p">[</span><span class="n">resource_user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">resource_user</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resource_user&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all resource users</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;resource_user&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">resource_user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">resource_user</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resource_user&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_resource_provider">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_resource_provider">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_resource_provider</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;resource_provider&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">resource_provider</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">resource_provider</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resource_provider&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all principal investigator</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;resource_provider&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">resource_provider</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">resource_provider</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resource_provider&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_originator">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_originator">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_originator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;originator&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">in</span> <span class="p">[</span><span class="n">originator</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">originator</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;originator&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all originators</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;originator&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">originator</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">originator</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;originator&quot;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_patch_principal_investigator">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_patch_principal_investigator">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_patch_principal_investigator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;datasets-list&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;ninja&quot;</span><span class="p">)</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;turtle&quot;</span><span class="p">)</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">]</span>
+        <span class="n">patch_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;principal_investigator&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">uid</span><span class="p">}</span> <span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">user_ids</span><span class="p">]}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">patch_data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">principal_investigator</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">principal_investigator</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;principal_investigator&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Resetting all principal investigator</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;principal_investigator&quot;</span><span class="p">:</span> <span class="p">[]},</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="nb">all</span><span class="p">(</span>
+                <span class="n">user_id</span>
+                <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">principal_investigator</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">principal_investigator</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;principal_investigator&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">user_id</span> <span class="ow">in</span> <span class="n">user_ids</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_metadata_update_for_not_supported_method">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_metadata_update_for_not_supported_method">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_metadata_update_for_not_supported_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-metadata&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">405</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">405</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_metadata_update_for_not_authorized_user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_metadata_update_for_not_authorized_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_metadata_update_for_not_authorized_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-metadata&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_unsupported_file_throws_error">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_unsupported_file_throws_error">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_unsupported_file_throws_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-metadata&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;invalid&gt;&lt;/invalid&gt;&#39;</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;metadata.xml&quot;</span>
+        <span class="n">put_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;metadata_file&quot;</span><span class="p">:</span> <span class="n">f</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">put_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_valid_metadata_file_with_different_uuid">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_valid_metadata_file_with_different_uuid">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_valid_metadata_file_with_different_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-metadata&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exml_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">put_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;metadata_file&quot;</span><span class="p">:</span> <span class="n">f</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">put_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_permissions_for_not_permitted_user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_permissions_for_not_permitted_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_permissions_for_not_permitted_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span>
+            <span class="n">username</span><span class="o">=</span><span class="s2">&quot;some_user&quot;</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="s2">&quot;some_password&quot;</span><span class="p">,</span>
+            <span class="n">email</span><span class="o">=</span><span class="s2">&quot;some_user@geonode.org&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-metadata&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;some_user&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;some_password&quot;</span><span class="p">)</span>
+
+        <span class="n">uuid</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exml_path</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;7cfbc42c-efa7-431c-8daa-1399dff4cd19&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;metadata.xml&quot;</span>
+        <span class="n">put_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;metadata_file&quot;</span><span class="p">:</span> <span class="n">f</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">put_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_permissions_for_permitted_user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_permissions_for_permitted_user">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_permissions_for_permitted_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">another_non_admin_user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span>
+            <span class="n">username</span><span class="o">=</span><span class="s2">&quot;some_other_user&quot;</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="s2">&quot;some_other_password&quot;</span><span class="p">,</span>
+            <span class="n">email</span><span class="o">=</span><span class="s2">&quot;some_other_user@geonode.org&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">assign_perm</span><span class="p">(</span><span class="s2">&quot;base.change_resourcebase_metadata&quot;</span><span class="p">,</span> <span class="n">another_non_admin_user</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-metadata&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;some_other_user&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;some_other_password&quot;</span><span class="p">)</span>
+
+        <span class="n">uuid</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exml_path</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;7cfbc42c-efa7-431c-8daa-1399dff4cd19&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;metadata.xml&quot;</span>
+        <span class="n">put_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;metadata_file&quot;</span><span class="p">:</span> <span class="n">f</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">put_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_valid_metadata_file">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_valid_metadata_file">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_valid_metadata_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-replace-metadata&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">id</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
+
+        <span class="n">uuid</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exml_path</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;7cfbc42c-efa7-431c-8daa-1399dff4cd19&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;metadata.xml&quot;</span>
+        <span class="n">put_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;metadata_file&quot;</span><span class="p">:</span> <span class="n">f</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">put_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatasetsApiTests.test_download_api">
+<a class="viewcode-back" href="../../../../autoapi/geonode/layers/api/tests/index.html#geonode.layers.api.tests.DatasetsApiTests.test_download_api">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_download_api</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">create_single_dataset</span><span class="p">(</span><span class="s2">&quot;test_dataset&quot;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;datasets-detail&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="n">dataset</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span>
+        <span class="n">download_url_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;download_urls&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">download_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;dataset_download&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">dataset</span><span class="o">.</span><span class="n">alternate</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">download_url_data</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">download_url_data</span><span class="p">[</span><span class="s2">&quot;ajax_safe&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">download_url_data</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">download_url</span><span class="p">)</span>
+
+        <span class="n">link</span> <span class="o">=</span> <span class="n">Link</span><span class="p">(</span><span class="n">link_type</span><span class="o">=</span><span class="s2">&quot;original&quot;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://myoriginal.org&quot;</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">link</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;dataset&quot;</span><span class="p">]</span>
+        <span class="n">download_url_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;download_urls&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">download_url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;dataset_download&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">dataset</span><span class="o">.</span><span class="n">alternate</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">download_url_data</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">],</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">download_url_data</span><span class="p">[</span><span class="s2">&quot;ajax_safe&quot;</span><span class="p">],</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">download_url_data</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="s2">&quot;https://myoriginal.org&quot;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

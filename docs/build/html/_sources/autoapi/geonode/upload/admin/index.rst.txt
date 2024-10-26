@@ -1,0 +1,93 @@
+geonode.upload.admin
+====================
+
+.. py:module:: geonode.upload.admin
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.upload.admin.UploadAdmin
+   geonode.upload.admin.UploadSizeLimitAdmin
+   geonode.upload.admin.UploadParallelismLimitAdmin
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.upload.admin.import_link
+
+
+Module Contents
+---------------
+
+.. py:function:: import_link(obj)
+
+.. py:class:: UploadAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+
+
+   .. py:attribute:: list_display_links
+      :value: ('id',)
+
+
+
+   .. py:attribute:: date_hierarchy
+      :value: 'date'
+
+
+
+   .. py:attribute:: list_filter
+      :value: ('name', 'resource', 'user', 'date', 'state')
+
+
+
+   .. py:attribute:: search_fields
+      :value: ('name', 'resource__title', 'user__username', 'date', 'state')
+
+
+
+   .. py:method:: delete_queryset(request, queryset)
+
+      We need to invoke the 'Upload.delete' method even when deleting
+      through the admin batch action
+
+
+
+.. py:class:: UploadSizeLimitAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('slug', 'description', 'max_size', 'max_size_label')
+
+
+
+   .. py:method:: has_delete_permission(request, obj=None)
+
+
+.. py:class:: UploadParallelismLimitAdmin
+
+   Bases: :py:obj:`django.contrib.admin.ModelAdmin`
+
+
+   .. py:attribute:: list_display
+      :value: ('slug', 'description', 'max_number')
+
+
+
+   .. py:method:: has_delete_permission(request, obj=None)
+
+
+   .. py:method:: has_add_permission(request)
+
+
