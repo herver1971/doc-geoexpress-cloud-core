@@ -1,0 +1,136 @@
+geonode.services.serviceprocessors.wms
+======================================
+
+.. py:module:: geonode.services.serviceprocessors.wms
+
+.. autoapi-nested-parse::
+
+   Utilities for enabling OGC WMS remote services in geonode.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.services.serviceprocessors.wms.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.services.serviceprocessors.wms.WmsServiceHandler
+   geonode.services.serviceprocessors.wms.GeoNodeServiceHandler
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: WmsServiceHandler(url, geonode_service_id=None)
+
+   Bases: :py:obj:`geonode.services.serviceprocessors.base.ServiceHandlerBase`, :py:obj:`geonode.services.serviceprocessors.base.CascadableServiceHandlerMixin`
+
+
+   Remote service handler for OGC WMS services
+
+
+   .. py:attribute:: service_type
+
+
+   .. py:attribute:: _parsed_service
+      :value: None
+
+
+
+   .. py:attribute:: indexing_method
+
+
+   .. py:attribute:: name
+
+
+   .. py:method:: get_cleaned_url_params(url)
+      :staticmethod:
+
+
+
+   .. py:property:: parsed_service
+
+
+   .. py:method:: probe()
+
+
+   .. py:method:: create_cascaded_store(service)
+
+
+   .. py:method:: create_geonode_service(owner, parent=None)
+
+      Create a new geonode.service.models.Service instance
+      :arg owner: The user who will own the service instance
+      :type owner: geonode.people.models.Profile
+
+
+
+
+   .. py:method:: get_keywords()
+
+
+   .. py:method:: _get_cascaded_dataset_fields(geoserver_resource)
+
+
+   .. py:method:: _get_indexed_dataset_fields(dataset_meta)
+
+
+   .. py:method:: _get_store(create=True)
+
+      Return the geoserver store associated with this service.
+
+      The store may optionally be created if it doesn't exist already.
+      Store is assumed to be (and created) named after the instance's name
+      and belongs to the default geonode workspace for cascaded layers.
+
+
+
+
+   .. py:method:: _import_cascaded_resource(service, dataset_meta)
+
+      Import a layer into geoserver in order to enable cascading.
+
+
+
+   .. py:method:: _offers_geonode_projection()
+
+
+.. py:class:: GeoNodeServiceHandler(url, geonode_service_id=None)
+
+   Bases: :py:obj:`WmsServiceHandler`
+
+
+   Remote service handler for OGC WMS services
+
+
+   .. py:attribute:: service_type
+
+
+   .. py:attribute:: indexing_method
+
+
+   .. py:attribute:: name
+
+
+   .. py:property:: parsed_service
+
+
+   .. py:method:: probe()
+
+
+   .. py:method:: get_harvester_configuration_options()
+
+
+   .. py:method:: ows_endpoint()
+
+

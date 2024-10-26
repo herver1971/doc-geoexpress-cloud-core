@@ -1,0 +1,440 @@
+geonode.base.forms
+==================
+
+.. py:module:: geonode.base.forms
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.base.forms.logger
+   geonode.base.forms.THESAURUS_RESULT_LIST_SEPERATOR
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.forms.AdvancedModelChoiceIterator
+   geonode.base.forms.CategoryChoiceField
+   geonode.base.forms.RegionsMultipleChoiceField
+   geonode.base.forms.RegionsSelect
+   geonode.base.forms.CategoryForm
+   geonode.base.forms.TKeywordForm
+   geonode.base.forms.ThesaurusAvailableForm
+   geonode.base.forms.ContactRoleMultipleChoiceField
+   geonode.base.forms.LinkedResourceForm
+   geonode.base.forms.ResourceBaseDateTimePicker
+   geonode.base.forms.ResourceBaseForm
+   geonode.base.forms.ValuesListField
+   geonode.base.forms.BatchEditForm
+   geonode.base.forms.UserAndGroupPermissionsForm
+   geonode.base.forms.OwnerRightsRequestForm
+   geonode.base.forms.ThesaurusImportForm
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.base.forms.get_tree_data
+   geonode.base.forms.get_user_choices
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: get_tree_data()
+
+.. py:class:: AdvancedModelChoiceIterator
+
+   Bases: :py:obj:`django.forms.models.ModelChoiceIterator`
+
+
+   .. py:method:: choice(obj)
+
+
+.. py:class:: CategoryChoiceField
+
+   Bases: :py:obj:`django.forms.ModelChoiceField`
+
+
+   .. py:method:: _get_choices()
+
+
+   .. py:attribute:: choices
+
+
+   .. py:method:: label_from_instance(obj)
+
+
+.. py:class:: RegionsMultipleChoiceField
+
+   Bases: :py:obj:`django.forms.MultipleChoiceField`
+
+
+   .. py:method:: validate(value)
+
+      Validates that the input is a list or tuple.
+
+
+
+.. py:class:: RegionsSelect
+
+   Bases: :py:obj:`django.forms.Select`
+
+
+   .. py:attribute:: allow_multiple_selected
+      :value: True
+
+
+
+   .. py:method:: render(name, value, attrs=None, renderer=None)
+
+
+   .. py:method:: value_from_datadict(data, files, name)
+
+
+   .. py:method:: render_option_value(selected_choices, option_value, option_label, data_section=None)
+
+
+   .. py:method:: render_options(selected_choices)
+
+      Normalize to strings.
+
+
+
+.. py:class:: CategoryForm
+
+   Bases: :py:obj:`django.forms.Form`
+
+
+   .. py:attribute:: category_choice_field
+
+
+   .. py:method:: clean()
+
+
+.. py:class:: TKeywordForm
+
+   Bases: :py:obj:`django.forms.ModelForm`
+
+
+   .. py:attribute:: prefix
+      :value: 'tkeywords'
+
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ['tkeywords']
+
+
+
+
+   .. py:attribute:: tkeywords
+
+
+.. py:data:: THESAURUS_RESULT_LIST_SEPERATOR
+   :value: ('', '-------')
+
+
+.. py:class:: ThesaurusAvailableForm(*args, **kwargs)
+
+   Bases: :py:obj:`django.forms.Form`
+
+
+   Separator at the beginning of the thesaurus search result and between results found in the local language and alt labels.
+
+
+   .. py:attribute:: lang
+
+
+   .. py:method:: cleanx(x)
+
+
+   .. py:method:: _define_multifield(item, required, tname, lang)
+
+
+   .. py:method:: _define_choicefield(item, required, tname, lang)
+
+
+   .. py:method:: _get_thesauro_keyword_label(item, lang)
+      :staticmethod:
+
+
+      Tries to find results for the given language (e.g., en-us).
+
+      If no results are found, it removes the country code from the language (e.g., en) and tries again.
+
+
+
+   .. py:method:: _get_thesauro_title_label(item, lang)
+      :staticmethod:
+
+
+
+.. py:class:: ContactRoleMultipleChoiceField
+
+   Bases: :py:obj:`django.forms.ModelMultipleChoiceField`
+
+
+   .. py:method:: clean(value) -> django.db.models.query.QuerySet
+
+
+.. py:class:: LinkedResourceForm(*args, **kwargs)
+
+   Bases: :py:obj:`django.forms.ModelForm`
+
+
+   .. py:attribute:: linked_resources
+
+
+   .. py:attribute:: queryset
+
+
+   .. py:attribute:: initial
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ['linked_resources']
+
+
+
+
+   .. py:method:: save_linked_resources(links_field='linked_resources')
+
+      Create and fetch desired links
+
+
+
+.. py:class:: ResourceBaseDateTimePicker
+
+   Bases: :py:obj:`bootstrap3_datetime.widgets.DateTimePicker`
+
+
+   .. py:method:: build_attrs(base_attrs=None, extra_attrs=None, **kwargs)
+
+      Helper function for building an attribute dictionary.
+
+
+
+.. py:class:: ResourceBaseForm(*args, **kwargs)
+
+   Bases: :py:obj:`modeltranslation.forms.TranslationModelForm`, :py:obj:`LinkedResourceForm`
+
+
+   Base form for metadata, should be inherited by childres classes of ResourceBase
+
+
+   .. py:attribute:: abstract
+
+
+   .. py:attribute:: purpose
+
+
+   .. py:attribute:: constraints_other
+
+
+   .. py:attribute:: supplemental_information
+
+
+   .. py:attribute:: ptype
+
+
+   .. py:attribute:: sourcetype
+
+
+   .. py:attribute:: data_quality_statement
+
+
+   .. py:attribute:: owner
+
+
+   .. py:attribute:: date
+
+
+   .. py:attribute:: temporal_extent_start
+
+
+   .. py:attribute:: temporal_extent_end
+
+
+   .. py:attribute:: metadata_author
+
+
+   .. py:attribute:: processor
+
+
+   .. py:attribute:: publisher
+
+
+   .. py:attribute:: custodian
+
+
+   .. py:attribute:: poc
+
+
+   .. py:attribute:: distributor
+
+
+   .. py:attribute:: resource_user
+
+
+   .. py:attribute:: resource_provider
+
+
+   .. py:attribute:: originator
+
+
+   .. py:attribute:: principal_investigator
+
+
+   .. py:attribute:: keywords
+
+
+   .. py:attribute:: regions
+
+
+   .. py:attribute:: extra_metadata
+
+
+   .. py:attribute:: user
+
+
+   .. py:attribute:: choices
+
+
+   .. py:attribute:: can_change_perms
+
+
+   .. py:method:: disable_keywords_widget_for_non_superuser(user)
+
+
+   .. py:method:: clean_keywords()
+
+
+   .. py:method:: clean_title()
+
+
+   .. py:method:: clean_extra_metadata()
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: exclude
+         :value: ('contacts', 'name', 'uuid', 'bbox_polygon', 'll_bbox_polygon', 'srid', 'category',...
+
+
+
+
+.. py:class:: ValuesListField
+
+   Bases: :py:obj:`django.forms.Field`
+
+
+   .. py:method:: to_python(value)
+
+
+   .. py:method:: clean(value)
+
+
+.. py:class:: BatchEditForm
+
+   Bases: :py:obj:`django.forms.Form`
+
+
+   .. py:attribute:: LANGUAGES
+
+
+   .. py:attribute:: group
+
+
+   .. py:attribute:: owner
+
+
+   .. py:attribute:: category
+
+
+   .. py:attribute:: license
+
+
+   .. py:attribute:: regions
+
+
+   .. py:attribute:: date
+
+
+   .. py:attribute:: language
+
+
+   .. py:attribute:: keywords
+
+
+   .. py:attribute:: ids
+
+
+.. py:function:: get_user_choices()
+
+.. py:class:: UserAndGroupPermissionsForm(*args, **kwargs)
+
+   Bases: :py:obj:`django.forms.Form`
+
+
+   .. py:attribute:: label_from_instance
+
+
+   .. py:attribute:: layers
+
+
+   .. py:attribute:: permission_type
+
+
+   .. py:attribute:: mode
+
+
+   .. py:attribute:: ids
+
+
+.. py:class:: OwnerRightsRequestForm
+
+   Bases: :py:obj:`django.forms.Form`
+
+
+   .. py:attribute:: resource
+
+
+   .. py:attribute:: reason
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: fields
+         :value: ['reason', 'resource']
+
+
+
+
+.. py:class:: ThesaurusImportForm
+
+   Bases: :py:obj:`django.forms.Form`
+
+
+   .. py:attribute:: rdf_file
+
+

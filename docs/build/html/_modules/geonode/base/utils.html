@@ -1,0 +1,361 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.utils &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../base.html">geonode.base</a></li>
+      <li class="breadcrumb-item active">geonode.base.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.base.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="sd">&quot;&quot;&quot;Utilities for managing GeoNode base models</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Standard Modules</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">schema</span> <span class="kn">import</span> <span class="n">Schema</span>
+<span class="kn">from</span> <span class="nn">dateutil.parser</span> <span class="kn">import</span> <span class="n">isoparse</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+
+<span class="c1"># Django functionality</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
+
+<span class="c1"># Geonode functionality</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span><span class="p">,</span> <span class="n">Link</span><span class="p">,</span> <span class="n">Configuration</span>
+<span class="kn">from</span> <span class="nn">geonode.security.utils</span> <span class="kn">import</span> <span class="n">AdvancedSecurityWorkflowManager</span>
+<span class="kn">from</span> <span class="nn">geonode.thumbs.utils</span> <span class="kn">import</span> <span class="n">get_thumbs</span><span class="p">,</span> <span class="n">remove_thumb</span>
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">get_legend_url</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;geonode.base.utils&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_names">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils._names">[docs]</a>
+<span class="n">_names</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Zipped Shapefile&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Zipped&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Shapefile&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GML 2.0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GML 3.1.1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CSV&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GeoJSON&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Excel&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Legend&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GeoTIFF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GZIP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Original Dataset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ESRI Shapefile&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;View in Google Earth&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KML&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;KMZ&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Atom&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DIF&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Dublin Core&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ebRIM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;FGDC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ISO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ISO with XSL&quot;</span><span class="p">,</span>
+<span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="thumb_filename_regex">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.thumb_filename_regex">[docs]</a>
+<span class="n">thumb_filename_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">&quot;^(document|map|layer|dataset|geoapp)-([a-f\d]</span><span class="si">{8}</span><span class="s2">-[a-f\d]</span><span class="si">{4}</span><span class="s2">-[a-f\d]</span><span class="si">{4}</span><span class="s2">-[a-f\d]</span><span class="si">{4}</span><span class="s2">-[a-f\d]</span><span class="si">{12}</span><span class="s2">)-thumb-([a-f\d]</span><span class="si">{8}</span><span class="s2">-[a-f\d]</span><span class="si">{4}</span><span class="s2">-[a-f\d]</span><span class="si">{4}</span><span class="s2">-[a-f\d]</span><span class="si">{4}</span><span class="s2">-[a-f\d]</span><span class="si">{12}</span><span class="s2">)\.png$&quot;</span>
+<span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_thumb_uuid">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.get_thumb_uuid">[docs]</a>
+<span class="k">def</span> <span class="nf">get_thumb_uuid</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetches the UUID associated with the given thumbnail file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">thumb_filename_regex</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">result</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">uuid</span></div>
+
+
+
+<div class="viewcode-block" id="delete_orphaned_thumbs">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.delete_orphaned_thumbs">[docs]</a>
+<span class="k">def</span> <span class="nf">delete_orphaned_thumbs</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deletes orphaned thumbnails.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">deleted</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">thumb_uuids</span> <span class="o">=</span> <span class="p">{</span><span class="n">get_thumb_uuid</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span> <span class="n">filename</span> <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">get_thumbs</span><span class="p">()}</span>
+    <span class="n">db_uuids</span> <span class="o">=</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">uuid__in</span><span class="o">=</span><span class="n">thumb_uuids</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">orphaned_uuids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">thumb_uuids</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">db_uuids</span><span class="p">)</span>
+    <span class="n">orphaned_thumbs</span> <span class="o">=</span> <span class="p">(</span><span class="n">thumb_uuids</span><span class="p">[</span><span class="n">uuid</span><span class="p">]</span> <span class="k">for</span> <span class="n">uuid</span> <span class="ow">in</span> <span class="n">orphaned_uuids</span> <span class="k">if</span> <span class="n">uuid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">orphaned_thumbs</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">remove_thumb</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">deleted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">NotImplementedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to delete orphaned thumbnail &#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">deleted</span></div>
+
+
+
+<div class="viewcode-block" id="remove_duplicate_links">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.remove_duplicate_links">[docs]</a>
+<span class="k">def</span> <span class="nf">remove_duplicate_links</span><span class="p">(</span><span class="n">resource</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes a scan of Links related to the resource and removes the duplicates.</span>
+<span class="sd">    It also regenerates the Legend link in case this is missing for some reason.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">_n</span> <span class="ow">in</span> <span class="n">_names</span><span class="p">:</span>
+        <span class="n">_links</span> <span class="o">=</span> <span class="n">Link</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">resource__id</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">_n</span><span class="p">)</span>
+        <span class="n">_cnt</span> <span class="o">=</span> <span class="n">_links</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">_cnt</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">_links</span><span class="o">.</span><span class="n">last</span><span class="p">()</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+            <span class="n">_cnt</span> <span class="o">-=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+        <span class="c1"># fixup Legend links</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">resource</span>
+        <span class="k">if</span> <span class="n">layer</span><span class="o">.</span><span class="n">default_style</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">layer</span><span class="o">.</span><span class="n">get_legend_url</span><span class="p">(</span><span class="n">style_name</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">default_style</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">Link</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">update_or_create</span><span class="p">(</span>
+                <span class="n">resource</span><span class="o">=</span><span class="n">layer</span><span class="o">.</span><span class="n">resourcebase_ptr</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Legend&quot;</span><span class="p">,</span>
+                <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;png&quot;</span><span class="p">,</span>
+                <span class="n">url</span><span class="o">=</span><span class="n">get_legend_url</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">default_style</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                <span class="n">mime</span><span class="o">=</span><span class="s2">&quot;image/png&quot;</span><span class="p">,</span>
+                <span class="n">link_type</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="configuration_session_cache">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.configuration_session_cache">[docs]</a>
+<span class="k">def</span> <span class="nf">configuration_session_cache</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="n">CONFIG_CACHE_TIMEOUT_SEC</span> <span class="o">=</span> <span class="mi">60</span>
+
+    <span class="n">_config</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">)</span>
+    <span class="n">_now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span>
+    <span class="n">_dt</span> <span class="o">=</span> <span class="n">isoparse</span><span class="p">(</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;expiration&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="n">_config</span> <span class="k">else</span> <span class="n">_now</span>
+    <span class="k">if</span> <span class="n">_config</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_dt</span> <span class="o">&lt;</span> <span class="n">_now</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+        <span class="n">_dt</span> <span class="o">=</span> <span class="n">_now</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">CONFIG_CACHE_TIMEOUT_SEC</span><span class="p">)</span>
+        <span class="n">cached_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configuration&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;expiration&quot;</span><span class="p">:</span> <span class="n">_dt</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()}</span>
+
+        <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;read_only&quot;</span><span class="p">,</span> <span class="s2">&quot;maintenance&quot;</span><span class="p">]:</span>
+            <span class="n">cached_config</span><span class="p">[</span><span class="s2">&quot;configuration&quot;</span><span class="p">][</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
+
+        <span class="n">session</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cached_config</span></div>
+
+
+
+<div class="viewcode-block" id="OwnerRightsRequestViewUtils">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.OwnerRightsRequestViewUtils">[docs]</a>
+<span class="k">class</span> <span class="nc">OwnerRightsRequestViewUtils</span><span class="p">:</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OwnerRightsRequestViewUtils.get_message_recipients">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.OwnerRightsRequestViewUtils.get_message_recipients">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_message_recipients</span><span class="p">(</span><span class="n">owner</span><span class="p">):</span>
+        <span class="n">User</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span>
+        <span class="n">allowed_users</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">none</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_admin_moderate_mode</span><span class="p">():</span>
+            <span class="n">allowed_users</span> <span class="o">|=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_superuser</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">owner</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+
+                <span class="n">groups</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                <span class="n">obj_group_managers</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">group_profile</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="n">managers</span> <span class="o">=</span> <span class="n">group_profile</span><span class="o">.</span><span class="n">get_managers</span><span class="p">()</span>
+                        <span class="k">for</span> <span class="n">manager</span> <span class="ow">in</span> <span class="n">managers</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">manager</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj_group_managers</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">manager</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+                                <span class="n">obj_group_managers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">manager</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                <span class="n">allowed_users</span> <span class="o">|=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="p">[</span><span class="n">_u</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">_u</span> <span class="ow">in</span> <span class="n">obj_group_managers</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">allowed_users</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="OwnerRightsRequestViewUtils.get_resource">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.OwnerRightsRequestViewUtils.get_resource">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_resource</span><span class="p">(</span><span class="n">resource_base</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">resource_base</span><span class="o">.</span><span class="n">get_real_instance</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="validate_extra_metadata">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.validate_extra_metadata">[docs]</a>
+<span class="k">def</span> <span class="nf">validate_extra_metadata</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="c1"># starting validation of extra metadata passed via JSON</span>
+    <span class="c1"># if schema for metadata validation is not defined, an error is raised</span>
+    <span class="n">resource_type</span> <span class="o">=</span> <span class="n">instance</span><span class="o">.</span><span class="n">polymorphic_ctype</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">polymorphic_ctype</span> <span class="k">else</span> <span class="n">instance</span><span class="o">.</span><span class="n">class_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">extra_metadata_validation_schema</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">EXTRA_METADATA_SCHEMA</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resource_type</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">extra_metadata_validation_schema</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;EXTRA_METADATA_SCHEMA validation schema is not available for resource </span><span class="si">{</span><span class="n">resource_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># starting json structure validation. The Field can contain multiple metadata</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s2">&quot;The value provided for the Extra metadata field is not a valid JSON&quot;</span><span class="p">)</span>
+
+    <span class="c1"># looping on all the single metadata provided. If it doen&#39;t match the schema an error is raised</span>
+    <span class="k">for</span> <span class="n">_index</span><span class="p">,</span> <span class="n">_metadata</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Schema</span><span class="p">(</span><span class="n">extra_metadata_validation_schema</span><span class="p">)</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">_metadata</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> at index </span><span class="si">{</span><span class="n">_index</span><span class="si">}</span><span class="s2"> for input json: </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">_metadata</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># conerted because in this case, we can store a well formated json instead of the user input</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="remove_country_from_languagecode">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/utils/index.html#geonode.base.utils.remove_country_from_languagecode">[docs]</a>
+<span class="k">def</span> <span class="nf">remove_country_from_languagecode</span><span class="p">(</span><span class="n">language</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove country code (us) from language name (en-us)</span>
+
+<span class="sd">    &gt;&gt;&gt; remove_country_from_lanugecode(&quot;en-us&quot;) &#39;en&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="s2">&quot;-&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">language</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">language</span>
+
+    <span class="n">lang</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">language</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lang</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
