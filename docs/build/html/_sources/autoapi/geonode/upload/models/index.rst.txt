@@ -1,0 +1,233 @@
+geonode.upload.models
+=====================
+
+.. py:module:: geonode.upload.models
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.upload.models.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.upload.models.UploadManager
+   geonode.upload.models.UploadSizeLimitManager
+   geonode.upload.models.UploadParallelismLimitManager
+   geonode.upload.models.Upload
+   geonode.upload.models.UploadSizeLimit
+   geonode.upload.models.UploadParallelismLimit
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: UploadManager
+
+   Bases: :py:obj:`django.db.models.Manager`
+
+
+   .. py:method:: invalidate_from_session(upload_session)
+
+
+   .. py:method:: update_from_session(upload_session, resource: geonode.base.models.ResourceBase = None)
+
+
+   .. py:method:: get_incomplete_uploads(user)
+
+
+.. py:class:: UploadSizeLimitManager
+
+   Bases: :py:obj:`django.db.models.Manager`
+
+
+   .. py:method:: create_default_limit()
+
+
+   .. py:method:: create_default_limit_with_slug(slug)
+
+
+.. py:class:: UploadParallelismLimitManager
+
+   Bases: :py:obj:`django.db.models.Manager`
+
+
+   .. py:method:: create_default_limit()
+
+
+.. py:class:: Upload
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+   .. py:attribute:: objects
+
+
+   .. py:attribute:: import_id
+
+
+   .. py:attribute:: user
+
+
+   .. py:attribute:: state
+
+
+   .. py:attribute:: create_date
+
+
+   .. py:attribute:: date
+
+
+   .. py:attribute:: resource
+
+
+   .. py:attribute:: upload_dir
+
+
+   .. py:attribute:: store_spatial_files
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: complete
+
+
+   .. py:attribute:: session
+
+
+   .. py:attribute:: metadata
+
+
+   .. py:attribute:: mosaic
+
+
+   .. py:attribute:: append_to_mosaic_opts
+
+
+   .. py:attribute:: append_to_mosaic_name
+
+
+   .. py:attribute:: mosaic_time_regex
+
+
+   .. py:attribute:: mosaic_time_value
+
+
+   .. py:attribute:: mosaic_elev_regex
+
+
+   .. py:attribute:: mosaic_elev_value
+
+
+   .. py:attribute:: resume_url
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: ordering
+         :value: ['-date']
+
+
+
+
+   .. py:property:: get_session
+
+
+   .. py:method:: update_from_session(upload_session, resource: geonode.base.models.ResourceBase = None)
+
+
+   .. py:property:: progress
+
+
+   .. py:method:: set_resume_url(resume_url)
+
+
+   .. py:method:: get_resume_url()
+
+
+   .. py:method:: get_delete_url()
+
+
+   .. py:method:: get_import_url()
+
+
+   .. py:method:: get_detail_url()
+
+
+   .. py:method:: delete(*args, **kwargs)
+
+
+   .. py:method:: set_processing_state(state)
+
+
+   .. py:method:: __str__()
+
+
+.. py:class:: UploadSizeLimit
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+   .. py:attribute:: objects
+
+
+   .. py:attribute:: slug
+
+
+   .. py:attribute:: description
+
+
+   .. py:attribute:: max_size
+
+
+   .. py:property:: max_size_label
+
+
+   .. py:method:: __str__()
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: ordering
+         :value: ('slug',)
+
+
+
+
+.. py:class:: UploadParallelismLimit
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+   .. py:attribute:: objects
+
+
+   .. py:attribute:: slug
+
+
+   .. py:attribute:: description
+
+
+   .. py:attribute:: max_number
+
+
+   .. py:method:: __str__()
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: ordering
+         :value: ('slug',)
+
+
+
+

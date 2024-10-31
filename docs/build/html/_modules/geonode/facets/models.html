@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.facets.models &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../facets.html">geonode.facets</a></li>
+      <li class="breadcrumb-item active">geonode.facets.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.facets.models</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2023 Open Source Geospatial Foundation - all rights reserved</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+<div class="viewcode-block" id="DEFAULT_FACET_PAGE_SIZE">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.DEFAULT_FACET_PAGE_SIZE">[docs]</a>
+<span class="n">DEFAULT_FACET_PAGE_SIZE</span> <span class="o">=</span> <span class="mi">10</span></div>
+
+
+<span class="c1"># Well known types of facet - not an enum bc it needs to be extensible</span>
+<div class="viewcode-block" id="FACET_TYPE_PLACE">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FACET_TYPE_PLACE">[docs]</a>
+<span class="n">FACET_TYPE_PLACE</span> <span class="o">=</span> <span class="s2">&quot;place&quot;</span></div>
+
+<div class="viewcode-block" id="FACET_TYPE_USER">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FACET_TYPE_USER">[docs]</a>
+<span class="n">FACET_TYPE_USER</span> <span class="o">=</span> <span class="s2">&quot;user&quot;</span></div>
+
+<div class="viewcode-block" id="FACET_TYPE_THESAURUS">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FACET_TYPE_THESAURUS">[docs]</a>
+<span class="n">FACET_TYPE_THESAURUS</span> <span class="o">=</span> <span class="s2">&quot;thesaurus&quot;</span></div>
+
+<div class="viewcode-block" id="FACET_TYPE_CATEGORY">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FACET_TYPE_CATEGORY">[docs]</a>
+<span class="n">FACET_TYPE_CATEGORY</span> <span class="o">=</span> <span class="s2">&quot;category&quot;</span></div>
+
+<div class="viewcode-block" id="FACET_TYPE_BASE">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FACET_TYPE_BASE">[docs]</a>
+<span class="n">FACET_TYPE_BASE</span> <span class="o">=</span> <span class="s2">&quot;base&quot;</span></div>
+
+<div class="viewcode-block" id="FACET_TYPE_KEYWORD">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FACET_TYPE_KEYWORD">[docs]</a>
+<span class="n">FACET_TYPE_KEYWORD</span> <span class="o">=</span> <span class="s2">&quot;keyword&quot;</span></div>
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="FacetProvider">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetProvider">[docs]</a>
+<span class="k">class</span> <span class="nc">FacetProvider</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides access to the facet information and the related topics</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="FacetProvider.config">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetProvider.config">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="FacetProvider.__str__">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetProvider.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">]&quot;</span></div>
+
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="FacetProvider.name">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetProvider.name">[docs]</a>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the name of the facet, to be used as a key for this provider.</span>
+<span class="sd">        You may want to override this method in order to have an optimized logic</span>
+<span class="sd">        :return: The name of the provider as a str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">get_info</span><span class="p">()[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="FacetProvider.get_info">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetProvider.get_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the basic info for this provider, as a dict with these keys:</span>
+<span class="sd">            - &#39;name&#39;: the name of the provider (the one returned by name())</span>
+<span class="sd">            - &#39;filter&#39;: the filtering key to be used in a filter query</span>
+<span class="sd">            - &#39;label&#39;: a generic label for the facet; the client should try and localize it whenever possible</span>
+<span class="sd">            - &#39;localized_label&#39;: a localized label for the facet (localized according to the `lang` param)</span>
+<span class="sd">            - &#39;type&#39;: the facet type (e.g. user, region, thesaurus, ...)</span>
+<span class="sd">            - &#39;hierarchical&#39;: boolean value telling if the facet items are hierarchically organized</span>
+<span class="sd">            - &quot;order&quot;: an optional integer suggesting the relative ordering of the facets</span>
+
+<span class="sd">        :param lang: lanuage for label localization</span>
+<span class="sd">        :return: a dict</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="FacetProvider.get_facet_items">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetProvider.get_facet_items">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_facet_items</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_FACET_PAGE_SIZE</span><span class="p">,</span>
+        <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">,</span>
+        <span class="n">topic_contains</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">keys</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the items of the facets, in a tuple:</span>
+
+<span class="sd">            - int, total number of items matched</span>
+<span class="sd">            - list, topic records. A topic record is a dict having these keys:</span>
+<span class="sd">                - key: the key of the items that should be used for filtering</span>
+<span class="sd">                - label: a generic label for the item; the client should try and localize it whenever possible</span>
+<span class="sd">                - localized_label: a localized label for the item</span>
+<span class="sd">                - count: the count of such topic in the current facet</span>
+<span class="sd">                - other facet specific keys</span>
+
+<span class="sd">        :param queryset: the prefiltered queryset (may be filtered for authorization or other filters)</span>
+<span class="sd">        :param start: int: pagination, the index of the initial returned item</span>
+<span class="sd">        :param end: int: pagination, the index of the last returned item</span>
+<span class="sd">        :param lang: the preferred language for the labels</span>
+<span class="sd">        :param topic_contains: only returns matching topics</span>
+<span class="sd">        :param keys: only returns topics with given keys, even if their count is 0</span>
+<span class="sd">        :return: a tuple int:total count of record, list of items</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="FacetProvider.get_topics">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetProvider.get_topics">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_topics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the topics with the requested ids as a list</span>
+<span class="sd">            - list, topic records. A topic record is a dict having these keys:</span>
+<span class="sd">                - key: the key of the items that should be used for filtering</span>
+<span class="sd">                - label: a generic label for the item; the client should try and localize it whenever possible</span>
+<span class="sd">                - localized_label: a localized label for the item</span>
+<span class="sd">                - other facet specific keys</span>
+
+<span class="sd">        :param keys: the list of the keys of the topics, as returned by the get_facet_items() method</span>
+<span class="sd">        :param lang: the preferred language for the labels</span>
+<span class="sd">        :return: list of items</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="FacetProvider.register">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetProvider.register">[docs]</a>
+    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">registry</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform registration of instances of this Provider</span>
+
+<span class="sd">        :param registry: the registry where instances shall be registered</span>
+<span class="sd">        :param kwargs: other args that may be needed by Providers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FacetsRegistry">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetsRegistry">[docs]</a>
+<span class="k">class</span> <span class="nc">FacetsRegistry</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FacetsRegistry.facet_providers">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetsRegistry.facet_providers">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_providers</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="FacetsRegistry._load_facets_configuration">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetsRegistry._load_facets_configuration">[docs]</a>
+    <span class="k">def</span> <span class="nf">_load_facets_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Facet loading is done lazily because some FacetProvider may need to access the DB, which may not have been initialized/created yet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">django.utils.module_loading</span> <span class="kn">import</span> <span class="n">import_string</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_providers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initializing Facets&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">providerconf</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;FACET_PROVIDERS&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">clz</span> <span class="o">=</span> <span class="n">providerconf</span><span class="p">[</span><span class="s2">&quot;class&quot;</span><span class="p">]</span>
+            <span class="n">provider</span> <span class="o">=</span> <span class="n">import_string</span><span class="p">(</span><span class="n">clz</span><span class="p">)</span>
+            <span class="n">provider</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">providerconf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="p">{}))</span></div>
+
+
+<div class="viewcode-block" id="FacetsRegistry.register_facet_provider">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetsRegistry.register_facet_provider">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_facet_provider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provider</span><span class="p">:</span> <span class="n">FacetProvider</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registering </span><span class="si">{</span><span class="n">provider</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">facet_providers</span><span class="p">[</span><span class="n">provider</span><span class="o">.</span><span class="n">get_info</span><span class="p">()[</span><span class="s2">&quot;name&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">provider</span></div>
+
+
+<div class="viewcode-block" id="FacetsRegistry.get_providers">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetsRegistry.get_providers">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_providers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">facet_providers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_facets_configuration</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">facet_providers</span><span class="o">.</span><span class="n">values</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="FacetsRegistry.get_provider">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.FacetsRegistry.get_provider">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_provider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">facet_providers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_facets_configuration</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">facet_providers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="facet_registry">
+<a class="viewcode-back" href="../../../autoapi/geonode/facets/models/index.html#geonode.facets.models.facet_registry">[docs]</a>
+<span class="n">facet_registry</span> <span class="o">=</span> <span class="n">FacetsRegistry</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

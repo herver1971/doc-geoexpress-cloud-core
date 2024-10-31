@@ -1,0 +1,1189 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.forms &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../base.html">geonode.base</a></li>
+      <li class="breadcrumb-item active">geonode.base.forms</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.base.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">html</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">django.db.models.query</span> <span class="kn">import</span> <span class="n">QuerySet</span>
+<span class="kn">from</span> <span class="nn">bootstrap3_datetime.widgets</span> <span class="kn">import</span> <span class="n">DateTimePicker</span>
+<span class="kn">from</span> <span class="nn">dal</span> <span class="kn">import</span> <span class="n">autocomplete</span>
+<span class="kn">import</span> <span class="nn">dal.forward</span>
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Group</span>
+<span class="kn">from</span> <span class="nn">django.core</span> <span class="kn">import</span> <span class="n">validators</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Prefetch</span><span class="p">,</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.forms</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.forms.fields</span> <span class="kn">import</span> <span class="n">ChoiceField</span><span class="p">,</span> <span class="n">MultipleChoiceField</span>
+<span class="kn">from</span> <span class="nn">django.forms.utils</span> <span class="kn">import</span> <span class="n">flatatt</span>
+<span class="kn">from</span> <span class="nn">django.utils.encoding</span> <span class="kn">import</span> <span class="n">force_text</span>
+<span class="kn">from</span> <span class="nn">django.utils.html</span> <span class="kn">import</span> <span class="n">format_html</span>
+<span class="kn">from</span> <span class="nn">django.utils.safestring</span> <span class="kn">import</span> <span class="n">mark_safe</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">modeltranslation.forms</span> <span class="kn">import</span> <span class="n">TranslationModelForm</span>
+<span class="kn">from</span> <span class="nn">taggit.forms</span> <span class="kn">import</span> <span class="n">TagField</span>
+<span class="kn">from</span> <span class="nn">tinymce.widgets</span> <span class="kn">import</span> <span class="n">TinyMCE</span>
+<span class="kn">from</span> <span class="nn">django.contrib.admin.utils</span> <span class="kn">import</span> <span class="n">flatten</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">get_language</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.enumerations</span> <span class="kn">import</span> <span class="n">ALL_LANGUAGES</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HierarchicalKeyword</span><span class="p">,</span>
+    <span class="n">License</span><span class="p">,</span>
+    <span class="n">LinkedResource</span><span class="p">,</span>
+    <span class="n">Region</span><span class="p">,</span>
+    <span class="n">ResourceBase</span><span class="p">,</span>
+    <span class="n">Thesaurus</span><span class="p">,</span>
+    <span class="n">ThesaurusKeyword</span><span class="p">,</span>
+    <span class="n">ThesaurusKeywordLabel</span><span class="p">,</span>
+    <span class="n">ThesaurusLabel</span><span class="p">,</span>
+    <span class="n">TopicCategory</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">geonode.base.widgets</span> <span class="kn">import</span> <span class="n">TaggitSelect2Custom</span><span class="p">,</span> <span class="n">TaggitProfileSelect2Custom</span>
+<span class="kn">from</span> <span class="nn">geonode.base.fields</span> <span class="kn">import</span> <span class="n">MultiThesauriField</span>
+<span class="kn">from</span> <span class="nn">geonode.documents.models</span> <span class="kn">import</span> <span class="n">Document</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.base.utils</span> <span class="kn">import</span> <span class="n">validate_extra_metadata</span><span class="p">,</span> <span class="n">remove_country_from_languagecode</span>
+<span class="kn">from</span> <span class="nn">geonode.people</span> <span class="kn">import</span> <span class="n">Roles</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_tree_data">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.get_tree_data">[docs]</a>
+<span class="k">def</span> <span class="nf">get_tree_data</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">rectree</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">children_list_of_tuples</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">Region</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="n">parent</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">c</span><span class="p">:</span>
+            <span class="n">children_list_of_tuples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">path</span> <span class="o">+</span> <span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">child</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="p">)))))</span>
+            <span class="n">childrens</span> <span class="o">=</span> <span class="n">rectree</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">childrens</span><span class="p">:</span>
+                <span class="n">children_list_of_tuples</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">childrens</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">children_list_of_tuples</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Region</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">toplevel</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">toplevel</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">toplevel</span><span class="o">.</span><span class="n">name</span><span class="p">)))</span>
+            <span class="n">childrens</span> <span class="o">=</span> <span class="n">rectree</span><span class="p">(</span><span class="n">toplevel</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">childrens</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">((</span><span class="n">toplevel</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">childrens</span><span class="p">)))</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="AdvancedModelChoiceIterator">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.AdvancedModelChoiceIterator">[docs]</a>
+<span class="k">class</span> <span class="nc">AdvancedModelChoiceIterator</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">ModelChoiceIterator</span><span class="p">):</span>
+<div class="viewcode-block" id="AdvancedModelChoiceIterator.choice">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.AdvancedModelChoiceIterator.choice">[docs]</a>
+    <span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">prepare_value</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">label_from_instance</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">obj</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CategoryChoiceField">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.CategoryChoiceField">[docs]</a>
+<span class="k">class</span> <span class="nc">CategoryChoiceField</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">):</span>
+<div class="viewcode-block" id="CategoryChoiceField._get_choices">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.CategoryChoiceField._get_choices">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_choices&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choices</span>
+
+        <span class="k">return</span> <span class="n">AdvancedModelChoiceIterator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CategoryChoiceField.choices">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.CategoryChoiceField.choices">[docs]</a>
+    <span class="n">choices</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_choices</span><span class="p">,</span> <span class="n">ChoiceField</span><span class="o">.</span><span class="n">_set_choices</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CategoryChoiceField.label_from_instance">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.CategoryChoiceField.label_from_instance">[docs]</a>
+    <span class="k">def</span> <span class="nf">label_from_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s1">&#39;&lt;i class=&quot;fa &#39;</span> <span class="o">+</span> <span class="n">obj</span><span class="o">.</span><span class="n">fa_class</span> <span class="o">+</span> <span class="s1">&#39; fa-2x unchecked&quot;&gt;&lt;/i&gt;&#39;</span>
+            <span class="s1">&#39;&lt;i class=&quot;fa &#39;</span> <span class="o">+</span> <span class="n">obj</span><span class="o">.</span><span class="n">fa_class</span> <span class="o">+</span> <span class="s1">&#39; fa-2x checked&quot;&gt;&lt;/i&gt;&#39;</span>
+            <span class="s1">&#39;&lt;span class=&quot;has-popover&quot; data-container=&quot;body&quot; data-toggle=&quot;popover&quot; data-placement=&quot;top&quot; &#39;</span>
+            <span class="s1">&#39;data-content=&quot;&#39;</span> <span class="o">+</span> <span class="n">obj</span><span class="o">.</span><span class="n">description</span> <span class="o">+</span> <span class="s1">&#39;&quot; trigger=&quot;hover&quot;&gt;&#39;</span>
+            <span class="s2">&quot;&lt;br/&gt;&lt;strong&gt;&quot;</span> <span class="o">+</span> <span class="n">obj</span><span class="o">.</span><span class="n">gn_description</span> <span class="o">+</span> <span class="s2">&quot;&lt;/strong&gt;&lt;/span&gt;&quot;</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RegionsMultipleChoiceField">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.RegionsMultipleChoiceField">[docs]</a>
+<span class="k">class</span> <span class="nc">RegionsMultipleChoiceField</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">MultipleChoiceField</span><span class="p">):</span>
+<div class="viewcode-block" id="RegionsMultipleChoiceField.validate">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.RegionsMultipleChoiceField.validate">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates that the input is a list or tuple.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">required</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_messages</span><span class="p">[</span><span class="s2">&quot;required&quot;</span><span class="p">],</span> <span class="n">code</span><span class="o">=</span><span class="s2">&quot;required&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RegionsSelect">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.RegionsSelect">[docs]</a>
+<span class="k">class</span> <span class="nc">RegionsSelect</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">):</span>
+<div class="viewcode-block" id="RegionsSelect.allow_multiple_selected">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.RegionsSelect.allow_multiple_selected">[docs]</a>
+    <span class="n">allow_multiple_selected</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="RegionsSelect.render">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.RegionsSelect.render">[docs]</a>
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">renderer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">final_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="n">final_attrs</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="n">format_html</span><span class="p">(</span><span class="s1">&#39;&lt;select multiple=&quot;multiple&quot;</span><span class="si">{}</span><span class="s1">&gt;&#39;</span><span class="p">,</span> <span class="n">flatatt</span><span class="p">(</span><span class="n">final_attrs</span><span class="p">))]</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_options</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">options</span><span class="p">:</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/select&gt;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mark_safe</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="RegionsSelect.value_from_datadict">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.RegionsSelect.value_from_datadict">[docs]</a>
+    <span class="k">def</span> <span class="nf">value_from_datadict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">getter</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">getlist</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">getter</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span>
+        <span class="k">return</span> <span class="n">getter</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RegionsSelect.render_option_value">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.RegionsSelect.render_option_value">[docs]</a>
+    <span class="k">def</span> <span class="nf">render_option_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selected_choices</span><span class="p">,</span> <span class="n">option_value</span><span class="p">,</span> <span class="n">option_label</span><span class="p">,</span> <span class="n">data_section</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">option_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">option_value</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">option_value</span> <span class="o">=</span> <span class="n">force_text</span><span class="p">(</span><span class="n">option_value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">option_value</span> <span class="ow">in</span> <span class="n">selected_choices</span><span class="p">:</span>
+            <span class="n">selected_html</span> <span class="o">=</span> <span class="n">mark_safe</span><span class="p">(</span><span class="s2">&quot; selected&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">allow_multiple_selected</span><span class="p">:</span>
+                <span class="c1"># Only allow for a single selection.</span>
+                <span class="n">selected_choices</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">option_value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">selected_html</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">label</span> <span class="o">=</span> <span class="n">force_text</span><span class="p">(</span><span class="n">option_label</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">data_section</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data_section</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data_section</span> <span class="o">=</span> <span class="n">force_text</span><span class="p">(</span><span class="n">data_section</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">data_section</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">format_html</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> [</span><span class="si">{}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">data_section</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">format_html</span><span class="p">(</span>
+            <span class="s1">&#39;&lt;option data-section=&quot;</span><span class="si">{}</span><span class="s1">&quot; value=&quot;</span><span class="si">{}</span><span class="s1">&quot;</span><span class="si">{}</span><span class="s1">&gt;</span><span class="si">{}</span><span class="s1">&lt;/option&gt;&#39;</span><span class="p">,</span> <span class="n">data_section</span><span class="p">,</span> <span class="n">option_value</span><span class="p">,</span> <span class="n">selected_html</span><span class="p">,</span> <span class="n">label</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RegionsSelect.render_options">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.RegionsSelect.render_options">[docs]</a>
+    <span class="k">def</span> <span class="nf">render_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selected_choices</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalize to strings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">_region_id_from_choice</span><span class="p">(</span><span class="n">choice</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">choice</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()):</span>
+                <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">choice</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">choice</span><span class="o">.</span><span class="n">id</span>
+
+        <span class="n">selected_choices</span> <span class="o">=</span> <span class="p">{</span><span class="n">force_text</span><span class="p">(</span><span class="n">_region_id_from_choice</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">selected_choices</span><span class="p">}</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_html</span><span class="p">(</span><span class="s1">&#39;&lt;optgroup label=&quot;</span><span class="si">{}</span><span class="s1">&quot;&gt;&#39;</span><span class="p">,</span> <span class="s2">&quot;Global&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">option_value</span><span class="p">,</span> <span class="n">option_label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option_label</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option_label</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">render_option_value</span><span class="p">(</span><span class="n">selected_choices</span><span class="p">,</span> <span class="n">option_value</span><span class="p">,</span> <span class="n">option_label</span><span class="p">))</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/optgroup&gt;&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">option_value</span><span class="p">,</span> <span class="n">option_label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option_label</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option_label</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_html</span><span class="p">(</span><span class="s1">&#39;&lt;optgroup label=&quot;</span><span class="si">{}</span><span class="s1">&quot;&gt;&#39;</span><span class="p">,</span> <span class="n">force_text</span><span class="p">(</span><span class="n">option_value</span><span class="p">)))</span>
+                <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">option_label</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">option</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                            <span class="k">for</span> <span class="n">option_child</span> <span class="ow">in</span> <span class="n">option</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
+                                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">render_option_value</span><span class="p">(</span>
+                                        <span class="n">selected_choices</span><span class="p">,</span> <span class="o">*</span><span class="n">option_child</span><span class="p">,</span> <span class="n">data_section</span><span class="o">=</span><span class="n">force_text</span><span class="p">(</span><span class="n">option</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">render_option_value</span><span class="p">(</span>
+                                    <span class="n">selected_choices</span><span class="p">,</span> <span class="o">*</span><span class="n">option</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">data_section</span><span class="o">=</span><span class="n">force_text</span><span class="p">(</span><span class="n">option</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                                <span class="p">)</span>
+                            <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">render_option_value</span><span class="p">(</span><span class="n">selected_choices</span><span class="p">,</span> <span class="o">*</span><span class="n">option</span><span class="p">,</span> <span class="n">data_section</span><span class="o">=</span><span class="n">force_text</span><span class="p">(</span><span class="n">option_value</span><span class="p">))</span>
+                        <span class="p">)</span>
+                <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/optgroup&gt;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CategoryForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.CategoryForm">[docs]</a>
+<span class="k">class</span> <span class="nc">CategoryForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+<div class="viewcode-block" id="CategoryForm.category_choice_field">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.CategoryForm.category_choice_field">[docs]</a>
+    <span class="n">category_choice_field</span> <span class="o">=</span> <span class="n">CategoryChoiceField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;*</span><span class="si">{</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Category&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">empty_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">TopicCategory</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_choice</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">extra</span><span class="p">(</span><span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CategoryForm.clean">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.CategoryForm.clean">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">ccf_data</span> <span class="o">=</span> <span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;category_choice_field&quot;</span><span class="p">)</span>
+        <span class="n">category_mandatory</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;TOPICCATEGORY_MANDATORY&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">category_mandatory</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ccf_data</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Category is required.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_class</span><span class="p">([</span><span class="n">msg</span><span class="p">])</span>
+
+        <span class="c1"># Always return the full collection of cleaned data.</span>
+        <span class="k">return</span> <span class="n">cleaned_data</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TKeywordForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.TKeywordForm">[docs]</a>
+<span class="k">class</span> <span class="nc">TKeywordForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+<div class="viewcode-block" id="TKeywordForm.prefix">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.TKeywordForm.prefix">[docs]</a>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;tkeywords&quot;</span></div>
+
+
+<div class="viewcode-block" id="TKeywordForm.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.TKeywordForm.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="TKeywordForm.Meta.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.TKeywordForm.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Document</span></div>
+
+<div class="viewcode-block" id="TKeywordForm.Meta.fields">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.TKeywordForm.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;tkeywords&quot;</span><span class="p">]</span></div>
+</div>
+
+
+<div class="viewcode-block" id="TKeywordForm.tkeywords">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.TKeywordForm.tkeywords">[docs]</a>
+    <span class="n">tkeywords</span> <span class="o">=</span> <span class="n">MultiThesauriField</span><span class="p">(</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">ThesaurusKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">prefetch_related</span><span class="p">(</span>
+            <span class="n">Prefetch</span><span class="p">(</span><span class="s2">&quot;keyword&quot;</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="n">ThesaurusKeywordLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">lang</span><span class="o">=</span><span class="s2">&quot;en&quot;</span><span class="p">))</span>
+        <span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">autocomplete</span><span class="o">.</span><span class="n">ModelSelect2Multiple</span><span class="p">(</span>
+            <span class="n">url</span><span class="o">=</span><span class="s2">&quot;thesaurus_autocomplete&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Keywords from Thesaurus&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span>
+            <span class="s2">&quot;List of keywords from Thesaurus&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="THESAURUS_RESULT_LIST_SEPERATOR">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.THESAURUS_RESULT_LIST_SEPERATOR">[docs]</a>
+<span class="n">THESAURUS_RESULT_LIST_SEPERATOR</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;-------&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ThesaurusAvailableForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusAvailableForm">[docs]</a>
+<span class="k">class</span> <span class="nc">ThesaurusAvailableForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Separator at the beginning of the thesaurus search result and between results found in the local language and alt labels.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="viewcode-block" id="ThesaurusAvailableForm.lang">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusAvailableForm.lang">[docs]</a>
+        <span class="n">lang</span> <span class="o">=</span> <span class="n">get_language</span><span class="p">()</span></div>
+
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">Thesaurus</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">):</span>
+            <span class="n">tname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_thesauro_title_label</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">card_max</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">item</span><span class="o">.</span><span class="n">card_max</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">card_min</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_choicefield</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">tname</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">item</span><span class="o">.</span><span class="n">card_max</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">card_min</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_choicefield</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">tname</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">item</span><span class="o">.</span><span class="n">card_max</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">card_min</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_multifield</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">tname</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">item</span><span class="o">.</span><span class="n">card_max</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">card_min</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_define_multifield</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">tname</span><span class="p">,</span> <span class="n">lang</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ThesaurusAvailableForm.cleanx">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusAvailableForm.cleanx">[docs]</a>
+    <span class="k">def</span> <span class="nf">cleanx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">cleaned_values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">QuerySet</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="n">cleaned_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">value</span><span class="p">:</span>
+                <span class="n">cleaned_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ThesaurusKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">flatten</span><span class="p">(</span><span class="n">cleaned_values</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusAvailableForm._define_multifield">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusAvailableForm._define_multifield">[docs]</a>
+    <span class="k">def</span> <span class="nf">_define_multifield</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">required</span><span class="p">,</span> <span class="n">tname</span><span class="p">,</span> <span class="n">lang</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MultipleChoiceField</span><span class="p">(</span>
+            <span class="n">choices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_thesauro_keyword_label</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">lang</span><span class="p">),</span>
+            <span class="n">widget</span><span class="o">=</span><span class="n">autocomplete</span><span class="o">.</span><span class="n">Select2Multiple</span><span class="p">(</span>
+                <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/base/thesaurus_available/?sysid=</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&amp;lang=</span><span class="si">{</span><span class="n">lang</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;treq&quot;</span> <span class="k">if</span> <span class="n">required</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">},</span>
+            <span class="p">),</span>
+            <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ThesaurusAvailableForm._define_choicefield">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusAvailableForm._define_choicefield">[docs]</a>
+    <span class="k">def</span> <span class="nf">_define_choicefield</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">required</span><span class="p">,</span> <span class="n">tname</span><span class="p">,</span> <span class="n">lang</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">models</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Select</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;treq&quot;</span> <span class="k">if</span> <span class="n">required</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">}),</span>
+            <span class="n">choices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_thesauro_keyword_label</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">lang</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ThesaurusAvailableForm._get_thesauro_keyword_label">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusAvailableForm._get_thesauro_keyword_label">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_thesauro_keyword_label</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">lang</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tries to find results for the given language (e.g., en-us).</span>
+
+<span class="sd">        If no results are found, it removes the country code from the language (e.g., en) and tries again.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">keyword_id_for_given_thesaurus</span> <span class="o">=</span> <span class="n">ThesaurusKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">thesaurus_id</span><span class="o">=</span><span class="n">item</span><span class="p">)</span>
+
+        <span class="n">qs_keyword_ids</span> <span class="o">=</span> <span class="n">ThesaurusKeywordLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">keyword_id__in</span><span class="o">=</span><span class="n">keyword_id_for_given_thesaurus</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;keyword_id&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qs_keyword_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lang</span> <span class="o">=</span> <span class="n">remove_country_from_languagecode</span><span class="p">(</span><span class="n">lang</span><span class="p">)</span>
+            <span class="n">qs_keyword_ids</span> <span class="o">=</span> <span class="n">ThesaurusKeywordLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">keyword_id__in</span><span class="o">=</span><span class="n">keyword_id_for_given_thesaurus</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;keyword_id&quot;</span><span class="p">)</span>
+
+        <span class="n">not_qs_ids</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ThesaurusKeywordLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">keyword_id__in</span><span class="o">=</span><span class="n">qs_keyword_ids</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;keyword_id&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">distinct</span><span class="p">(</span><span class="s2">&quot;keyword_id&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;keyword_id&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">qs_local</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">ThesaurusKeywordLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">,</span> <span class="n">keyword_id__in</span><span class="o">=</span><span class="n">keyword_id_for_given_thesaurus</span><span class="p">)</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span>
+                <span class="s2">&quot;keyword_id&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">qs_non_local</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">keyword_id_for_given_thesaurus</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">not_qs_ids</span><span class="p">)</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;alt_label&quot;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">THESAURUS_RESULT_LIST_SEPERATOR</span><span class="p">]</span> <span class="o">+</span> <span class="n">qs_local</span> <span class="o">+</span> <span class="p">[</span><span class="n">THESAURUS_RESULT_LIST_SEPERATOR</span><span class="p">]</span> <span class="o">+</span> <span class="n">qs_non_local</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ThesaurusAvailableForm._get_thesauro_title_label">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusAvailableForm._get_thesauro_title_label">[docs]</a>
+    <span class="k">def</span> <span class="nf">_get_thesauro_title_label</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">lang</span><span class="p">):</span>
+        <span class="n">tname</span> <span class="o">=</span> <span class="n">ThesaurusLabel</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">thesaurus</span><span class="o">=</span><span class="n">item</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tname</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Thesaurus</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">item</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">title</span>
+        <span class="k">return</span> <span class="n">tname</span><span class="o">.</span><span class="n">first</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ContactRoleMultipleChoiceField">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ContactRoleMultipleChoiceField">[docs]</a>
+<span class="k">class</span> <span class="nc">ContactRoleMultipleChoiceField</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelMultipleChoiceField</span><span class="p">):</span>
+<div class="viewcode-block" id="ContactRoleMultipleChoiceField.clean">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ContactRoleMultipleChoiceField.clean">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QuerySet</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">users</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">username__in</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="c1"># value of not supported type ...</span>
+            <span class="k">raise</span> <span class="n">forms</span><span class="o">.</span><span class="n">ValidationError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Something went wrong in finding the profile(s) in a contact role form ...&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">users</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="LinkedResourceForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.LinkedResourceForm">[docs]</a>
+<span class="k">class</span> <span class="nc">LinkedResourceForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+<div class="viewcode-block" id="LinkedResourceForm.linked_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.LinkedResourceForm.linked_resources">[docs]</a>
+    <span class="n">linked_resources</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ModelMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Related resources&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">autocomplete</span><span class="o">.</span><span class="n">ModelSelect2Multiple</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_linked_resource&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># this is used to automatically validate the POSTed back values</span>
+<div class="viewcode-block" id="LinkedResourceForm.queryset">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.LinkedResourceForm.queryset">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;linked_resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">queryset</span> <span class="o">=</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="p">)</span></div>
+
+        <span class="c1"># these are the LinkedResource already linked to this resource</span>
+<div class="viewcode-block" id="LinkedResourceForm.initial">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.LinkedResourceForm.initial">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;linked_resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">LinkedResource</span><span class="o">.</span><span class="n">get_target_ids</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+        <span class="c1"># this is used by the autocomplete view to exclude current resource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;linked_resources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">forward</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">dal</span><span class="o">.</span><span class="n">forward</span><span class="o">.</span><span class="n">Const</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="s2">&quot;exclude&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="LinkedResourceForm.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.LinkedResourceForm.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="LinkedResourceForm.Meta.model">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.LinkedResourceForm.Meta.model">[docs]</a>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ResourceBase</span></div>
+
+<div class="viewcode-block" id="LinkedResourceForm.Meta.fields">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.LinkedResourceForm.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;linked_resources&quot;</span><span class="p">]</span></div>
+</div>
+
+
+<div class="viewcode-block" id="LinkedResourceForm.save_linked_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.LinkedResourceForm.save_linked_resources">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_linked_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">links_field</span><span class="o">=</span><span class="s2">&quot;linked_resources&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create and fetch desired links</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">target_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="n">links_field</span><span class="p">]:</span>
+            <span class="n">LinkedResource</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_or_create</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">res</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">target_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+
+        <span class="c1"># delete remaining links</span>
+        <span class="p">(</span>
+            <span class="n">LinkedResource</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">source_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">target_id__in</span><span class="o">=</span><span class="n">target_ids</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ResourceBaseDateTimePicker">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseDateTimePicker">[docs]</a>
+<span class="k">class</span> <span class="nc">ResourceBaseDateTimePicker</span><span class="p">(</span><span class="n">DateTimePicker</span><span class="p">):</span>
+<div class="viewcode-block" id="ResourceBaseDateTimePicker.build_attrs">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseDateTimePicker.build_attrs">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra_attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="s2">&quot;Helper function for building an attribute dictionary.&quot;</span>
+        <span class="k">if</span> <span class="n">extra_attrs</span><span class="p">:</span>
+            <span class="n">base_attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra_attrs</span><span class="p">)</span>
+        <span class="n">base_attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build_attrs</span><span class="p">(</span><span class="n">base_attrs</span><span class="p">)</span></div>
+</div>
+
+        <span class="c1"># return base_attrs</span>
+
+
+<div class="viewcode-block" id="ResourceBaseForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm">[docs]</a>
+<span class="k">class</span> <span class="nc">ResourceBaseForm</span><span class="p">(</span><span class="n">TranslationModelForm</span><span class="p">,</span> <span class="n">LinkedResourceForm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base form for metadata, should be inherited by childres classes of ResourceBase</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ResourceBaseForm.abstract">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.abstract">[docs]</a>
+    <span class="n">abstract</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Abstract&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">TinyMCE</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.purpose">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.purpose">[docs]</a>
+    <span class="n">purpose</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Purpose&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">TinyMCE</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.constraints_other">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.constraints_other">[docs]</a>
+    <span class="n">constraints_other</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Other constraints&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">TinyMCE</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.supplemental_information">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.supplemental_information">[docs]</a>
+    <span class="n">supplemental_information</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Supplemental information&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">TinyMCE</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.ptype">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.ptype">[docs]</a>
+    <span class="n">ptype</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ResourceBaseForm.sourcetype">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.sourcetype">[docs]</a>
+    <span class="n">sourcetype</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.data_quality_statement">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.data_quality_statement">[docs]</a>
+    <span class="n">data_quality_statement</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Data quality statement&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">TinyMCE</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.owner">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.owner">[docs]</a>
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">(</span>
+        <span class="n">empty_label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">OWNER</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">OWNER</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">autocomplete</span><span class="o">.</span><span class="n">ModelSelect2</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.date">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.date">[docs]</a>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">),</span>
+        <span class="n">localize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">input_formats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M %p&quot;</span><span class="p">],</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">ResourceBaseDateTimePicker</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;YYYY-MM-DD HH:mm a&quot;</span><span class="p">}),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.temporal_extent_start">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.temporal_extent_start">[docs]</a>
+    <span class="n">temporal_extent_start</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;temporal extent start&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">localize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">input_formats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M %p&quot;</span><span class="p">],</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">ResourceBaseDateTimePicker</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;YYYY-MM-DD HH:mm a&quot;</span><span class="p">}),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.temporal_extent_end">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.temporal_extent_end">[docs]</a>
+    <span class="n">temporal_extent_end</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;temporal extent end&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">localize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">input_formats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M %p&quot;</span><span class="p">],</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">ResourceBaseDateTimePicker</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;YYYY-MM-DD HH:mm a&quot;</span><span class="p">}),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.metadata_author">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.metadata_author">[docs]</a>
+    <span class="n">metadata_author</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">METADATA_AUTHOR</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">METADATA_AUTHOR</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.processor">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.processor">[docs]</a>
+    <span class="n">processor</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">PROCESSOR</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">PROCESSOR</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.publisher">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.publisher">[docs]</a>
+    <span class="n">publisher</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">PUBLISHER</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">PUBLISHER</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.custodian">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.custodian">[docs]</a>
+    <span class="n">custodian</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">CUSTODIAN</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">CUSTODIAN</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.poc">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.poc">[docs]</a>
+    <span class="n">poc</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">POC</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">POC</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.distributor">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.distributor">[docs]</a>
+    <span class="n">distributor</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">DISTRIBUTOR</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">DISTRIBUTOR</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.resource_user">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.resource_user">[docs]</a>
+    <span class="n">resource_user</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">RESOURCE_USER</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">RESOURCE_USER</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.resource_provider">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.resource_provider">[docs]</a>
+    <span class="n">resource_provider</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">RESOURCE_PROVIDER</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">RESOURCE_PROVIDER</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.originator">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.originator">[docs]</a>
+    <span class="n">originator</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">ORIGINATOR</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">ORIGINATOR</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.principal_investigator">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.principal_investigator">[docs]</a>
+    <span class="n">principal_investigator</span> <span class="o">=</span> <span class="n">ContactRoleMultipleChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="n">Roles</span><span class="o">.</span><span class="n">PRINCIPAL_INVESTIGATOR</span><span class="o">.</span><span class="n">label</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="n">Roles</span><span class="o">.</span><span class="n">PRINCIPAL_INVESTIGATOR</span><span class="o">.</span><span class="n">is_required</span><span class="p">,</span>
+        <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitProfileSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_profile&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.keywords">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.keywords">[docs]</a>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">TagField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Free-text Keywords&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;A space or comma-separated list of keywords. Use the widget to select from Hierarchical tree.&quot;</span><span class="p">),</span>
+        <span class="c1"># widget=TreeWidget(url=&#39;autocomplete_hierachical_keyword&#39;), #Needs updating to work with select2</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">TaggitSelect2Custom</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;autocomplete_hierachical_keyword&quot;</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.regions">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.regions">[docs]</a>
+    <span class="n">regions</span> <span class="o">=</span> <span class="n">RegionsMultipleChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Regions&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">RegionsSelect</span><span class="p">)</span></div>
+
+
+    <span class="n">regions</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">}</span>
+
+<div class="viewcode-block" id="ResourceBaseForm.extra_metadata">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.extra_metadata">[docs]</a>
+    <span class="n">extra_metadata</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span>
+            <span class="s1">&#39;Additional metadata, must be in format [</span><span class="se">\</span>
+<span class="s1">                {&quot;metadata_key&quot;: &quot;metadata_value&quot;},</span><span class="se">\</span>
+<span class="s1">                {&quot;metadata_key&quot;: &quot;metadata_value&quot;} </span><span class="se">\</span>
+<span class="s1">            ]&#39;</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ResourceBaseForm.user">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.user">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="viewcode-block" id="ResourceBaseForm.choices">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.choices">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;regions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="n">get_tree_data</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ResourceBaseForm.can_change_perms">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.can_change_perms">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">can_change_perms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">has_perm</span><span class="p">(</span>
+            <span class="s2">&quot;change_resourcebase_permissions&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">()</span>
+        <span class="p">)</span></div>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">id</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;extra_metadata&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">metadata</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span>
+
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s2">&quot;featured&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">help_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">help_text</span>
+            <span class="k">if</span> <span class="n">help_text</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;has-popover&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;data-content&quot;</span><span class="p">:</span> <span class="n">help_text</span><span class="p">,</span>
+                        <span class="s2">&quot;data-placement&quot;</span><span class="p">:</span> <span class="s2">&quot;right&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;data-container&quot;</span><span class="p">:</span> <span class="s2">&quot;body&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;data-html&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">can_change_perms</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">]</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="ResourceBaseForm.disable_keywords_widget_for_non_superuser">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.disable_keywords_widget_for_non_superuser">[docs]</a>
+    <span class="k">def</span> <span class="nf">disable_keywords_widget_for_non_superuser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">FREETEXT_KEYWORDS_READONLY</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">field</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.clean_keywords">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.clean_keywords">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean_keywords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">]</span>
+        <span class="n">_unsescaped_kwds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+            <span class="n">_k</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;%([A-Z0-9]</span><span class="si">{2}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;&amp;#x\g&lt;1&gt;;&quot;</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_k</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">_kk</span> <span class="ow">in</span> <span class="p">[</span><span class="n">html</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">_k</span><span class="p">]:</span>
+                    <span class="c1"># Simulate JS Unescape</span>
+                    <span class="n">_kk</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">_kk</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%u</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\u&quot;</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;unicode-escape&quot;</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">u&quot;</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">u&quot;</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;unicode-escape&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="s2">&quot;</span><span class="si">%u</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">_kk</span>
+                        <span class="k">else</span> <span class="n">_kk</span>
+                    <span class="p">)</span>
+                    <span class="n">_hk</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__iexact</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_kk</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">_hk</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">_hk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">_unsescaped_kwds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">_hk</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">_unsescaped_kwds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">_kk</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_hk</span> <span class="o">=</span> <span class="n">HierarchicalKeyword</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__iexact</span><span class="o">=</span><span class="n">_k</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">_hk</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">_hk</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">_unsescaped_kwds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">_hk</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_unsescaped_kwds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">_k</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">_unsescaped_kwds</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.clean_title">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.clean_title">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">title</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.clean_extra_metadata">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.clean_extra_metadata">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean_extra_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cleaned_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;extra_metadata&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">validate_extra_metadata</span><span class="p">(</span><span class="n">cleaned_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceBaseForm.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="ResourceBaseForm.Meta.exclude">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ResourceBaseForm.Meta.exclude">[docs]</a>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;contacts&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;bbox_polygon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ll_bbox_polygon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;srid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;category&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;csw_typename&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;csw_schema&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;csw_mdsource&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;csw_type&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;csw_wkt_geometry&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;metadata_uploaded&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;metadata_xml&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;csw_anytext&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;popular_count&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;share_count&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;thumbnail&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;charset&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;rating&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;detail_url&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;tkeywords&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;users_geolimits&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;groups_geolimits&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dirty_state&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;state&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;blob&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;files&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;was_approved&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;was_published&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="ValuesListField">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ValuesListField">[docs]</a>
+<span class="k">class</span> <span class="nc">ValuesListField</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Field</span><span class="p">):</span>
+<div class="viewcode-block" id="ValuesListField.to_python">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ValuesListField.to_python">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">validators</span><span class="o">.</span><span class="n">EMPTY_VALUES</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+
+        <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="ValuesListField.clean">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ValuesListField.clean">[docs]</a>
+    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_python</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_validators</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BatchEditForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm">[docs]</a>
+<span class="k">class</span> <span class="nc">BatchEditForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+<div class="viewcode-block" id="BatchEditForm.LANGUAGES">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.LANGUAGES">[docs]</a>
+    <span class="n">LANGUAGES</span> <span class="o">=</span> <span class="p">((</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;--------&quot;</span><span class="p">),)</span> <span class="o">+</span> <span class="n">ALL_LANGUAGES</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.group">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.group">[docs]</a>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Group&quot;</span><span class="p">),</span> <span class="n">queryset</span><span class="o">=</span><span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.owner">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.owner">[docs]</a>
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Owner&quot;</span><span class="p">),</span> <span class="n">queryset</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.category">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.category">[docs]</a>
+    <span class="n">category</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Category&quot;</span><span class="p">),</span> <span class="n">queryset</span><span class="o">=</span><span class="n">TopicCategory</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.license">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.license">[docs]</a>
+    <span class="n">license</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;License&quot;</span><span class="p">),</span> <span class="n">queryset</span><span class="o">=</span><span class="n">License</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.regions">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.regions">[docs]</a>
+    <span class="n">regions</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Regions&quot;</span><span class="p">),</span> <span class="n">queryset</span><span class="o">=</span><span class="n">Region</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.date">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.date">[docs]</a>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.language">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.language">[docs]</a>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Language&quot;</span><span class="p">),</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">LANGUAGES</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.keywords">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.keywords">[docs]</a>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BatchEditForm.ids">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.BatchEditForm.ids">[docs]</a>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_user_choices">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.get_user_choices">[docs]</a>
+<span class="k">def</span> <span class="nf">get_user_choices</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">x</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">title</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+
+<div class="viewcode-block" id="UserAndGroupPermissionsForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.UserAndGroupPermissionsForm">[docs]</a>
+<span class="k">class</span> <span class="nc">UserAndGroupPermissionsForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="viewcode-block" id="UserAndGroupPermissionsForm.label_from_instance">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.UserAndGroupPermissionsForm.label_from_instance">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;layers&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">label_from_instance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_from_instance</span></div>
+
+
+<div class="viewcode-block" id="UserAndGroupPermissionsForm.layers">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.UserAndGroupPermissionsForm.layers">[docs]</a>
+    <span class="n">layers</span> <span class="o">=</span> <span class="n">MultipleChoiceField</span><span class="p">(</span>
+        <span class="n">choices</span><span class="o">=</span><span class="n">get_user_choices</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">autocomplete</span><span class="o">.</span><span class="n">Select2Multiple</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;datasets_autocomplete&quot;</span><span class="p">),</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Datasets&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UserAndGroupPermissionsForm.permission_type">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.UserAndGroupPermissionsForm.permission_type">[docs]</a>
+    <span class="n">permission_type</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">RadioSelect</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;view&quot;</span><span class="p">,</span> <span class="s2">&quot;View&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">,</span> <span class="s2">&quot;Download&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;edit&quot;</span><span class="p">,</span> <span class="s2">&quot;Edit&quot;</span><span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="UserAndGroupPermissionsForm.mode">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.UserAndGroupPermissionsForm.mode">[docs]</a>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ChoiceField</span><span class="p">(</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">RadioSelect</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;set&quot;</span><span class="p">,</span> <span class="s2">&quot;Set&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;unset&quot;</span><span class="p">,</span> <span class="s2">&quot;Unset&quot;</span><span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="UserAndGroupPermissionsForm.ids">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.UserAndGroupPermissionsForm.ids">[docs]</a>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">())</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">label_from_instance</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">title</span></div>
+
+
+
+<div class="viewcode-block" id="OwnerRightsRequestForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.OwnerRightsRequestForm">[docs]</a>
+<span class="k">class</span> <span class="nc">OwnerRightsRequestForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+<div class="viewcode-block" id="OwnerRightsRequestForm.resource">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.OwnerRightsRequestForm.resource">[docs]</a>
+    <span class="n">resource</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">ModelChoiceField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Resource&quot;</span><span class="p">),</span> <span class="n">queryset</span><span class="o">=</span><span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">HiddenInput</span><span class="p">()</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="OwnerRightsRequestForm.reason">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.OwnerRightsRequestForm.reason">[docs]</a>
+    <span class="n">reason</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Reason&quot;</span><span class="p">),</span> <span class="n">widget</span><span class="o">=</span><span class="n">forms</span><span class="o">.</span><span class="n">Textarea</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Short reasoning behind the request&quot;</span><span class="p">),</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OwnerRightsRequestForm.Meta">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.OwnerRightsRequestForm.Meta">[docs]</a>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+<div class="viewcode-block" id="OwnerRightsRequestForm.Meta.fields">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.OwnerRightsRequestForm.Meta.fields">[docs]</a>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;reason&quot;</span><span class="p">,</span> <span class="s2">&quot;resource&quot;</span><span class="p">]</span></div>
+</div>
+</div>
+
+
+
+<div class="viewcode-block" id="ThesaurusImportForm">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusImportForm">[docs]</a>
+<span class="k">class</span> <span class="nc">ThesaurusImportForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">Form</span><span class="p">):</span>
+<div class="viewcode-block" id="ThesaurusImportForm.rdf_file">
+<a class="viewcode-back" href="../../../autoapi/geonode/base/forms/index.html#geonode.base.forms.ThesaurusImportForm.rdf_file">[docs]</a>
+    <span class="n">rdf_file</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">FileField</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

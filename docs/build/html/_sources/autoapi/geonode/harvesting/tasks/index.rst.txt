@@ -1,0 +1,125 @@
+geonode.harvesting.tasks
+========================
+
+.. py:module:: geonode.harvesting.tasks
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.harvesting.tasks.logger
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.harvesting.tasks.harvesting_scheduler
+   geonode.harvesting.tasks.harvesting_dispatcher
+   geonode.harvesting.tasks.harvest_resources
+   geonode.harvesting.tasks._harvest_resource
+   geonode.harvesting.tasks._finish_harvesting
+   geonode.harvesting.tasks._handle_harvesting_error
+   geonode.harvesting.tasks.check_harvester_available
+   geonode.harvesting.tasks.update_harvestable_resources
+   geonode.harvesting.tasks._update_harvestable_resources_batch
+   geonode.harvesting.tasks._finish_harvestable_resources_update
+   geonode.harvesting.tasks._handle_harvestable_resources_update_error
+   geonode.harvesting.tasks._delete_stale_harvestable_resources
+   geonode.harvesting.tasks.finish_asynchronous_session
+   geonode.harvesting.tasks.update_asynchronous_session
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: harvesting_scheduler(self)
+
+   Check whether any of the configured harvesters needs to be run or not.
+
+   This function is called periodically by celery beat. It is configured to run every
+   `HARVESTER_SCHEDULER_FREQUENCY_MINUTES` minutes. This can be configured in the GeoNode
+   settings. The default value is 0.5, which means that this function is called every
+   thirty seconds.
+
+
+
+.. py:function:: harvesting_dispatcher(self, harvesting_session_id: int)
+
+   Perform harvesting asynchronously.
+
+   This function kicks-off a harvesting session for the input harvester id.
+   It defines an async workflow that results in the harvestable resources being
+   checked and harvested onto the local GeoNode.
+
+   The implementation briefly consists of:
+
+   - start a harvesting session
+   - determine which of the known harvestable resources have to be harvested
+   - schedule each harvestable resource to be harvested asynchronously
+   - when all resources have been harvested, finish the harvesting session
+
+   Internally, the code uses celery's `chord` workflow primitive. This is used to
+   allow the harvesting of individual resources to be done in parallel (as much
+   as the celery worker config allows for) and still have a final synchronization
+   step, once all resources are harvested, that finalizes the harvesting session.
+
+
+
+.. py:function:: harvest_resources(self, harvestable_resource_ids: List[int], harvesting_session_id: int)
+
+   Harvest a list of remote resources that all belong to the same harvester.
+
+
+.. py:function:: _harvest_resource(self, harvestable_resource_id: int, harvesting_session_id: int)
+
+   Harvest a single resource from the input harvestable resource id
+
+
+.. py:function:: _finish_harvesting(self, harvesting_session_id: int)
+
+.. py:function:: _handle_harvesting_error(self, task_id, *args, **kwargs)
+
+   Ensure harvester status is set back to `ready` in case of an error.
+
+
+.. py:function:: check_harvester_available(self, harvester_id: int)
+
+.. py:function:: update_harvestable_resources(self, refresh_session_id: int)
+
+.. py:function:: _update_harvestable_resources_batch(self, refresh_session_id: int, page: int, page_size: int)
+
+.. py:function:: _finish_harvestable_resources_update(self, refresh_session_id: int)
+
+.. py:function:: _handle_harvestable_resources_update_error(self, task_id, *args, **kwargs)
+
+.. py:function:: _delete_stale_harvestable_resources(harvester: geonode.harvesting.models.Harvester)
+
+   Delete harvestable resources that haven't been found on the current refresh.
+
+   If a harvestable resource was not refreshed since the last check, it this means
+   it has not been found this time around - maybe it is not available anymore, or
+   maybe the user just changed the harvester parameters. Either way, the harvestable
+   resource is no longer relevant, and therefore can be deleted.
+
+   When a harvestable resource is deleted, it may leave a corresponding GeoNode
+   resource orphan. The corresponding GeoNode resource is the one that had been
+   created locally as a result of harvesting information of the HarvestableResource
+   on the remote server by the harvester worker. Depending on the value of the
+   corresponding `models.Harvester.delete_orphan_resources_automatically`, the GeoNode
+   resource may also be deleted as a result of running this method.
+
+
+
+.. py:function:: finish_asynchronous_session(session_id: int, final_status: str, final_details: Optional[str] = None, additional_processed_records: Optional[int] = None) -> None
+
+   Finish the asynchronous session and also reset the harvester status.
+
+
+.. py:function:: update_asynchronous_session(session_id: int, total_records_to_process: Optional[int] = None, additional_processed_records: Optional[int] = None, additional_details: Optional[str] = None) -> None
+

@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pavement &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="changepw" href="../changepw/index.html" />
+    <link rel="prev" title="geonode.wsgi" href="../geonode/wsgi/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../geonode/index.html">geonode</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pavement</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pavement._keepdb"><code class="docutils literal notranslate"><span class="pre">_keepdb</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.dev_config"><code class="docutils literal notranslate"><span class="pre">dev_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">dev_config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.grab"><code class="docutils literal notranslate"><span class="pre">grab()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.setup_geoserver"><code class="docutils literal notranslate"><span class="pre">setup_geoserver()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement._configure_data_dir"><code class="docutils literal notranslate"><span class="pre">_configure_data_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.static"><code class="docutils literal notranslate"><span class="pre">static()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.setup"><code class="docutils literal notranslate"><span class="pre">setup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.grab_winfiles"><code class="docutils literal notranslate"><span class="pre">grab_winfiles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.win_install_deps"><code class="docutils literal notranslate"><span class="pre">win_install_deps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.upgradedb"><code class="docutils literal notranslate"><span class="pre">upgradedb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.sync"><code class="docutils literal notranslate"><span class="pre">sync()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.package"><code class="docutils literal notranslate"><span class="pre">package()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.start"><code class="docutils literal notranslate"><span class="pre">start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.stop_django"><code class="docutils literal notranslate"><span class="pre">stop_django()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.stop_geoserver"><code class="docutils literal notranslate"><span class="pre">stop_geoserver()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.stop"><code class="docutils literal notranslate"><span class="pre">stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.start_django"><code class="docutils literal notranslate"><span class="pre">start_django()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.start_messaging"><code class="docutils literal notranslate"><span class="pre">start_messaging()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.start_geoserver"><code class="docutils literal notranslate"><span class="pre">start_geoserver()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.test"><code class="docutils literal notranslate"><span class="pre">test()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.test_bdd"><code class="docutils literal notranslate"><span class="pre">test_bdd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.test_javascript"><code class="docutils literal notranslate"><span class="pre">test_javascript()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.test_integration"><code class="docutils literal notranslate"><span class="pre">test_integration()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.run_tests"><code class="docutils literal notranslate"><span class="pre">run_tests()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.reset"><code class="docutils literal notranslate"><span class="pre">reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement._reset"><code class="docutils literal notranslate"><span class="pre">_reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.reset_hard"><code class="docutils literal notranslate"><span class="pre">reset_hard()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.setup_data"><code class="docutils literal notranslate"><span class="pre">setup_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.deb"><code class="docutils literal notranslate"><span class="pre">deb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.publish"><code class="docutils literal notranslate"><span class="pre">publish()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.versions"><code class="docutils literal notranslate"><span class="pre">versions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.kill"><code class="docutils literal notranslate"><span class="pre">kill()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.waitfor"><code class="docutils literal notranslate"><span class="pre">waitfor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement._copytree"><code class="docutils literal notranslate"><span class="pre">_copytree()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.justcopy"><code class="docutils literal notranslate"><span class="pre">justcopy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pavement.str2bool"><code class="docutils literal notranslate"><span class="pre">str2bool()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">pavement</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/autoapi/pavement/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pavement">
+<span id="pavement"></span><h1>pavement<a class="headerlink" href="#module-pavement" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement._keepdb" title="pavement._keepdb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_keepdb</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="pavement.dev_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dev_config</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="pavement.dev_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dev_config</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.logger" title="pavement.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.grab" title="pavement.grab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grab</span></code></a>(src, dest, name)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.setup_geoserver" title="pavement.setup_geoserver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_geoserver</span></code></a>(options)</p></td>
+<td><p>Prepare a testing instance of GeoServer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement._configure_data_dir" title="pavement._configure_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_configure_data_dir</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.static" title="pavement.static"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static</span></code></a>(options)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.setup" title="pavement.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup</span></code></a>(options)</p></td>
+<td><p>Get dependencies and prepare a GeoNode development environment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.grab_winfiles" title="pavement.grab_winfiles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grab_winfiles</span></code></a>(url, dest, packagename)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.win_install_deps" title="pavement.win_install_deps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">win_install_deps</span></code></a>(options)</p></td>
+<td><p>Install all Windows Binary automatically</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.upgradedb" title="pavement.upgradedb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upgradedb</span></code></a>(options)</p></td>
+<td><p>Add 'fake' data migrations for existing tables from legacy GeoNode versions</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.sync" title="pavement.sync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sync</span></code></a>(options)</p></td>
+<td><p>Run the migrate and migrate management commands to create and migrate a DB</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.package" title="pavement.package"><code class="xref py py-obj docutils literal notranslate"><span class="pre">package</span></code></a>(options)</p></td>
+<td><p>Creates a tarball to use for building the system elsewhere</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.start" title="pavement.start"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start</span></code></a>(options)</p></td>
+<td><p>Start GeoNode (Django, GeoServer &amp; Client)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.stop_django" title="pavement.stop_django"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop_django</span></code></a>(options)</p></td>
+<td><p>Stop the GeoNode Django application</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.stop_geoserver" title="pavement.stop_geoserver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop_geoserver</span></code></a>(options)</p></td>
+<td><p>Stop GeoServer</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.stop" title="pavement.stop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop</span></code></a>(options)</p></td>
+<td><p>Stop GeoNode</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.start_django" title="pavement.start_django"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_django</span></code></a>(options)</p></td>
+<td><p>Start the GeoNode Django application</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.start_messaging" title="pavement.start_messaging"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_messaging</span></code></a>(options)</p></td>
+<td><p>Start the GeoNode messaging server</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.start_geoserver" title="pavement.start_geoserver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_geoserver</span></code></a>(options)</p></td>
+<td><p>Start GeoServer with GeoNode extensions</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.test" title="pavement.test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test</span></code></a>(options)</p></td>
+<td><p>Run GeoNode's Unit Test Suite</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.test_bdd" title="pavement.test_bdd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_bdd</span></code></a>(options)</p></td>
+<td><p>Run GeoNode's BDD Test Suite</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.test_javascript" title="pavement.test_javascript"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_javascript</span></code></a>(options)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.test_integration" title="pavement.test_integration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_integration</span></code></a>(options)</p></td>
+<td><p>Run GeoNode's Integration test suite against the external apps</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.run_tests" title="pavement.run_tests"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_tests</span></code></a>(options)</p></td>
+<td><p>Executes the entire test suite.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.reset" title="pavement.reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset</span></code></a>(options)</p></td>
+<td><p>Reset a development environment (Database, GeoServer &amp; Catalogue)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement._reset" title="pavement._reset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_reset</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.reset_hard" title="pavement.reset_hard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_hard</span></code></a>(options)</p></td>
+<td><p>Reset a development environment (Database, GeoServer &amp; Catalogue)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.setup_data" title="pavement.setup_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_data</span></code></a>(options)</p></td>
+<td><p>Import sample data (from gisdata package) into GeoNode</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.deb" title="pavement.deb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deb</span></code></a>(options)</p></td>
+<td><p>Creates debian packages.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.publish" title="pavement.publish"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish</span></code></a>(options)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.versions" title="pavement.versions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">versions</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.kill" title="pavement.kill"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kill</span></code></a>(arg1, arg2)</p></td>
+<td><p>Stops a proces that contains arg1 and is filtered by arg2</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.waitfor" title="pavement.waitfor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">waitfor</span></code></a>(url[, timeout])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement._copytree" title="pavement._copytree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_copytree</span></code></a>(src, dst[, symlinks, ignore])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pavement.justcopy" title="pavement.justcopy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">justcopy</span></code></a>(origin, target)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pavement.str2bool" title="pavement.str2bool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str2bool</span></code></a>(v)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="pavement._keepdb">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">_keepdb</span></span><a class="reference internal" href="../../_modules/pavement.html#_keepdb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement._keepdb" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pavement.dev_config">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">dev_config</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../_modules/pavement.html#dev_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.dev_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">dev_config</span></span><a class="reference internal" href="../../_modules/pavement.html#dev_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="pavement.logger">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../_modules/pavement.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.grab">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">grab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#grab"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.grab" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.setup_geoserver">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">setup_geoserver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#setup_geoserver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.setup_geoserver" title="Link to this definition"></a></dt>
+<dd><p>Prepare a testing instance of GeoServer.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement._configure_data_dir">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">_configure_data_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#_configure_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement._configure_data_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.static">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">static</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#static"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.static" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.setup">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.setup" title="Link to this definition"></a></dt>
+<dd><p>Get dependencies and prepare a GeoNode development environment.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.grab_winfiles">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">grab_winfiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packagename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#grab_winfiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.grab_winfiles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.win_install_deps">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">win_install_deps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#win_install_deps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.win_install_deps" title="Link to this definition"></a></dt>
+<dd><p>Install all Windows Binary automatically
+This can be removed as wheels become available for these packages</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.upgradedb">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">upgradedb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#upgradedb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.upgradedb" title="Link to this definition"></a></dt>
+<dd><p>Add ‘fake’ data migrations for existing tables from legacy GeoNode versions</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.sync">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#sync"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.sync" title="Link to this definition"></a></dt>
+<dd><p>Run the migrate and migrate management commands to create and migrate a DB</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.package">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">package</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#package"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.package" title="Link to this definition"></a></dt>
+<dd><p>Creates a tarball to use for building the system elsewhere</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.start">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.start" title="Link to this definition"></a></dt>
+<dd><p>Start GeoNode (Django, GeoServer &amp; Client)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.stop_django">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">stop_django</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#stop_django"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.stop_django" title="Link to this definition"></a></dt>
+<dd><p>Stop the GeoNode Django application</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.stop_geoserver">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">stop_geoserver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#stop_geoserver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.stop_geoserver" title="Link to this definition"></a></dt>
+<dd><p>Stop GeoServer</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.stop">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.stop" title="Link to this definition"></a></dt>
+<dd><p>Stop GeoNode</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.start_django">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">start_django</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#start_django"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.start_django" title="Link to this definition"></a></dt>
+<dd><p>Start the GeoNode Django application</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.start_messaging">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">start_messaging</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#start_messaging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.start_messaging" title="Link to this definition"></a></dt>
+<dd><p>Start the GeoNode messaging server</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.start_geoserver">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">start_geoserver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#start_geoserver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.start_geoserver" title="Link to this definition"></a></dt>
+<dd><p>Start GeoServer with GeoNode extensions</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.test">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.test" title="Link to this definition"></a></dt>
+<dd><p>Run GeoNode’s Unit Test Suite</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.test_bdd">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">test_bdd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#test_bdd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.test_bdd" title="Link to this definition"></a></dt>
+<dd><p>Run GeoNode’s BDD Test Suite</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.test_javascript">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">test_javascript</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#test_javascript"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.test_javascript" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.test_integration">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">test_integration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#test_integration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.test_integration" title="Link to this definition"></a></dt>
+<dd><p>Run GeoNode’s Integration test suite against the external apps</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.run_tests">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">run_tests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#run_tests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.run_tests" title="Link to this definition"></a></dt>
+<dd><p>Executes the entire test suite.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.reset">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.reset" title="Link to this definition"></a></dt>
+<dd><p>Reset a development environment (Database, GeoServer &amp; Catalogue)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement._reset">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">_reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#_reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement._reset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.reset_hard">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">reset_hard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#reset_hard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.reset_hard" title="Link to this definition"></a></dt>
+<dd><p>Reset a development environment (Database, GeoServer &amp; Catalogue)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.setup_data">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">setup_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#setup_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.setup_data" title="Link to this definition"></a></dt>
+<dd><p>Import sample data (from gisdata package) into GeoNode</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.deb">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">deb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#deb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.deb" title="Link to this definition"></a></dt>
+<dd><p>Creates debian packages.</p>
+<dl class="simple">
+<dt>Example uses:</dt><dd><p>paver deb
+paver deb -k 12345
+paver deb -k 12345 -p geonode/testing</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.publish">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">publish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#publish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.publish" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.versions">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">versions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.versions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.kill">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">kill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#kill"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.kill" title="Link to this definition"></a></dt>
+<dd><p>Stops a proces that contains arg1 and is filtered by arg2</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.waitfor">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">waitfor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#waitfor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.waitfor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement._copytree">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">_copytree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symlinks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#_copytree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement._copytree" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.justcopy">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">justcopy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#justcopy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.justcopy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pavement.str2bool">
+<span class="sig-prename descclassname"><span class="pre">pavement.</span></span><span class="sig-name descname"><span class="pre">str2bool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pavement.html#str2bool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pavement.str2bool" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../geonode/wsgi/index.html" class="btn btn-neutral float-left" title="geonode.wsgi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../changepw/index.html" class="btn btn-neutral float-right" title="changepw" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
