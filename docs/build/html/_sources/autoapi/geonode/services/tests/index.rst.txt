@@ -1,0 +1,198 @@
+geonode.services.tests
+======================
+
+.. py:module:: geonode.services.tests
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.services.tests.logger
+   geonode.services.tests.SERVICES_TYPE_MODULES
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.services.tests.ModuleFunctionsTestCase
+   geonode.services.tests.WmsServiceHandlerTestCase
+   geonode.services.tests.WmsServiceHarvestingTestCase
+   geonode.services.tests.TestServiceViews
+   geonode.services.tests.dummy_services_type
+   geonode.services.tests.dummy_services_type2
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: ModuleFunctionsTestCase(methodName='runTest')
+
+   Bases: :py:obj:`unittest.TestCase`
+
+
+   A class whose instances are single test cases.
+
+   By default, the test code itself should be placed in a method named
+   'runTest'.
+
+   If the fixture may be used for many test cases, create as
+   many test methods as are needed. When instantiating such a TestCase
+   subclass, specify in the constructor arguments the name of the test method
+   that the instance is to execute.
+
+   Test authors should subclass TestCase for their own tests. Construction
+   and deconstruction of the test's environment ('fixture') can be
+   implemented by overriding the 'setUp' and 'tearDown' methods respectively.
+
+   If it is necessary to override the __init__ method, the base class
+   __init__ method must always be called. It is important that subclasses
+   should not change the signature of their __init__ method, since instances
+   of the classes are instantiated automatically by parts of the framework
+   in order to be run.
+
+   When subclassing TestCase, you can set these attributes:
+   * failureException: determines which exception will be raised when
+       the instance's assertion methods fail; test methods raising this
+       exception will be deemed to have 'failed' rather than 'errored'.
+   * longMessage: determines whether long messages (including repr of
+       objects used in assert methods) will be printed on failure in *addition*
+       to any explicit message passed.
+   * maxDiff: sets the maximum length of a diff in failure messages
+       by assert methods using difflib. It is looked up as an instance
+       attribute so can be configured by individual tests if required.
+
+
+   .. py:method:: test_get_cascading_workspace_returns_existing(mock_settings, mock_catalog)
+
+
+   .. py:method:: test_get_cascading_workspace_creates_new_workspace(mock_settings, mock_catalog)
+
+
+   .. py:method:: test_get_service_handler_wms(mock_wms_handler)
+
+
+   .. py:method:: test_get_service_handler_arcgis(mock_map_service)
+
+
+   .. py:method:: test_get_arcgis_alternative_structure(mock_map_service)
+
+
+.. py:class:: WmsServiceHandlerTestCase
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_has_correct_url(mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_has_valid_name_when_no_title_exists(mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_has_valid_name_when_title_exists(mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_has_correct_service_type(mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_detects_indexed_service(mock_settings, mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_detects_cascaded_service(mock_settings, mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_create_geonode_service(mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_geonode_service_uses_given_getmap_params(mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_get_keywords(mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_get_resource(mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_get_resources(mock_wms_get_resource, mock_wms_get_resources, mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_offers_geonode_projection(mock_settings, mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_does_not_offer_geonode_projection(mock_settings, mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_get_store(mock_get_gs_cascading_store, mock_wms_parsed_service, mock_wms)
+
+
+   .. py:method:: test_local_user_cant_delete_service()
+
+
+   .. py:method:: test_add_duplicate_remote_service_url()
+
+
+.. py:class:: WmsServiceHarvestingTestCase
+
+   Bases: :py:obj:`django.contrib.staticfiles.testing.StaticLiveServerTestCase`
+
+
+   .. py:attribute:: selenium
+      :value: None
+
+
+
+   .. py:method:: setUpClass()
+      :classmethod:
+
+
+
+   .. py:method:: tearDownClass()
+      :classmethod:
+
+
+
+   .. py:method:: test_harvest_resources()
+
+
+.. py:data:: SERVICES_TYPE_MODULES
+   :value: ['geonode.services.tests.dummy_services_type', 'geonode.services.tests.dummy_services_type2']
+
+
+.. py:class:: TestServiceViews
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   .. py:method:: setUp()
+
+
+   .. py:method:: test_user_admin_can_access_to_page()
+
+
+   .. py:method:: test_anonymous_user_can_see_the_services()
+
+
+   .. py:method:: test_will_use_multiple_service_types_defined()
+
+
+   .. py:method:: test_will_use_multiple_service_types_defined_for_choices()
+
+
+.. py:class:: dummy_services_type
+
+   .. py:attribute:: services_type
+
+
+.. py:class:: dummy_services_type2
+
+   .. py:attribute:: services_type
+
+

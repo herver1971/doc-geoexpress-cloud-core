@@ -1,0 +1,101 @@
+geonode.messaging.consumer
+==========================
+
+.. py:module:: geonode.messaging.consumer
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.messaging.consumer.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.messaging.consumer.Consumer
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.messaging.consumer._update_dataset_data
+   geonode.messaging.consumer._wait_for_dataset
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: Consumer(connection, messages_limit=None)
+
+   Bases: :py:obj:`kombu.mixins.ConsumerMixin`
+
+
+   .. py:attribute:: last_message
+      :value: None
+
+
+
+   .. py:attribute:: connection
+
+
+   .. py:attribute:: messages_limit
+
+
+   .. py:method:: get_consumers(Consumer, channel)
+
+
+   .. py:method:: _check_message_limit()
+
+
+   .. py:method:: on_consume_end(connection, channel)
+
+
+   .. py:method:: on_message(body, message)
+
+
+   .. py:method:: on_email_messages(body, message)
+
+
+   .. py:method:: on_geoserver_messages(body, message)
+
+
+   .. py:method:: on_notifications_messages(body, message)
+
+
+   .. py:method:: on_geoserver_all(body, message)
+
+
+   .. py:method:: on_geoserver_catalog(body, message)
+
+
+   .. py:method:: on_geoserver_data(body, message)
+
+
+   .. py:method:: on_consume_ready(connection, channel, consumers, **kwargs)
+
+
+   .. py:method:: on_dataset_viewer(body, message)
+
+
+.. py:function:: _update_dataset_data(body, last_message)
+
+.. py:function:: _wait_for_dataset(dataset_id, num_attempts=5, wait_seconds=1)
+
+   Blocks execution while the Dataset instance is not found on the database
+
+   This is a workaround for the fact that the
+   ``geonode.geoserver.signals.geoserver_post_save_local`` function might
+   try to access the layer's ``id`` parameter before the layer is done being
+   saved in the database.
+
+
+

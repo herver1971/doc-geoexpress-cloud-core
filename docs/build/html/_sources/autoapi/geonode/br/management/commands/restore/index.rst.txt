@@ -1,0 +1,108 @@
+geonode.br.management.commands.restore
+======================================
+
+.. py:module:: geonode.br.management.commands.restore
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.br.management.commands.restore.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.br.management.commands.restore.Command
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: Command
+
+   Bases: :py:obj:`django.core.management.base.BaseCommand`
+
+
+   .. py:attribute:: help
+      :value: 'Restore the GeoNode application data'
+
+
+
+   .. py:method:: add_arguments(parser)
+
+
+   .. py:method:: handle(**options)
+
+
+   .. py:method:: execute_restore(**options)
+
+
+   .. py:method:: validate_backup_file_options(**options) -> None
+
+      Method validating --backup-file and --backup-files-dir options
+
+      :param options: self.handle() method options
+      :raises: Django CommandError, if options violate requirements
+      :return: None
+
+
+
+   .. py:method:: parse_backup_files_dir(backup_files_dir: str) -> Union[str, None]
+
+      Method picking the Backup Archive to be restored from the Backup Files Directory.
+      Only archives created/modified AFTER the last restored dumps are considered.
+
+      :param backup_files_dir: path to the directory containing backup files
+      :return: backup file path, if a proper backup archive was found, and None otherwise
+
+
+
+   .. py:method:: validate_backup_file_hash(backup_file: str) -> str
+
+      Method calculating the hash of the backup file and validating it if the proper \*.md5 file exists in the backup_file directory.
+
+      :param backup_file: path to the backup_file
+      :return: backup_file hash
+
+
+
+   .. py:method:: check_backup_ini_settings(backup_file: str) -> str
+
+      Method checking backup file's original settings availability
+
+      :param backup_file: path to the backup_file
+      :return: backup_ini_file_path original settings used by the backup file
+
+
+
+   .. py:method:: restore_geoserver_backup(config, settings, target_folder, skip_geoserver_info, skip_geoserver_security, ignore_errors, soft_reset)
+
+      Restore GeoServer Catalog
+
+
+
+   .. py:method:: prepare_geoserver_gwc_config(config, settings)
+
+
+   .. py:method:: restore_geoserver_raster_data(config, settings, target_folder)
+
+
+   .. py:method:: restore_geoserver_vector_data(config, settings, target_folder, soft_reset)
+
+      Restore Vectorial Data from DB
+
+
+
+   .. py:method:: restore_geoserver_externals(config, settings, target_folder)
+
+      Restore external references from XML files
+
+
+

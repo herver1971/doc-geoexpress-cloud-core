@@ -1,0 +1,97 @@
+geonode.geoserver.views
+=======================
+
+.. py:module:: geonode.geoserver.views
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.geoserver.views.logger
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.geoserver.views.stores
+   geonode.geoserver.views.updatelayers
+   geonode.geoserver.views.dataset_style
+   geonode.geoserver.views.dataset_style_upload
+   geonode.geoserver.views.dataset_style_manage
+   geonode.geoserver.views.style_change_check
+   geonode.geoserver.views.check_geoserver_access
+   geonode.geoserver.views.geoserver_proxy
+   geonode.geoserver.views._response_callback
+   geonode.geoserver.views.resolve_user
+   geonode.geoserver.views.dataset_acls
+   geonode.geoserver.views.get_dataset_capabilities
+   geonode.geoserver.views.format_online_resource
+   geonode.geoserver.views.get_capabilities
+   geonode.geoserver.views.server_online
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: stores(request, store_type=None)
+
+.. py:function:: updatelayers(request)
+
+.. py:function:: dataset_style(request, layername)
+
+.. py:function:: dataset_style_upload(request, layername)
+
+.. py:function:: dataset_style_manage(request, layername)
+
+.. py:function:: style_change_check(request, path, style_name=None, access_token=None)
+
+   If the layer has not change_dataset_style permission, return a status of
+   401 (unauthorized)
+
+
+.. py:function:: check_geoserver_access(request, proxy_path, downstream_path, workspace=None, layername=None, allowed_hosts=[])
+
+.. py:function:: geoserver_proxy(request, proxy_path, downstream_path, workspace=None, layername=None)
+
+   WARNING: Decorators are applied in the order they appear in the source.
+
+
+.. py:function:: _response_callback(**kwargs)
+
+.. py:function:: resolve_user(request)
+
+.. py:function:: dataset_acls(request)
+
+   returns json-encoded lists of layer identifiers that
+   represent the sets of read-write and read-only layers
+   for the currently authenticated user.
+
+
+.. py:function:: get_dataset_capabilities(layer, version='1.3.0', access_token=None)
+
+   Retrieve a layer-specific GetCapabilities document
+
+
+.. py:function:: format_online_resource(workspace, layer, element, namespaces)
+
+   Replace workspace/layer-specific OnlineResource links with the more
+   generic links returned by a site-wide GetCapabilities document
+
+
+.. py:function:: get_capabilities(request, layerid=None, user=None, mapid=None, category=None)
+
+   Compile a GetCapabilities document containing public layers
+   filtered by layer, user, map, or category
+
+
+.. py:function:: server_online(request)
+
+   Returns {success} whenever the LOCAL_GEOSERVER is up and running
+
+

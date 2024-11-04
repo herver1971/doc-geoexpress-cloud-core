@@ -1,0 +1,123 @@
+geonode.facets.views
+====================
+
+.. py:module:: geonode.facets.views
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.facets.views.PARAM_PAGE
+   geonode.facets.views.PARAM_PAGE_SIZE
+   geonode.facets.views.PARAM_LANG
+   geonode.facets.views.PARAM_ADD_LINKS
+   geonode.facets.views.PARAM_INCLUDE_TOPICS
+   geonode.facets.views.PARAM_INCLUDE_CONFIG
+   geonode.facets.views.PARAM_TOPIC_CONTAINS
+   geonode.facets.views.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.facets.views.BaseFacetingView
+   geonode.facets.views.ListFacetsView
+   geonode.facets.views.GetFacetView
+
+
+Module Contents
+---------------
+
+.. py:data:: PARAM_PAGE
+   :value: 'page'
+
+
+.. py:data:: PARAM_PAGE_SIZE
+   :value: 'page_size'
+
+
+.. py:data:: PARAM_LANG
+   :value: 'lang'
+
+
+.. py:data:: PARAM_ADD_LINKS
+   :value: 'add_links'
+
+
+.. py:data:: PARAM_INCLUDE_TOPICS
+   :value: 'include_topics'
+
+
+.. py:data:: PARAM_INCLUDE_CONFIG
+   :value: 'include_config'
+
+
+.. py:data:: PARAM_TOPIC_CONTAINS
+   :value: 'topic_contains'
+
+
+.. py:data:: logger
+
+.. py:class:: BaseFacetingView
+
+   Bases: :py:obj:`rest_framework.views.APIView`
+
+
+   .. py:attribute:: authentication_classes
+
+
+   .. py:method:: _get_topics(provider, queryset, page: int = 0, page_size: int = DEFAULT_FACET_PAGE_SIZE, lang: str = 'en', topic_contains: str = None, keys: set = {}, **kwargs)
+      :classmethod:
+
+
+
+   .. py:method:: _prefilter_topics(request)
+      :classmethod:
+
+
+      Perform some prefiltering on resources, such as
+
+        - auth visibility
+        - filtering by other facets already applied
+
+      :param request:
+      :return: a QuerySet on ResourceBase
+
+
+
+   .. py:method:: _resolve_language(request) -> (str, bool)
+      :classmethod:
+
+
+      :return: the resolved language, a boolean telling if the language was requested
+
+
+
+   .. py:method:: _resolve_boolean(request, name, fallback=None)
+      :classmethod:
+
+
+      Parse boolean query params
+
+
+
+.. py:class:: ListFacetsView
+
+   Bases: :py:obj:`BaseFacetingView`
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+.. py:class:: GetFacetView
+
+   Bases: :py:obj:`BaseFacetingView`
+
+
+   .. py:method:: get(request, facet)
+
+

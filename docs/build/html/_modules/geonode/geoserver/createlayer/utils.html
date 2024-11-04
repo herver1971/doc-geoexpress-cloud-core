@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.geoserver.createlayer.utils &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../geoserver.html">geonode.geoserver</a></li>
+          <li class="breadcrumb-item"><a href="../createlayer.html">geonode.geoserver.createlayer</a></li>
+      <li class="breadcrumb-item active">geonode.geoserver.createlayer.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.geoserver.createlayer.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2017 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.contrib.gis.geos</span> <span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">slugify</span>
+
+<span class="kn">from</span> <span class="nn">geonode</span> <span class="kn">import</span> <span class="n">GeoNodeException</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.models</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">geonode.layers.utils</span> <span class="kn">import</span> <span class="n">get_valid_name</span>
+<span class="kn">from</span> <span class="nn">geonode.resource.manager</span> <span class="kn">import</span> <span class="n">resource_manager</span>
+<span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">gs_catalog</span><span class="p">,</span> <span class="n">ogc_server_settings</span><span class="p">,</span> <span class="n">create_geoserver_db_featurestore</span>
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/utils/index.html#geonode.geoserver.createlayer.utils.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BBOX">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/utils/index.html#geonode.geoserver.createlayer.utils.BBOX">[docs]</a>
+<span class="n">BBOX</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DATA_QUALITY_MESSAGE">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/utils/index.html#geonode.geoserver.createlayer.utils.DATA_QUALITY_MESSAGE">[docs]</a>
+<span class="n">DATA_QUALITY_MESSAGE</span> <span class="o">=</span> <span class="s2">&quot;Created with GeoNode&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="create_dataset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/utils/index.html#geonode.geoserver.createlayer.utils.create_dataset">[docs]</a>
+<span class="k">def</span> <span class="nf">create_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">owner_name</span><span class="p">,</span> <span class="n">geometry_type</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an empty layer in GeoServer and register it in GeoNode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># first validate parameters</span>
+    <span class="k">if</span> <span class="n">geometry_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;Point&quot;</span><span class="p">,</span> <span class="s2">&quot;LineString&quot;</span><span class="p">,</span> <span class="s2">&quot;Polygon&quot;</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;geometry must be Point, LineString or Polygon&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">get_valid_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="c1"># we can proceed</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating the layer in GeoServer&quot;</span><span class="p">)</span>
+    <span class="n">workspace</span><span class="p">,</span> <span class="n">datastore</span> <span class="o">=</span> <span class="n">create_gs_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">geometry_type</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Creating the layer in GeoNode&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">create_gn_dataset</span><span class="p">(</span><span class="n">workspace</span><span class="p">,</span> <span class="n">datastore</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">owner_name</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_gn_dataset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/utils/index.html#geonode.geoserver.createlayer.utils.create_gn_dataset">[docs]</a>
+<span class="k">def</span> <span class="nf">create_gn_dataset</span><span class="p">(</span><span class="n">workspace</span><span class="p">,</span> <span class="n">datastore</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">owner_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Associate a layer in GeoNode for a given layer in GeoServer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">owner</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">owner_name</span><span class="p">)</span>
+
+    <span class="n">layer</span> <span class="o">=</span> <span class="n">resource_manager</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()),</span>
+        <span class="n">resource_type</span><span class="o">=</span><span class="n">Dataset</span><span class="p">,</span>
+        <span class="n">defaults</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">store</span><span class="o">=</span><span class="n">datastore</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">subtype</span><span class="o">=</span><span class="s2">&quot;vector&quot;</span><span class="p">,</span>
+            <span class="n">alternate</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">workspace</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+            <span class="n">owner</span><span class="o">=</span><span class="n">owner</span><span class="p">,</span>
+            <span class="n">srid</span><span class="o">=</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">,</span>
+            <span class="n">bbox_polygon</span><span class="o">=</span><span class="n">Polygon</span><span class="o">.</span><span class="n">from_bbox</span><span class="p">(</span><span class="n">BBOX</span><span class="p">),</span>
+            <span class="n">ll_bbox_polygon</span><span class="o">=</span><span class="n">Polygon</span><span class="o">.</span><span class="n">from_bbox</span><span class="p">(</span><span class="n">BBOX</span><span class="p">),</span>
+            <span class="n">data_quality_statement</span><span class="o">=</span><span class="n">DATA_QUALITY_MESSAGE</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">to_update</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">:</span>
+        <span class="n">to_update</span><span class="p">[</span><span class="s2">&quot;is_approved&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_update</span><span class="p">[</span><span class="s2">&quot;was_approved&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">:</span>
+        <span class="n">to_update</span><span class="p">[</span><span class="s2">&quot;is_published&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_update</span><span class="p">[</span><span class="s2">&quot;was_published&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">resource_manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">layer</span><span class="p">,</span> <span class="n">vals</span><span class="o">=</span><span class="n">to_update</span><span class="p">)</span>
+    <span class="n">resource_manager</span><span class="o">.</span><span class="n">set_thumbnail</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">layer</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">layer</span></div>
+
+
+
+<div class="viewcode-block" id="get_attributes">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/utils/index.html#geonode.geoserver.createlayer.utils.get_attributes">[docs]</a>
+<span class="k">def</span> <span class="nf">get_attributes</span><span class="p">(</span><span class="n">geometry_type</span><span class="p">,</span> <span class="n">json_attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a JSON representation of attributes to a Python representation.</span>
+
+<span class="sd">    Parameters:</span>
+
+<span class="sd">    - json_attrs:</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;field_str&quot;: &quot;string&quot;,</span>
+<span class="sd">                &quot;field_int&quot;: &quot;integer&quot;,</span>
+<span class="sd">                &quot;field_date&quot;: &quot;date&quot;,</span>
+<span class="sd">                &quot;field_float&quot;: &quot;float&quot;</span>
+<span class="sd">            }</span>
+
+<span class="sd">    - geometry_type: A string which can be &quot;Point&quot;, &quot;LineString&quot;, or &quot;Polygon&quot;</span>
+
+<span class="sd">    Output:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        [</span>
+<span class="sd">            [&#39;the_geom&#39;, u&#39;com.vividsolutions.jts.geom.Polygon&#39;, {&#39;nillable&#39;: False}],</span>
+<span class="sd">            [&#39;field_str&#39;, &#39;java.lang.String&#39;, {&#39;nillable&#39;: True}],</span>
+<span class="sd">            [&#39;field_int&#39;, &#39;java.lang.Integer&#39;, {&#39;nillable&#39;: True}],</span>
+<span class="sd">            [&#39;field_date&#39;, &#39;java.util.Date&#39;, {&#39;nillable&#39;: True}],</span>
+<span class="sd">            [&#39;field_float&#39;, &#39;java.lang.Float&#39;, {&#39;nillable&#39;: True}]</span>
+<span class="sd">        ]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">lattrs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">gattr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">gattr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;the_geom&quot;</span><span class="p">)</span>
+    <span class="n">gattr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;com.vividsolutions.jts.geom.</span><span class="si">{</span><span class="n">geometry_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">gattr</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;nillable&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+    <span class="n">lattrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gattr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">json_attrs</span><span class="p">:</span>
+        <span class="n">jattrs</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_attrs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">jattr</span> <span class="ow">in</span> <span class="n">jattrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">lattr</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">attr_name</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span><span class="n">jattr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">attr_type</span> <span class="o">=</span> <span class="n">jattr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;You must provide an attribute name for attribute of type </span><span class="si">{</span><span class="n">attr_type</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attr_type</span><span class="si">}</span><span class="s2"> is not a valid type for attribute </span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">attr_type</span> <span class="o">==</span> <span class="s2">&quot;date&quot;</span><span class="p">:</span>
+                <span class="n">attr_type</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;java.util.</span><span class="si">{</span><span class="p">(</span><span class="n">attr_type</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">attr_type</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">attr_type</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;java.lang.</span><span class="si">{</span><span class="p">(</span><span class="n">attr_type</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">attr_type</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">lattr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span>
+            <span class="n">lattr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attr_type</span><span class="p">)</span>
+            <span class="n">lattr</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;nillable&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+            <span class="n">lattrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lattr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lattrs</span></div>
+
+
+
+<div class="viewcode-block" id="get_or_create_datastore">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/utils/index.html#geonode.geoserver.createlayer.utils.get_or_create_datastore">[docs]</a>
+<span class="k">def</span> <span class="nf">get_or_create_datastore</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">charset</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a PostGIS database store or create it in GeoServer if does not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dsname</span> <span class="o">=</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">datastore_db</span><span class="p">[</span><span class="s2">&quot;NAME&quot;</span><span class="p">]</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">create_geoserver_db_featurestore</span><span class="p">(</span><span class="n">store_name</span><span class="o">=</span><span class="n">dsname</span><span class="p">,</span> <span class="n">workspace</span><span class="o">=</span><span class="n">workspace</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ds</span></div>
+
+
+
+<div class="viewcode-block" id="create_gs_dataset">
+<a class="viewcode-back" href="../../../../autoapi/geonode/geoserver/createlayer/utils/index.html#geonode.geoserver.createlayer.utils.create_gs_dataset">[docs]</a>
+<span class="k">def</span> <span class="nf">create_gs_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">geometry_type</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an empty PostGIS layer in GeoServer with a given name, title,</span>
+<span class="sd">    geometry_type and attributes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">native_name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="n">cat</span> <span class="o">=</span> <span class="n">gs_catalog</span>
+
+    <span class="c1"># get workspace and store</span>
+    <span class="n">workspace</span> <span class="o">=</span> <span class="n">cat</span><span class="o">.</span><span class="n">get_default_workspace</span><span class="p">()</span>
+
+    <span class="c1"># get (or create the datastore)</span>
+    <span class="n">datastore</span> <span class="o">=</span> <span class="n">get_or_create_datastore</span><span class="p">(</span><span class="n">cat</span><span class="p">,</span> <span class="n">workspace</span><span class="p">)</span>
+
+    <span class="c1"># check if datastore is of PostGIS type</span>
+    <span class="k">if</span> <span class="n">datastore</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s2">&quot;PostGIS&quot;</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;To use the createlayer application you must use PostGIS&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="c1"># check if layer is existing</span>
+    <span class="n">resources</span> <span class="o">=</span> <span class="n">datastore</span><span class="o">.</span><span class="n">get_resources</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">resources</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">resource</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;There is already a layer named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">workspace</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">GeoNodeException</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">attributes</span> <span class="o">=</span> <span class="n">get_attributes</span><span class="p">(</span><span class="n">geometry_type</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+    <span class="n">attributes_block</span> <span class="o">=</span> <span class="s2">&quot;&lt;attributes&gt;&quot;</span>
+    <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+        <span class="n">att_name</span><span class="p">,</span> <span class="n">binding</span><span class="p">,</span> <span class="n">opts</span> <span class="o">=</span> <span class="n">spec</span>
+        <span class="n">nillable</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nillable&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">attributes_block</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="s2">&quot;&lt;attribute&gt;&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;name&gt;</span><span class="si">{</span><span class="n">att_name</span><span class="si">}</span><span class="s2">&lt;/name&gt;&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;binding&gt;</span><span class="si">{</span><span class="n">binding</span><span class="si">}</span><span class="s2">&lt;/binding&gt;&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;nillable&gt;</span><span class="si">{</span><span class="n">nillable</span><span class="si">}</span><span class="s2">&lt;/nillable&gt;&quot;</span>
+            <span class="s2">&quot;&lt;/attribute&gt;&quot;</span>
+        <span class="p">)</span>
+    <span class="n">attributes_block</span> <span class="o">+=</span> <span class="s2">&quot;&lt;/attributes&gt;&quot;</span>
+
+    <span class="c1"># TODO implement others srs and not only EPSG:4326</span>
+    <span class="n">xml</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;&lt;featureType&gt;&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;&lt;name&gt;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&lt;/name&gt;&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;&lt;nativeName&gt;</span><span class="si">{</span><span class="n">native_name</span><span class="si">}</span><span class="s2">&lt;/nativeName&gt;&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;&lt;title&gt;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">&lt;/title&gt;&quot;</span>
+        <span class="s2">&quot;&lt;srs&gt;EPSG:4326&lt;/srs&gt;&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;&lt;latLonBoundingBox&gt;&lt;minx&gt;</span><span class="si">{</span><span class="n">BBOX</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/minx&gt;&lt;maxx&gt;</span><span class="si">{</span><span class="n">BBOX</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/maxx&gt;&lt;miny&gt;</span><span class="si">{</span><span class="n">BBOX</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/miny&gt;&lt;maxy&gt;</span><span class="si">{</span><span class="n">BBOX</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/maxy&gt;&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;&lt;crs&gt;EPSG:4326&lt;/crs&gt;&lt;/latLonBoundingBox&gt;&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attributes_block</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;&lt;/featureType&gt;&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">rest</span><span class="si">}</span><span class="s2">/workspaces/</span><span class="si">{</span><span class="n">workspace</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">/datastores/</span><span class="si">{</span><span class="n">datastore</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">/featuretypes&quot;</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/xml&quot;</span><span class="p">}</span>
+    <span class="n">_user</span><span class="p">,</span> <span class="n">_password</span> <span class="o">=</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">credentials</span>
+    <span class="n">req</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">xml</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="n">_user</span><span class="p">,</span> <span class="n">_password</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">201</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request status code was: </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Response was: </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset could not be created in GeoServer </span><span class="si">{</span><span class="n">req</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">cat</span><span class="o">.</span><span class="n">reload</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">workspace</span><span class="p">,</span> <span class="n">datastore</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

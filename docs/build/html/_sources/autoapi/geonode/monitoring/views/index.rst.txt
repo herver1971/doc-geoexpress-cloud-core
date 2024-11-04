@@ -1,0 +1,666 @@
+geonode.monitoring.views
+========================
+
+.. py:module:: geonode.monitoring.views
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.monitoring.views.capi
+   geonode.monitoring.views.api_metrics
+   geonode.monitoring.views.api_services
+   geonode.monitoring.views.api_hosts
+   geonode.monitoring.views.api_labels
+   geonode.monitoring.views.api_resources
+   geonode.monitoring.views.api_resource_types
+   geonode.monitoring.views.api_event_types
+   geonode.monitoring.views.api_metric_data
+   geonode.monitoring.views.api_metric_collect
+   geonode.monitoring.views.api_exceptions
+   geonode.monitoring.views.api_exception
+   geonode.monitoring.views.api_beacon
+   geonode.monitoring.views.api_user_notification_config
+   geonode.monitoring.views.api_user_notifications
+   geonode.monitoring.views.api_status
+   geonode.monitoring.views.api_autoconfigure
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.monitoring.views.MetricsList
+   geonode.monitoring.views.ServicesList
+   geonode.monitoring.views.HostsList
+   geonode.monitoring.views._ValidFromToLastForm
+   geonode.monitoring.views.CheckTypeForm
+   geonode.monitoring.views.MetricsFilters
+   geonode.monitoring.views.LabelsFilterForm
+   geonode.monitoring.views.ResourcesFilterForm
+   geonode.monitoring.views.EventTypesFilterForm
+   geonode.monitoring.views.FilteredView
+   geonode.monitoring.views.ResourcesList
+   geonode.monitoring.views.ResourceTypesList
+   geonode.monitoring.views.LabelsList
+   geonode.monitoring.views.EventTypeList
+   geonode.monitoring.views.MetricDataView
+   geonode.monitoring.views.ExceptionsListForm
+   geonode.monitoring.views.ExceptionsListView
+   geonode.monitoring.views.ExceptionDataView
+   geonode.monitoring.views.BeaconView
+   geonode.monitoring.views.NotificaitonCheckForm
+   geonode.monitoring.views.MetricNotificationCheckForm
+   geonode.monitoring.views.UserNotificationConfigView
+   geonode.monitoring.views.NotificationsList
+   geonode.monitoring.views.StatusCheckView
+   geonode.monitoring.views.AutoconfigureView
+   geonode.monitoring.views.CollectMetricsView
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.monitoring.views.index
+
+
+Module Contents
+---------------
+
+.. py:data:: capi
+
+.. py:class:: MetricsList
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:method:: get(*args, **kwargs)
+
+
+.. py:class:: ServicesList
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:method:: get_queryset()
+
+
+   .. py:method:: get(*args, **kwargs)
+
+
+.. py:class:: HostsList
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:method:: get_queryset()
+
+
+   .. py:method:: get(*args, **kwargs)
+
+
+.. py:class:: _ValidFromToLastForm
+
+   Bases: :py:obj:`django.forms.Form`
+
+
+   .. py:attribute:: valid_from
+
+
+   .. py:attribute:: valid_to
+
+
+   .. py:attribute:: interval
+
+
+   .. py:attribute:: last
+
+
+   .. py:method:: _check_timestamps()
+
+
+   .. py:method:: clean()
+
+
+.. py:class:: CheckTypeForm
+
+   Bases: :py:obj:`_ValidFromToLastForm`
+
+
+   Special form class to validate values from specific db dictionaries
+   (services, resources, ows services etc)
+
+
+   .. py:method:: _check_type(tname)
+
+      Returns tname-specific object instance from db.
+
+      Internally it uses geonode.monotoring.utils.TypeChecks
+      to resolve field's value to object.
+
+
+
+
+.. py:class:: MetricsFilters
+
+   Bases: :py:obj:`CheckTypeForm`
+
+
+   Special form class to validate values from specific db dictionaries
+   (services, resources, ows services etc)
+
+
+   .. py:attribute:: GROUP_BY_RESOURCE
+      :value: 'resource'
+
+
+
+   .. py:attribute:: GROUP_BY_RESOURCE_ON_LABEL
+      :value: 'resource_on_label'
+
+
+
+   .. py:attribute:: GROUP_BY_RESOURCE_ON_USER
+      :value: 'resource_on_user'
+
+
+
+   .. py:attribute:: GROUP_BY_COUNT_ON_RESOURCE
+      :value: 'count_on_resource'
+
+
+
+   .. py:attribute:: GROUP_BY_LABEL
+      :value: 'label'
+
+
+
+   .. py:attribute:: GROUP_BY_USER
+      :value: 'user'
+
+
+
+   .. py:attribute:: GROUP_BY_USER_ON_LABEL
+      :value: 'user_on_label'
+
+
+
+   .. py:attribute:: GROUP_BY_EVENT_TYPE
+      :value: 'event_type'
+
+
+
+   .. py:attribute:: GROUP_BY_EVENT_TYPE_ON_LABEL
+      :value: 'event_type_on_label'
+
+
+
+   .. py:attribute:: GROUP_BY_EVENT_TYPE_ON_USER
+      :value: 'event_type_on_user'
+
+
+
+   .. py:attribute:: GROUP_BY_CHOICES
+
+
+   .. py:attribute:: service
+
+
+   .. py:attribute:: label
+
+
+   .. py:attribute:: user
+
+
+   .. py:attribute:: resource
+
+
+   .. py:attribute:: resource_type
+
+
+   .. py:attribute:: event_type
+
+
+   .. py:attribute:: service_type
+
+
+   .. py:attribute:: group_by
+
+
+   .. py:method:: clean_resource()
+
+
+   .. py:method:: clean_service()
+
+
+   .. py:method:: clean_label()
+
+
+   .. py:method:: clean_user()
+
+
+   .. py:method:: clean_event_type()
+
+
+   .. py:method:: clean_service_type()
+
+
+   .. py:method:: _check_services()
+
+
+   .. py:method:: clean()
+
+
+.. py:class:: LabelsFilterForm
+
+   Bases: :py:obj:`CheckTypeForm`
+
+
+   Special form class to validate values from specific db dictionaries
+   (services, resources, ows services etc)
+
+
+   .. py:attribute:: metric_name
+
+
+   .. py:method:: clean_metric()
+
+
+.. py:class:: ResourcesFilterForm
+
+   Bases: :py:obj:`LabelsFilterForm`
+
+
+   Special form class to validate values from specific db dictionaries
+   (services, resources, ows services etc)
+
+
+   .. py:attribute:: resource_type
+
+
+   .. py:method:: clean_resource_type()
+
+
+.. py:class:: EventTypesFilterForm
+
+   Bases: :py:obj:`CheckTypeForm`
+
+
+   Special form class to validate values from specific db dictionaries
+   (services, resources, ows services etc)
+
+
+   .. py:attribute:: ows_service
+
+
+   .. py:method:: clean_ows_service()
+
+
+.. py:class:: FilteredView
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:attribute:: filter_form
+      :value: None
+
+
+
+   .. py:attribute:: fields_map
+
+
+   .. py:attribute:: output_name
+      :value: None
+
+
+
+   .. py:method:: get_filter_args(request)
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+.. py:class:: ResourcesList
+
+   Bases: :py:obj:`FilteredView`
+
+
+   .. py:attribute:: filter_form
+
+
+   .. py:attribute:: fields_map
+      :value: (('id', 'id'), ('type', 'type'), ('name', 'name'))
+
+
+
+   .. py:attribute:: output_name
+      :value: 'resources'
+
+
+
+   .. py:method:: get_queryset(metric_name=None, resource_type=None, valid_from=None, valid_to=None, last=None, interval=None)
+
+
+.. py:class:: ResourceTypesList
+
+   Bases: :py:obj:`FilteredView`
+
+
+   .. py:attribute:: output_name
+      :value: 'resource_types'
+
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+.. py:class:: LabelsList
+
+   Bases: :py:obj:`FilteredView`
+
+
+   .. py:attribute:: filter_form
+
+
+   .. py:attribute:: fields_map
+      :value: (('id', 'id'), ('name', 'name'))
+
+
+
+   .. py:attribute:: output_name
+      :value: 'labels'
+
+
+
+   .. py:method:: get_queryset(metric_name, valid_from, valid_to, interval=None, last=None)
+
+
+.. py:class:: EventTypeList
+
+   Bases: :py:obj:`FilteredView`
+
+
+   .. py:attribute:: filter_form
+
+
+   .. py:attribute:: fields_map
+      :value: (('name', 'name'), ('type_label', 'type_label'))
+
+
+
+   .. py:attribute:: output_name
+      :value: 'event_types'
+
+
+
+   .. py:method:: get_queryset(**kwargs)
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+.. py:class:: MetricDataView
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:method:: get_filters(**kwargs)
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+.. py:class:: ExceptionsListForm
+
+   Bases: :py:obj:`CheckTypeForm`
+
+
+   Special form class to validate values from specific db dictionaries
+   (services, resources, ows services etc)
+
+
+   .. py:attribute:: error_type
+
+
+   .. py:attribute:: service_name
+
+
+   .. py:attribute:: service_type
+
+
+   .. py:attribute:: resource
+
+
+   .. py:method:: clean_resource()
+
+
+   .. py:method:: clean_service()
+
+
+.. py:class:: ExceptionsListView
+
+   Bases: :py:obj:`FilteredView`
+
+
+   .. py:attribute:: filter_form
+
+
+   .. py:attribute:: fields_map
+      :value: (('id', 'id'), ('created', 'created'), ('url', 'url'), ('service_data', 'service'),...
+
+
+
+   .. py:attribute:: output_name
+      :value: 'exceptions'
+
+
+
+   .. py:method:: get_queryset(error_type=None, valid_from=None, valid_to=None, interval=None, last=None, service_name=None, service_type=None, resource=None)
+
+
+.. py:class:: ExceptionDataView
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:method:: get_object(exception_id)
+
+
+   .. py:method:: get(request, exception_id, *args, **kwargs)
+
+
+.. py:class:: BeaconView
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+.. py:function:: index(request)
+
+.. py:class:: NotificaitonCheckForm
+
+   Bases: :py:obj:`django.forms.ModelForm`
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ('name', 'description', 'severity', 'user_threshold')
+
+
+
+
+.. py:class:: MetricNotificationCheckForm
+
+   Bases: :py:obj:`django.forms.ModelForm`
+
+
+   .. py:attribute:: metric
+
+
+   .. py:attribute:: service
+
+
+   .. py:attribute:: resource
+
+
+   .. py:attribute:: label
+
+
+   .. py:attribute:: event_type
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ('notification_check', 'min_value', 'max_value', 'max_timeout')
+
+
+
+
+   .. py:method:: _get_clean_model(cls, name)
+
+
+   .. py:method:: clean_metric()
+
+
+   .. py:method:: clean_service()
+
+
+   .. py:method:: clean_label()
+
+
+   .. py:method:: clean_event_type()
+
+
+   .. py:method:: clean_resource()
+
+
+.. py:class:: UserNotificationConfigView
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:method:: get_object()
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+   .. py:method:: post(request, *args, **kwargs)
+
+
+.. py:class:: NotificationsList
+
+   Bases: :py:obj:`FilteredView`
+
+
+   .. py:attribute:: filter_form
+      :value: None
+
+
+
+   .. py:attribute:: fields_map
+      :value: (('id', 'id'), ('url', 'url'), ('name', 'name'), ('active', 'active'), ('severity', 'severity'),...
+
+
+
+   .. py:attribute:: output_name
+      :value: 'data'
+
+
+
+   .. py:method:: get_filter_args(*args, **kwargs)
+
+
+   .. py:method:: get_queryset(*args, **kwargs)
+
+
+   .. py:method:: create(request, *args, **kwargs)
+
+
+   .. py:method:: post(request, *args, **kwargs)
+
+
+.. py:class:: StatusCheckView
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:attribute:: fields
+      :value: ('name', 'severity', 'offending_value', 'threshold_value', 'spotted_at', 'valid_from',...
+
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+.. py:class:: AutoconfigureView
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   .. py:method:: post(request, *args, **kwargs)
+
+
+.. py:class:: CollectMetricsView
+
+   Bases: :py:obj:`django.views.generic.base.View`
+
+
+   - Run command "collect_metrics -n -t xml" via web
+
+
+   .. py:attribute:: authkey
+      :value: 'OzhVMECJUn9vDu2oLv1HjGPKByuTBwF8'
+
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+.. py:data:: api_metrics
+
+.. py:data:: api_services
+
+.. py:data:: api_hosts
+
+.. py:data:: api_labels
+
+.. py:data:: api_resources
+
+.. py:data:: api_resource_types
+
+.. py:data:: api_event_types
+
+.. py:data:: api_metric_data
+
+.. py:data:: api_metric_collect
+
+.. py:data:: api_exceptions
+
+.. py:data:: api_exception
+
+.. py:data:: api_beacon
+
+.. py:data:: api_user_notification_config
+
+.. py:data:: api_user_notifications
+
+.. py:data:: api_status
+
+.. py:data:: api_autoconfigure
+
