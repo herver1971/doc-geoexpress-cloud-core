@@ -1,0 +1,421 @@
+geonode.api.resourcebase_api
+============================
+
+.. py:module:: geonode.api.resourcebase_api
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.api.resourcebase_api.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.api.resourcebase_api.CommonMetaApi
+   geonode.api.resourcebase_api.CommonModelApi
+   geonode.api.resourcebase_api.ResourceBaseResource
+   geonode.api.resourcebase_api.FeaturedResourceBaseResource
+   geonode.api.resourcebase_api.LayerResource
+   geonode.api.resourcebase_api.MapResource
+   geonode.api.resourcebase_api.GeoAppResource
+   geonode.api.resourcebase_api.DocumentResource
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: CommonMetaApi
+
+   .. py:attribute:: authorization
+
+
+   .. py:attribute:: allowed_methods
+      :value: ['get']
+
+
+
+   .. py:attribute:: filtering
+
+
+   .. py:attribute:: ordering
+      :value: ['date', 'title', 'popular_count']
+
+
+
+   .. py:attribute:: max_limit
+      :value: None
+
+
+
+.. py:class:: CommonModelApi
+
+   Bases: :py:obj:`tastypie.resources.ModelResource`
+
+
+   .. py:attribute:: keywords
+
+
+   .. py:attribute:: regions
+
+
+   .. py:attribute:: category
+
+
+   .. py:attribute:: group
+
+
+   .. py:attribute:: owner
+
+
+   .. py:attribute:: tkeywords
+
+
+   .. py:attribute:: VALUES
+      :value: ['id', 'uuid', 'name', 'typename', 'title', 'date', 'date_type', 'edition', 'purpose',...
+
+
+
+   .. py:method:: build_filters(filters=None, ignore_bad_filters=False, **kwargs)
+
+
+   .. py:method:: _remove_additional_filters(orm_filters)
+
+
+   .. py:method:: apply_filters(request, applicable_filters)
+
+
+   .. py:method:: filter_h_keywords(queryset, keywords)
+
+
+   .. py:method:: build_haystack_filters(parameters)
+
+
+   .. py:method:: get_search(request, **kwargs)
+
+
+   .. py:method:: get_haystack_api_fields(haystack_object)
+
+
+   .. py:method:: get_list(request, **kwargs)
+
+      Returns a serialized list of resources.
+
+      Calls ``obj_get_list`` to provide the data, then handles that result
+      set and serializes it.
+
+      Should return a HttpResponse (200 OK).
+
+
+
+   .. py:method:: format_objects(objects)
+
+      Format the objects for output in a response.
+
+
+
+   .. py:method:: create_response(request, data, response_class=HttpResponse, response_objects=None, **response_kwargs)
+
+      Extracts the common "which-format/serialize/return-response" cycle.
+
+      Mostly a useful shortcut/hook.
+
+
+
+   .. py:method:: prepend_urls()
+
+
+   .. py:method:: hydrate_title(bundle)
+
+
+.. py:class:: ResourceBaseResource
+
+   Bases: :py:obj:`CommonModelApi`
+
+
+   ResourceBase api
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`CommonMetaApi`
+
+
+      .. py:attribute:: paginator_class
+
+
+      .. py:attribute:: queryset
+
+
+      .. py:attribute:: resource_name
+         :value: 'base'
+
+
+
+      .. py:attribute:: excludes
+         :value: ['csw_anytext', 'metadata_xml']
+
+
+
+      .. py:attribute:: authentication
+
+
+
+.. py:class:: FeaturedResourceBaseResource
+
+   Bases: :py:obj:`CommonModelApi`
+
+
+   Only the featured resourcebases
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`CommonMetaApi`
+
+
+      .. py:attribute:: paginator_class
+
+
+      .. py:attribute:: queryset
+
+
+      .. py:attribute:: resource_name
+         :value: 'featured'
+
+
+
+      .. py:attribute:: authentication
+
+
+
+.. py:class:: LayerResource
+
+   Bases: :py:obj:`CommonModelApi`
+
+
+   Dataset API
+
+
+   .. py:attribute:: links
+
+
+   .. py:attribute:: default_style
+
+
+   .. py:method:: build_filters(filters=None, ignore_bad_filters=False, **kwargs)
+
+
+   .. py:method:: format_objects(objects)
+
+      Formats the object.
+
+
+
+   .. py:method:: _dehydrate_links(bundle, link_types=None)
+
+      Dehydrate links field.
+
+
+
+   .. py:method:: dehydrate_links(bundle)
+
+
+   .. py:method:: dehydrate_ogc_links(bundle)
+
+
+   .. py:method:: dehydrate_gtype(bundle)
+
+
+   .. py:method:: build_bundle(obj=None, data=None, request=None, **kwargs)
+
+      Override build_bundle method to add additional info.
+
+
+
+   .. py:method:: populate_object(obj)
+
+      Populate results with necessary fields
+
+      :param obj: Dataset obj
+      :type obj: Dataset
+      :return:
+
+
+
+   .. py:attribute:: VALUES
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`CommonMetaApi`
+
+
+      .. py:attribute:: paginator_class
+
+
+      .. py:attribute:: queryset
+
+
+      .. py:attribute:: resource_name
+         :value: 'datasets'
+
+
+
+      .. py:attribute:: detail_uri_name
+         :value: 'id'
+
+
+
+      .. py:attribute:: include_resource_uri
+         :value: True
+
+
+
+      .. py:attribute:: allowed_methods
+         :value: ['get', 'patch']
+
+
+
+      .. py:attribute:: excludes
+         :value: ['csw_anytext', 'metadata_xml']
+
+
+
+      .. py:attribute:: authentication
+
+
+      .. py:attribute:: filtering
+
+
+
+.. py:class:: MapResource
+
+   Bases: :py:obj:`CommonModelApi`
+
+
+   Maps API
+
+
+   .. py:method:: build_filters(filters=None, ignore_bad_filters=False, **kwargs)
+
+
+   .. py:method:: format_objects(objects)
+
+      Formats the objects and provides reference to list of layers in map
+      resources.
+
+      :param objects: Map objects
+
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`CommonMetaApi`
+
+
+      .. py:attribute:: paginator_class
+
+
+      .. py:attribute:: queryset
+
+
+      .. py:attribute:: resource_name
+         :value: 'maps'
+
+
+
+      .. py:attribute:: authentication
+
+
+
+.. py:class:: GeoAppResource
+
+   Bases: :py:obj:`CommonModelApi`
+
+
+   GeoApps API
+
+
+   .. py:method:: format_objects(objects)
+
+      Formats the objects and provides reference to list of layers in GeoApp
+      resources.
+
+      :param objects: GeoApp objects
+
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`CommonMetaApi`
+
+
+      .. py:attribute:: paginator_class
+
+
+      .. py:attribute:: filtering
+
+
+      .. py:attribute:: queryset
+
+
+      .. py:attribute:: resource_name
+         :value: 'geoapps'
+
+
+
+      .. py:attribute:: authentication
+
+
+
+.. py:class:: DocumentResource
+
+   Bases: :py:obj:`CommonModelApi`
+
+
+   Documents API
+
+
+   .. py:method:: build_filters(filters=None, ignore_bad_filters=False, **kwargs)
+
+
+   .. py:method:: format_objects(objects)
+
+      Formats the objects and provides reference to list of layers in map
+      resources.
+
+      :param objects: Map objects
+
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`CommonMetaApi`
+
+
+      .. py:attribute:: paginator_class
+
+
+      .. py:attribute:: filtering
+
+
+      .. py:attribute:: queryset
+
+
+      .. py:attribute:: resource_name
+         :value: 'documents'
+
+
+
+      .. py:attribute:: authentication
+
+
+

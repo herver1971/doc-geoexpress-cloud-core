@@ -1,0 +1,513 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.harvesting.tests.test_api_serializers &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../harvesting.html">geonode.harvesting</a></li>
+      <li class="breadcrumb-item active">geonode.harvesting.tests.test_api_serializers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.harvesting.tests.test_api_serializers</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.utils.timezone</span> <span class="kn">import</span> <span class="n">now</span>
+<span class="kn">from</span> <span class="nn">rest_framework.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">rest_framework.test</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">APIRequestFactory</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">geonode.tests.base</span> <span class="kn">import</span> <span class="n">GeoNodeBaseTestSupport</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">..api</span> <span class="kn">import</span> <span class="n">serializers</span>
+
+
+<div class="viewcode-block" id="_REQUEST_FACTORY">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers._REQUEST_FACTORY">[docs]</a>
+<span class="n">_REQUEST_FACTORY</span> <span class="o">=</span> <span class="n">APIRequestFactory</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="BriefHarvesterSerializerTestCase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefHarvesterSerializerTestCase">[docs]</a>
+<span class="k">class</span> <span class="nc">BriefHarvesterSerializerTestCase</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="BriefHarvesterSerializerTestCase.remote_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefHarvesterSerializerTestCase.remote_url">[docs]</a>
+    <span class="n">remote_url</span> <span class="o">=</span> <span class="s2">&quot;test.com&quot;</span></div>
+
+<div class="viewcode-block" id="BriefHarvesterSerializerTestCase.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefHarvesterSerializerTestCase.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;This is geonode harvester&quot;</span></div>
+
+<div class="viewcode-block" id="BriefHarvesterSerializerTestCase.user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefHarvesterSerializerTestCase.user">[docs]</a>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BriefHarvesterSerializerTestCase.harvester_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefHarvesterSerializerTestCase.harvester_type">[docs]</a>
+    <span class="n">harvester_type</span> <span class="o">=</span> <span class="s2">&quot;geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker&quot;</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BriefHarvesterSerializerTestCase.setUpTestData">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefHarvesterSerializerTestCase.setUpTestData">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUpTestData</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">remote_url</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">remote_url</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">default_owner</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">harvester_type</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">harvester_type</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BriefHarvesterSerializerTestCase.test_serializer_is_able_to_serialize_model_instance">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefHarvesterSerializerTestCase.test_serializer_is_able_to_serialize_model_instance">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_serializer_is_able_to_serialize_model_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">api_endpoint</span> <span class="o">=</span> <span class="s2">&quot;/api/v2/harvesters/&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">api_endpoint</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BriefHarvesterSerializer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+        <span class="n">serialized</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;remote_url&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">remote_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">urlparse</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;links&quot;</span><span class="p">][</span><span class="s2">&quot;self&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api_endpoint</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;links&quot;</span><span class="p">][</span><span class="s2">&quot;harvestable_resources&quot;</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase">[docs]</a>
+<span class="k">class</span> <span class="nc">HarvesterSerializerTestCase</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="HarvesterSerializerTestCase.remote_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.remote_url">[docs]</a>
+    <span class="n">remote_url</span> <span class="o">=</span> <span class="s2">&quot;test.com&quot;</span></div>
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;This is geonode harvester&quot;</span></div>
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.user">[docs]</a>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.harvester_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.harvester_type">[docs]</a>
+    <span class="n">harvester_type</span> <span class="o">=</span> <span class="s2">&quot;geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker&quot;</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="HarvesterSerializerTestCase.setUpTestData">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.setUpTestData">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUpTestData</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">remote_url</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">remote_url</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">default_owner</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">harvester_type</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">harvester_type</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_serializer_is_able_to_serialize_model_instance">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_serializer_is_able_to_serialize_model_instance">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_serializer_is_able_to_serialize_model_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">api_endpoint</span> <span class="o">=</span> <span class="s2">&quot;/api/v2/harvesters/&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">api_endpoint</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BriefHarvesterSerializer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+        <span class="n">serialized</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;remote_url&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">remote_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">urlparse</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;links&quot;</span><span class="p">][</span><span class="s2">&quot;self&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api_endpoint</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;links&quot;</span><span class="p">][</span><span class="s2">&quot;harvestable_resources&quot;</span><span class="p">])</span></div>
+
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.models.validate_worker_configuration&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_validate_also_validates_worker_specific_config">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_validate_also_validates_worker_specific_config">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_validate_also_validates_worker_specific_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_validate_config</span><span class="p">):</span>
+        <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;phony&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;remote_url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://fake.com&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;harvester_type&quot;</span><span class="p">:</span> <span class="s2">&quot;geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;harvester_type_specific_configuration&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;something&quot;</span><span class="p">:</span> <span class="s2">&quot;fake config&quot;</span><span class="p">},</span>
+        <span class="p">}</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/v2/harvesters/&quot;</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span>
+
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">mock_validate_config</span><span class="o">.</span><span class="n">assert_called</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_validate_does_not_allow_changing_status_and_worker_specific_config">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_validate_does_not_allow_changing_status_and_worker_specific_config">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_validate_does_not_allow_changing_status_and_worker_specific_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;phony&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;remote_url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://fake.com&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;harvester_type_specific_configuration&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;something&quot;</span><span class="p">:</span> <span class="s2">&quot;fake config&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;updating-harvestable-resources&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/v2/harvesters/&quot;</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span>
+
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">):</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_create_does_not_allow_setting_custom_status">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_create_does_not_allow_setting_custom_status">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_create_does_not_allow_setting_custom_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;phony&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;remote_url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://fake.com&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;updating-harvestable-resources&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/v2/harvesters/&quot;</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span>
+
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">):</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_create">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_create">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">input_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;phony&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;remote_url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://fake.com&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/v2/harvesters/&quot;</span><span class="p">)</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span>
+
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">input_data</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">harvester</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">harvester</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">input_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_update_errors_out_if_current_status_is_not_ready">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_update_errors_out_if_current_status_is_not_ready">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_update_errors_out_if_current_status_is_not_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/v2/harvesters/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;updating-harvestable-resources&quot;</span><span class="p">},</span>
+            <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">},</span>
+            <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCES</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">):</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_update_errors_out_when_client_tries_to_set_status_ready">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_update_errors_out_when_client_tries_to_set_status_ready">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_update_errors_out_when_client_tries_to_set_status_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/v2/harvesters/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">},</span>
+            <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">},</span>
+            <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ValidationError</span><span class="p">):</span>
+            <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.api.serializers.tasks&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_update_calls_update_harvestable_resources_task">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_update_calls_update_harvestable_resources_task">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_update_calls_update_harvestable_resources_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_tasks</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/v2/harvesters/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_UPDATING_HARVESTABLE_RESOURCES</span><span class="p">},</span>
+            <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">},</span>
+            <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">mock_tasks</span><span class="o">.</span><span class="n">update_harvestable_resources</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">assert_called</span><span class="p">()</span>
+        <span class="n">mock_tasks</span><span class="o">.</span><span class="n">update_harvestable_resources</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="n">apply_async</span><span class="o">.</span><span class="n">assert_called</span><span class="p">()</span></div>
+
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.api.serializers.tasks&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_update_calls_harvesting_dispatcher_task">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_update_calls_harvesting_dispatcher_task">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_update_calls_harvesting_dispatcher_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_tasks</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/v2/harvesters/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_PERFORMING_HARVESTING</span><span class="p">},</span>
+            <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">},</span>
+            <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">called_args</span> <span class="o">=</span> <span class="n">mock_tasks</span><span class="o">.</span><span class="n">harvesting_dispatcher</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">call_args_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">]</span>
+        <span class="n">called_session_pk</span> <span class="o">=</span> <span class="n">called_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">called_session_pk</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+        <span class="n">mock_tasks</span><span class="o">.</span><span class="n">harvesting_dispatcher</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="n">apply_async</span><span class="o">.</span><span class="n">assert_called</span><span class="p">()</span></div>
+
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.api.serializers.tasks&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_update_calls_update_harvester_availability_task">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_update_calls_update_harvester_availability_task">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_update_calls_update_harvester_availability_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_tasks</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/v2/harvesters/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_CHECKING_AVAILABILITY</span><span class="p">},</span>
+            <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">},</span>
+            <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">mock_tasks</span><span class="o">.</span><span class="n">check_harvester_available</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="p">,))</span>
+        <span class="n">mock_tasks</span><span class="o">.</span><span class="n">check_harvester_available</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="n">apply_async</span><span class="o">.</span><span class="n">assert_called</span><span class="p">()</span></div>
+
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.api.serializers.tasks&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="HarvesterSerializerTestCase.test_update_updates_harvestable_resources_whenever_worker_config_changes">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvesterSerializerTestCase.test_update_updates_harvestable_resources_whenever_worker_config_changes">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_update_updates_harvestable_resources_whenever_worker_config_changes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_tasks</span><span class="p">):</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/api/v2/harvesters/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">harvester_type_specific_configuration</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvesterSerializer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;harvester_type_specific_configuration&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;harvest_datasets&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}},</span>
+            <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">},</span>
+            <span class="n">partial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">mock_tasks</span><span class="o">.</span><span class="n">update_harvestable_resources</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">pk</span><span class="p">,))</span>
+        <span class="n">mock_tasks</span><span class="o">.</span><span class="n">update_harvestable_resources</span><span class="o">.</span><span class="n">signature</span><span class="o">.</span><span class="n">return_value</span><span class="o">.</span><span class="n">apply_async</span><span class="o">.</span><span class="n">assert_called</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="BriefAsynchronousHarvestingSessionSerializerTestCase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefAsynchronousHarvestingSessionSerializerTestCase">[docs]</a>
+<span class="k">class</span> <span class="nc">BriefAsynchronousHarvestingSessionSerializerTestCase</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="BriefAsynchronousHarvestingSessionSerializerTestCase.harvester">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefAsynchronousHarvestingSessionSerializerTestCase.harvester">[docs]</a>
+    <span class="n">harvester</span><span class="p">:</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="BriefAsynchronousHarvestingSessionSerializerTestCase.setUpTestData">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefAsynchronousHarvestingSessionSerializerTestCase.setUpTestData">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUpTestData</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="n">remote_url</span> <span class="o">=</span> <span class="s2">&quot;test.com&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;This is geonode harvester&quot;</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span>
+        <span class="n">harvester_type</span> <span class="o">=</span> <span class="s2">&quot;geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker&quot;</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">remote_url</span><span class="o">=</span><span class="n">remote_url</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">default_owner</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">harvester_type</span><span class="o">=</span><span class="n">harvester_type</span>
+        <span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">harvesting_session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">harvester</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span> <span class="n">session_type</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_HARVESTING</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BriefAsynchronousHarvestingSessionSerializerTestCase.test_serializer_is_able_to_serialize_model_instance">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.BriefAsynchronousHarvestingSessionSerializerTestCase.test_serializer_is_able_to_serialize_model_instance">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_serializer_is_able_to_serialize_model_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">api_endpoint</span> <span class="o">=</span> <span class="s2">&quot;/api/v2/harvesting-sessions/&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">api_endpoint</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">BriefAsynchronousHarvestingSessionSerializer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">harvesting_session</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">serialized</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;started&quot;</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HarvestableResourceSerializerTestCase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvestableResourceSerializerTestCase">[docs]</a>
+<span class="k">class</span> <span class="nc">HarvestableResourceSerializerTestCase</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="HarvestableResourceSerializerTestCase.unique_identifier">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvestableResourceSerializerTestCase.unique_identifier">[docs]</a>
+    <span class="n">unique_identifier</span> <span class="o">=</span> <span class="s2">&quot;some-identifier&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceSerializerTestCase.title">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvestableResourceSerializerTestCase.title">[docs]</a>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;something&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceSerializerTestCase.remote_resource_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvestableResourceSerializerTestCase.remote_resource_type">[docs]</a>
+    <span class="n">remote_resource_type</span> <span class="o">=</span> <span class="s2">&quot;documents&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceSerializerTestCase.default_should_be_harvested">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvestableResourceSerializerTestCase.default_should_be_harvested">[docs]</a>
+    <span class="n">default_should_be_harvested</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="HarvestableResourceSerializerTestCase.setUpTestData">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvestableResourceSerializerTestCase.setUpTestData">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUpTestData</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">remote_url</span><span class="o">=</span><span class="s2">&quot;test.com&quot;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;This is geonode harvester&quot;</span><span class="p">,</span>
+            <span class="n">default_owner</span><span class="o">=</span><span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">),</span>
+            <span class="n">harvester_type</span><span class="o">=</span><span class="s2">&quot;geonode.harvesting.harvesters.geonodeharvester.GeonodeUnifiedHarvesterWorker&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">harvestable_resource</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">unique_identifier</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
+            <span class="n">harvester</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="n">should_be_harvested</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">default_should_be_harvested</span><span class="p">,</span>
+            <span class="n">remote_resource_type</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">remote_resource_type</span><span class="p">,</span>
+            <span class="n">last_refreshed</span><span class="o">=</span><span class="n">now</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HarvestableResourceSerializerTestCase.test_serializer_is_able_to_serialize_model_instance">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvestableResourceSerializerTestCase.test_serializer_is_able_to_serialize_model_instance">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_serializer_is_able_to_serialize_model_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">api_endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/api/v2/harvesters/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">/harvestable-resources/&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">api_endpoint</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvestableResourceSerializer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">})</span>
+        <span class="n">serialized</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;unique_identifier&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;remote_resource_type&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_resource_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">serialized</span><span class="p">[</span><span class="s2">&quot;should_be_harvested&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_should_be_harvested</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HarvestableResourceSerializerTestCase.test_serializer_is_allowed_to_change_instance_should_be_harvested_attribute">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_api_serializers/index.html#geonode.harvesting.tests.test_api_serializers.HarvestableResourceSerializerTestCase.test_serializer_is_allowed_to_change_instance_should_be_harvested_attribute">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_serializer_is_allowed_to_change_instance_should_be_harvested_attribute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">should_be_harvested</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_should_be_harvested</span><span class="p">)</span>
+        <span class="n">api_endpoint</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/api/v2/harvesters/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">/harvestable-resources/&quot;</span>
+        <span class="n">request</span> <span class="o">=</span> <span class="n">_REQUEST_FACTORY</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">api_endpoint</span><span class="p">)</span>
+        <span class="n">serializer</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">HarvestableResourceSerializer</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;unique_identifier&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span>
+                <span class="s2">&quot;should_be_harvested&quot;</span><span class="p">:</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_should_be_harvested</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="n">context</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+                <span class="s2">&quot;harvester&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">is_valid</span><span class="p">(</span><span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;validated_data: </span><span class="si">{</span><span class="n">serializer</span><span class="o">.</span><span class="n">validated_data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">refresh_from_db</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">should_be_harvested</span><span class="p">,</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_should_be_harvested</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

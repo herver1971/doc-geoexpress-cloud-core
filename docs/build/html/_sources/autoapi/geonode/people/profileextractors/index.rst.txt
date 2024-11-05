@@ -1,0 +1,274 @@
+geonode.people.profileextractors
+================================
+
+.. py:module:: geonode.people.profileextractors
+
+.. autoapi-nested-parse::
+
+   Profile extractor utilities for social account providers
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.people.profileextractors.PROVIDER_ID
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.people.profileextractors.BaseExtractor
+   geonode.people.profileextractors.FacebookExtractor
+   geonode.people.profileextractors.LinkedInExtractor
+   geonode.people.profileextractors.OpenIDExtractor
+   geonode.people.profileextractors.OpenIDGroupRoleMapper
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.people.profileextractors._get_latest_position
+
+
+Module Contents
+---------------
+
+.. py:class:: BaseExtractor
+
+   Base class for social account data extractors.
+
+   In order to define new extractors you just need to define a class that
+   implements:
+
+   * Some of the method stubs defined below - you don't need to implement
+     all of them, just use the ones you need;
+
+
+   In the spirit of duck typing, your custom class does not even need to
+   inherit from this one. As long as it provides the expected methods
+   geonode should be able to use it.
+
+   Be sure to let geonode know about any custom adapters that you define by
+   updating the ``SOCIALACCOUNT_PROFILE_EXTRACTORS`` setting.
+
+
+
+   .. py:method:: extract_area(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_city(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_country(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_delivery(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_email(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_fax(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_first_name(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_last_name(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_organization(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_position(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_profile(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_voice(data)
+      :abstractmethod:
+
+
+
+   .. py:method:: extract_zipcode(data)
+      :abstractmethod:
+
+
+
+.. py:class:: FacebookExtractor
+
+   Bases: :py:obj:`BaseExtractor`
+
+
+   Base class for social account data extractors.
+
+   In order to define new extractors you just need to define a class that
+   implements:
+
+   * Some of the method stubs defined below - you don't need to implement
+     all of them, just use the ones you need;
+
+
+   In the spirit of duck typing, your custom class does not even need to
+   inherit from this one. As long as it provides the expected methods
+   geonode should be able to use it.
+
+   Be sure to let geonode know about any custom adapters that you define by
+   updating the ``SOCIALACCOUNT_PROFILE_EXTRACTORS`` setting.
+
+
+
+   .. py:method:: extract_email(data)
+
+
+   .. py:method:: extract_first_name(data)
+
+
+   .. py:method:: extract_last_name(data)
+
+
+   .. py:method:: extract_profile(data)
+
+
+.. py:class:: LinkedInExtractor
+
+   Bases: :py:obj:`BaseExtractor`
+
+
+   Base class for social account data extractors.
+
+   In order to define new extractors you just need to define a class that
+   implements:
+
+   * Some of the method stubs defined below - you don't need to implement
+     all of them, just use the ones you need;
+
+
+   In the spirit of duck typing, your custom class does not even need to
+   inherit from this one. As long as it provides the expected methods
+   geonode should be able to use it.
+
+   Be sure to let geonode know about any custom adapters that you define by
+   updating the ``SOCIALACCOUNT_PROFILE_EXTRACTORS`` setting.
+
+
+
+   .. py:method:: extract_email(data)
+
+
+   .. py:method:: extract_first_name(data)
+
+
+   .. py:method:: extract_last_name(data)
+
+
+   .. py:method:: _extract_field(name, data)
+
+
+.. py:data:: PROVIDER_ID
+
+.. py:class:: OpenIDExtractor
+
+   Bases: :py:obj:`BaseExtractor`
+
+
+   Base class for social account data extractors.
+
+   In order to define new extractors you just need to define a class that
+   implements:
+
+   * Some of the method stubs defined below - you don't need to implement
+     all of them, just use the ones you need;
+
+
+   In the spirit of duck typing, your custom class does not even need to
+   inherit from this one. As long as it provides the expected methods
+   geonode should be able to use it.
+
+   Be sure to let geonode know about any custom adapters that you define by
+   updating the ``SOCIALACCOUNT_PROFILE_EXTRACTORS`` setting.
+
+
+
+   .. py:method:: extract_email(data)
+
+
+   .. py:method:: extract_first_name(data)
+
+
+   .. py:method:: extract_last_name(data)
+
+
+   .. py:method:: extract_country(data)
+
+
+   .. py:method:: extract_language(data)
+
+
+   .. py:method:: extract_timezone(data)
+
+
+   .. py:method:: extract_city(data)
+
+
+   .. py:method:: extract_zipcode(data)
+
+
+   .. py:method:: extract_organization(data)
+
+
+   .. py:method:: extract_voice(data)
+
+
+   .. py:method:: extract_keywords(data)
+
+
+   .. py:method:: extract_groups(data)
+
+
+   .. py:method:: extract_roles(data)
+
+
+.. py:function:: _get_latest_position(data)
+
+.. py:class:: OpenIDGroupRoleMapper
+
+   GeoNode will look for names like: ["GroupProfile1.Role", "GroupProfile2.Role", ..., "GroupProfileN.Role"]
+
+
+   .. py:method:: parse_group_and_role(group_role_name)
+
+
+   .. py:method:: is_manager()
+
+
