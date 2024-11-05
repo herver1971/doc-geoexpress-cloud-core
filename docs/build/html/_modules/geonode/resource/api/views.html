@@ -157,16 +157,21 @@
 <a class="viewcode-back" href="../../../../autoapi/geonode/resource/api/views/index.html#geonode.resource.api.views.resource_service_exists">[docs]</a>
 <span class="k">def</span> <span class="nf">resource_service_exists</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns a JSON boolean success field valorized with the &#39;exists&#39; operation outcome.</span>
+<span class="sd">    Returns a JSON boolean `success` field indicating the outcome of the &#39;exists&#39; operation.</span>
 
-<span class="sd">    -  GET http://localhost:8000/api/v2/resource-service/exists/13decd74-df04-11eb-a0c1-00155dc3de71</span>
-<span class="sd">       ```</span>
-<span class="sd">        200,</span>
-<span class="sd">        {</span>
-<span class="sd">            &#39;success&#39;: true</span>
-<span class="sd">        }</span>
-<span class="sd">       ```</span>
+<span class="sd">    - Example:</span>
+<span class="sd">      GET http://localhost:8000/api/v2/resource-service/exists/13decd74-df04-11eb-a0c1-00155dc3de71</span>
+
+<span class="sd">      Response:</span>
+
+<span class="sd">      .. code-block:: bash</span>
+
+<span class="sd">         200 OK</span>
+<span class="sd">         {</span>
+<span class="sd">             &quot;success&quot;: true</span>
+<span class="sd">         }</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">_exists</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">resource_manager</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">uuid</span><span class="p">):</span>
         <span class="n">_exists</span> <span class="o">=</span> <span class="n">get_resources_with_perms</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
@@ -178,11 +183,13 @@
 <div class="viewcode-block" id="resource_service_execution_status">
 <a class="viewcode-back" href="../../../../autoapi/geonode/resource/api/views/index.html#geonode.resource.api.views.resource_service_execution_status">[docs]</a>
 <span class="k">def</span> <span class="nf">resource_service_execution_status</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main dispatcher endpoint to follow an API request status progress</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main dispatcher endpoint to follow an API request status progress</span>
 
 <span class="sd">    - GET input: &lt;str: execution id&gt;</span>
 <span class="sd">    - output: &lt;ExecutionRequest&gt;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">try</span><span class="p">:</span>
         <span class="n">_exec_request</span> <span class="o">=</span> <span class="n">ExecutionRequest</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">exec_id</span><span class="o">=</span><span class="n">execution_id</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">_exec_request</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>

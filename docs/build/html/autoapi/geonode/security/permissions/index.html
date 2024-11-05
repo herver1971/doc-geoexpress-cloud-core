@@ -130,6 +130,33 @@
              
   <section id="module-geonode.security.permissions">
 <span id="geonode-security-permissions"></span><h1>geonode.security.permissions<a class="headerlink" href="#module-geonode.security.permissions" title="Link to this heading"></a></h1>
+<p>Permissions will be managed according to a “compact” set:</p>
+<ul class="simple">
+<li><p>view: view resource</p></li>
+<li><p>download: view and download</p></li>
+<li><p>edit: view download and edit (metadata, style, data)</p></li>
+<li><p>manage: change permissions, delete resource, etc.</p></li>
+</ul>
+<p>The GET method will return:</p>
+<p>users:</p>
+<ul class="simple">
+<li><p>username</p></li>
+<li><p>first name</p></li>
+<li><p>last name</p></li>
+<li><p>permissions (view | download | edit | manage)</p></li>
+</ul>
+<p>organizations:</p>
+<ul class="simple">
+<li><p>title</p></li>
+<li><p>name</p></li>
+<li><p>permissions (view | download | edit | manage)</p></li>
+</ul>
+<p>groups:</p>
+<ul class="simple">
+<li><p>title</p></li>
+<li><p>name</p></li>
+<li><p>permissions (view | download | edit | manage)</p></li>
+</ul>
 <section id="attributes">
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
@@ -528,60 +555,46 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="geonode.security.permissions.PermSpec.compact">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compact</span></span><a class="reference internal" href="../../../../_modules/geonode/security/permissions.html#PermSpec.compact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.permissions.PermSpec.compact" title="Link to this definition"></a></dt>
-<dd><p>Converts a standard and verbose ‘perm_spec’ into ‘compact mode’.</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>The method also recognizes special/internal security groups, like ‘anonymous’ and ‘registered-members’ and places
-their permissions on a specific node called ‘groups’.</p></li>
-<li><p>Every security group, different from the former ones, associated to a GeoNode ‘GroupProfile’, will be placed on a
-node called ‘organizations’ instead.</p></li>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">Converts</span> <span class="pre">a</span> <span class="pre">standard</span> <span class="pre">and</span> <span class="pre">verbose</span> <span class="pre">'perm_spec'</span> <span class="pre">into</span> <span class="pre">'compact</span> <span class="pre">mode'.</span></span></dt>
+<dd><ul class="simple">
+<li><p>This method also recognizes special/internal security groups, such as ‘anonymous’ and ‘registered-members’,
+and places their permissions in a specific node called ‘groups’.</p></li>
+<li><p>Every security group different from the former ones, associated with a GeoNode ‘GroupProfile’,
+will instead be placed in a node called ‘organizations’.</p></li>
 </ul>
-</div></blockquote>
-<p>e.g.:</p>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
-{</p>
-<blockquote>
-<div><dl>
-<dt>“users”: [</dt><dd><dl class="simple">
-<dt>{</dt><dd><p>“id”: 1001,
-“username”: “afabiani”,
-“first_name”: “”,
-“last_name”: “”,
-“avatar”: “”,
-“permissions”: “manage”,
-“is_superuser”: &lt;bool&gt;,
-“is_staff”: &lt;bool&gt;</p>
-</dd>
-</dl>
-<p>}</p>
-</dd>
-</dl>
-<p>],
-“organizations”: [],
-“groups”: [</p>
-<blockquote>
-<div><dl class="simple">
-<dt>{</dt><dd><p>“id”: 3,
-“title”: “Registered Members”,
-“name”: “registered-members”,
-“permissions”: “edit”</p>
-</dd>
-</dl>
-<p>},
-{</p>
-<blockquote>
-<div><p>“id”: 2,
-“title”: “anonymous”,
-“name”: “anonymous”,
-“permissions”: “download”</p>
-</div></blockquote>
-<p>}</p>
-</div></blockquote>
-<p>]</p>
-</div></blockquote>
-<section id="id3">
-<h3>}<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
-</section>
+<p>Example:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;users&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1001</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;afabiani&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;first_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;last_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;avatar&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;permissions&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;manage&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;is_superuser&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">&lt;bool&gt;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;is_staff&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">&lt;bool&gt;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;organizations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Registered Members&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;registered-members&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;permissions&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;edit&quot;</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;anonymous&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;anonymous&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;permissions&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;download&quot;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -641,39 +654,36 @@ node called ‘organizations’ instead.</p></li>
 <dt class="sig sig-object py" id="geonode.security.permissions.PermSpecCompact.extended">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extended</span></span><a class="reference internal" href="../../../../_modules/geonode/security/permissions.html#PermSpecCompact.extended"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.permissions.PermSpecCompact.extended" title="Link to this definition"></a></dt>
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">Converts</span> <span class="pre">a</span> <span class="pre">'perm_spec'</span> <span class="pre">in</span> <span class="pre">'compact</span> <span class="pre">mode'</span> <span class="pre">into</span> <span class="pre">standard</span> <span class="pre">and</span> <span class="pre">verbose</span> <span class="pre">one.</span></span></dt>
-<dd><p>e.g.:</p>
-<p><a href="#id4"><span class="problematic" id="id5">``</span></a>`
-{</p>
-<blockquote>
-<div><dl>
-<dt>‘groups’: {</dt><dd><dl class="simple">
-<dt>&lt;Group: registered-members&gt;: [‘view_resourcebase’,</dt><dd><p>‘download_resourcebase’,
-‘change_resourcebase’],</p>
-</dd>
-</dl>
-<p>&lt;Group: anonymous&gt;: [‘view_resourcebase’]</p>
-</dd>
-</dl>
-<p>},
-‘users’: {</p>
-<blockquote>
-<div><p>&lt;Profile: AnonymousUser&gt;: [‘view_resourcebase’],
-&lt;Profile: afabiani&gt;: [‘view_resourcebase’,</p>
-<blockquote>
-<div><p>‘download_resourcebase’,
-‘change_resourcebase_metadata’,
-‘change_resourcebase’,
-‘delete_resourcebase’,
-‘change_resourcebase_permissions’,
-‘publish_resourcebase’]</p>
-</div></blockquote>
-</div></blockquote>
-<p>}</p>
-</div></blockquote>
-<section id="id6">
-<h3>}<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
-</section>
+<span class="sig-name descname"><span class="pre">Converts</span> <span class="pre">a</span> <span class="pre">'perm_spec'</span> <span class="pre">in</span> <span class="pre">'compact</span> <span class="pre">mode'</span> <span class="pre">into</span> <span class="pre">a</span> <span class="pre">standard</span> <span class="pre">and</span> <span class="pre">verbose</span> <span class="pre">format.</span></span></dt>
+<dd><p>Example:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Group: registered-members&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="s2">&quot;view_resourcebase&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;download_resourcebase&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;change_resourcebase&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Group: anonymous&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="s2">&quot;view_resourcebase&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;users&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Profile: AnonymousUser&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="s2">&quot;view_resourcebase&quot;</span>
+<span class="w">        </span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Profile: afabiani&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">            </span><span class="s2">&quot;view_resourcebase&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;download_resourcebase&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;change_resourcebase_metadata&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;change_resourcebase&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;delete_resourcebase&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;change_resourcebase_permissions&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="s2">&quot;publish_resourcebase&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">

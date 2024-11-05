@@ -220,7 +220,7 @@
 <dt class="sig sig-object py" id="geonode.security.utils.get_geoapp_subtypes">
 <span class="sig-prename descclassname"><span class="pre">geonode.security.utils.</span></span><span class="sig-name descname"><span class="pre">get_geoapp_subtypes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/utils.html#get_geoapp_subtypes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.utils.get_geoapp_subtypes" title="Link to this definition"></a></dt>
 <dd><p>Returns a list of geoapp subtypes.
-eg [‘geostory’]</p>
+Example [‘geostory’]</p>
 </dd></dl>
 
 <dl class="py function">
@@ -237,9 +237,11 @@ eg [‘geostory’]</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="geonode.security.utils.get_user_visible_groups">
 <span class="sig-prename descclassname"><span class="pre">geonode.security.utils.</span></span><span class="sig-name descname"><span class="pre">get_user_visible_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_public_invite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/utils.html#get_user_visible_groups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.utils.get_user_visible_groups" title="Link to this definition"></a></dt>
-<dd><p>Retrieves all the groups accordingly to the following conditions:
-- The user is member of
-- The group is public</p>
+<dd><p>Retrieves all the groups accordingly to the following conditions:</p>
+<ul class="simple">
+<li><p>The user is member of</p></li>
+<li><p>The group is public</p></li>
+</ul>
 </dd></dl>
 
 <dl class="py data">
@@ -287,9 +289,12 @@ eg [‘geostory’]</p>
 <dt><strong>AUTO PUBLISHING</strong></dt><dd><ul class="simple">
 <li><p><cite>RESOURCE_PUBLISHING = False</cite></p></li>
 <li><p><cite>ADMIN_MODERATE_UPLOADS = False</cite></p></li>
-<li><p>When user creates a resource:
-- OWNER gets all the owner permissions (publish resource included)
-- ANONYMOUS can view and download</p></li>
+<li><p>When user creates a resource:</p>
+<ul>
+<li><p>OWNER gets all the owner permissions (publish resource included)</p></li>
+<li><p>ANONYMOUS can view and download</p></li>
+</ul>
+</li>
 <li><p>No change to the Group Manager is applied</p></li>
 </ul>
 </dd>
@@ -303,15 +308,21 @@ eg [‘geostory’]</p>
 <dt><strong>SIMPLE PUBLISHING</strong></dt><dd><ul class="simple">
 <li><p><cite>RESOURCE_PUBLISHING = True</cite> (Autopublishing is disabled)</p></li>
 <li><p><cite>ADMIN_MODERATE_UPLOADS = False</cite></p></li>
-<li><p>When user creates a resource:
-- OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> INCLUDED)
-- Group MANAGERS of the user’s groups will get the owner permissions (<cite>publish_resource</cite> EXCLUDED)
-- Group MEMBERS of the user’s groups will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission
-- ANONYMOUS can not view and download if the resource is not published</p></li>
-<li><p>When resource has a group assigned:
-- OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> INCLUDED)
-- Group MANAGERS of the <em>resource’s group</em> will get the owner permissions (<cite>publish_resource</cite> EXCLUDED)
-- Group MEMBERS of the <em>resource’s group</em> will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission</p></li>
+<li><p>When user creates a resource:</p>
+<ul>
+<li><p>OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> INCLUDED)</p></li>
+<li><p>Group MANAGERS of the user’s groups will get the owner permissions (<cite>publish_resource</cite> EXCLUDED)</p></li>
+<li><p>Group MEMBERS of the user’s groups will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission</p></li>
+<li><p>ANONYMOUS can not view and download if the resource is not published</p></li>
+</ul>
+</li>
+<li><p>When resource has a group assigned:</p>
+<ul>
+<li><p>OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> INCLUDED)</p></li>
+<li><p>Group MANAGERS of the <em>resource’s group</em> will get the owner permissions (<cite>publish_resource</cite> EXCLUDED)</p></li>
+<li><p>Group MEMBERS of the <em>resource’s group</em> will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission</p></li>
+</ul>
+</li>
 </ul>
 </dd>
 </dl>
@@ -324,15 +335,21 @@ eg [‘geostory’]</p>
 <dt><strong>ADVANCED WORKFLOW</strong></dt><dd><ul class="simple">
 <li><p><cite>RESOURCE_PUBLISHING = True</cite></p></li>
 <li><p><cite>ADMIN_MODERATE_UPLOADS = True</cite></p></li>
-<li><p>When user creates a resource:
-- OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> EXCLUDED)
-- Group MANAGERS of the user’s groups will get the owner permissions (<cite>publish_resource</cite> INCLUDED)
-- Group MEMBERS of the user’s groups will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission
-- ANONYMOUS can not view and download if the resource is not published</p></li>
-<li><p>When resource has a group assigned:
-- OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> EXCLUDED)
-- Group MANAGERS of the resource’s group will get the owner permissions (<cite>publish_resource</cite> INCLUDED)
-- Group MEMBERS of the resource’s group will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission</p></li>
+<li><p>When user creates a resource:</p>
+<ul>
+<li><p>OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> EXCLUDED)</p></li>
+<li><p>Group MANAGERS of the user’s groups will get the owner permissions (<cite>publish_resource</cite> INCLUDED)</p></li>
+<li><p>Group MEMBERS of the user’s groups will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission</p></li>
+<li><p>ANONYMOUS can not view and download if the resource is not published</p></li>
+</ul>
+</li>
+<li><p>When resource has a group assigned:</p>
+<ul>
+<li><p>OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> EXCLUDED)</p></li>
+<li><p>Group MANAGERS of the resource’s group will get the owner permissions (<cite>publish_resource</cite> INCLUDED)</p></li>
+<li><p>Group MEMBERS of the resource’s group will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission</p></li>
+</ul>
+</li>
 </ul>
 </dd>
 </dl>
@@ -341,22 +358,31 @@ eg [‘geostory’]</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.utils.AdvancedSecurityWorkflowManager.is_simplified_workflow">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_simplified_workflow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/utils.html#AdvancedSecurityWorkflowManager.is_simplified_workflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.utils.AdvancedSecurityWorkflowManager.is_simplified_workflow" title="Link to this definition"></a></dt>
-<dd><dl>
-<dt><strong>SIMPLIFIED WORKFLOW</strong></dt><dd><ul class="simple">
+<dd><p><strong>SIMPLIFIED WORKFLOW</strong></p>
+<blockquote>
+<div><ul>
 <li><p><cite>RESOURCE_PUBLISHING = False</cite></p></li>
-<li><p><cite>ADMIN_MODERATE_UPLOADS = True</cite></p></li>
-<li><p><strong>NOTE</strong>: Is it even possibile? when the resource is automatically published, can it be un-published?</p></li>
-</ul>
+<li><p><cite>ADMIN_MODERATE_UPLOADS = True</cite></p>
+<blockquote>
+<div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Is it even possibile? when the resource is automatically published, can it be un-published?</p>
 <p>If this combination is not allowed, we should either stop the process when reading the settings or log a warning and force a safe combination.</p>
-<ul class="simple">
-<li><p>When user creates a resource:
-- OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> INCLUDED)
-- Group MANAGERS of the user’s groups will get the owner permissions (<cite>publish_resource</cite> INCLUDED)
-- Group MEMBERS of the user’s group will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission
-- ANONYMOUS can view and download</p></li>
+</div>
+</div></blockquote>
+</li>
+<li><p>When user creates a resource:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>OWNER gets all the owner permissions (<cite>publish_resource</cite> and <cite>change_resourcebase_permissions</cite> INCLUDED)</p></li>
+<li><p>Group MANAGERS of the user’s groups will get the owner permissions (<cite>publish_resource</cite> INCLUDED)</p></li>
+<li><p>Group MEMBERS of the user’s group will get the <cite>view_resourcebase</cite>, <cite>download_resourcebase</cite> permission</p></li>
+<li><p>ANONYMOUS can view and download</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
@@ -382,74 +408,90 @@ eg [‘geostory’]</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.utils.AdvancedSecurityWorkflowManager.compute_admin_and_view_permissions_set">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_admin_and_view_permissions_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AdminViewPermissionsSet</span></span></span><a class="reference internal" href="../../../../_modules/geonode/security/utils.html#AdvancedSecurityWorkflowManager.compute_admin_and_view_permissions_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.utils.AdvancedSecurityWorkflowManager.compute_admin_and_view_permissions_set" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>returns a copy of the ADMIN_PERMISSIONS and VIEW_PERMISISONS of a resource accordinlgy to:</dt><dd><ul class="simple">
+<dd><p>Returns a copy of the ADMIN_PERMISSIONS and VIEW_PERMISISONS of a resource accordinlgy to:</p>
+<ul class="simple">
 <li><p>The resource_type</p></li>
 <li><p>The resource_subtype</p></li>
 </ul>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.utils.AdvancedSecurityWorkflowManager.compute_resource_groups_and_members_set">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_resource_groups_and_members_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ResourceGroupsAndMembersSet</span></span></span><a class="reference internal" href="../../../../_modules/geonode/security/utils.html#AdvancedSecurityWorkflowManager.compute_resource_groups_and_members_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.utils.AdvancedSecurityWorkflowManager.compute_resource_groups_and_members_set" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>returns a tuple containing:</dt><dd><ul class="simple">
+<dd><p>Returns a tuple containing:</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>The “Anonymous” Group</p></li>
 <li><p>The “Registered Members” Group</p></li>
 <li><p>The “Groups” belonging to the Resource Owner</p></li>
 <li><p>The “managers” of the Groups affecting the Resource</p></li>
 <li><p>The “members” of the Groups affecting the Resource</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.utils.AdvancedSecurityWorkflowManager.get_workflow_permissions">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_workflow_permissions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perm_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{'users':</span> <span class="pre">{},</span> <span class="pre">'groups':</span> <span class="pre">{}}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approval_status_changed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_status_changed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../../../../_modules/geonode/security/utils.html#AdvancedSecurityWorkflowManager.get_workflow_permissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.utils.AdvancedSecurityWorkflowManager.get_workflow_permissions" title="Link to this definition"></a></dt>
-<dd><dl>
-<dt>Adapts the provided “perm_spec” accordingly to the following schema:</dt><dd><blockquote>
-<div><div class="line-block">
-<div class="line">RESOURCE_PUBLISHING | ADMIN_MODERATE_UPLOADS</div>
-</div>
-</div></blockquote>
-<blockquote>
-<div><p>AUTO PUBLISH        |          X          |           X
-SIMPLE PUBLISHING   |          V          |           X
-SIMPLIFIED WORKFLOW |          X          |           V
-ADVANCED WORKFLOW   |          V          |           V</p>
-</div></blockquote>
-</dd>
-<dt>General Rules:</dt><dd><ul>
-<li><p>OWNER can never publish, except in the AUTO_PUBLISHING workflow</p></li>
-<li><p>MANAGERS can always “publish” the resource</p></li>
-<li><p>MEMBERS can always “view” and “download” the resource</p></li>
-<li><p>When the OWNER is also a MANAGER, the MANAGER wins! Therefore he can publish too</p></li>
-<li><p>Others, except in the AUTO_PUBLISHING workflow</p>
-<blockquote>
-<div><blockquote>
-<div><div class="line-block">
-<div class="line">N/PUBLISHED   | PUBLISHED</div>
-</div>
-</div></blockquote>
-<blockquote>
-<div><p>N/APPROVED    |     GM/OWR     |     -
-APPROVED      |   registerd    |    all</p>
-</div></blockquote>
-</div></blockquote>
-</li>
+<dd><p>Adapts the provided “perm_spec” according to the following schema:</p>
+<p><strong>Publishing Workflow Schema</strong></p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td></td>
+<td><p>RESOURCE_PUBLISHING</p></td>
+<td><p>ADMIN_MODERATE_UPLOADS</p></td>
+</tr>
+<tr class="row-even"><td><p>AUTO PUBLISH</p></td>
+<td><p>X</p></td>
+<td><p>X</p></td>
+</tr>
+<tr class="row-odd"><td><p>SIMPLE PUBLISHING</p></td>
+<td><p>✓</p></td>
+<td><p>X</p></td>
+</tr>
+<tr class="row-even"><td><p>SIMPLIFIED WORKFLOW</p></td>
+<td><p>X</p></td>
+<td><p>✓</p></td>
+</tr>
+<tr class="row-odd"><td><p>ADVANCED WORKFLOW</p></td>
+<td><p>✓</p></td>
+<td><p>✓</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>General Rules:</strong></p>
+<ul class="simple">
+<li><p><strong>OWNER</strong> can never publish, except in the <strong>AUTO_PUBLISHING</strong> workflow.</p></li>
+<li><p><strong>MANAGERS</strong> can always “publish” the resource.</p></li>
+<li><p><strong>MEMBERS</strong> can always “view” and “download” the resource.</p></li>
+<li><p>When the OWNER is also a MANAGER, the MANAGER wins and can publish.</p></li>
+<li><p>Others, except in the AUTO_PUBLISHING workflow.</p></li>
 </ul>
-<blockquote>
-<div><ul class="simple">
-<li><p>There are few exceptions accordingly to the enabled workflow
-* SIMPLIFIED WORKFLOW: If the resource will be “approved” or “published” the OWNERS won’t be able change the resource data and perms
-* ADVANCED WORKFLOW: If the resource will be “approved” or “published” the OWNERS won’t be able change the resource data, metadata and perms</p></li>
+<p><strong>Approval and Publishing Schema</strong></p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td></td>
+<td><p>N/PUBLISHED</p></td>
+<td><p>PUBLISHED</p></td>
+</tr>
+<tr class="row-even"><td><p>N/APPROVED</p></td>
+<td><p>GM/OWR</p></td>
+<td><ul class="simple">
+<li></li>
 </ul>
-</div></blockquote>
-</dd>
-</dl>
+</td>
+</tr>
+<tr class="row-odd"><td><p>APPROVED</p></td>
+<td><p>registered</p></td>
+<td><p>all</p></td>
+</tr>
+</tbody>
+</table>
+<p>Exceptions based on the enabled workflow:</p>
+<ul class="simple">
+<li><p><strong>SIMPLIFIED WORKFLOW</strong>: If the resource is “approved” or “published”, OWNERS won’t be able to change the resource data and permissions.</p></li>
+<li><p><strong>ADVANCED WORKFLOW</strong>: If the resource is “approved” or “published”, OWNERS won’t be able to change the resource data, metadata, and permissions.</p></li>
+</ul>
 </dd></dl>
 
 <dl class="py method">

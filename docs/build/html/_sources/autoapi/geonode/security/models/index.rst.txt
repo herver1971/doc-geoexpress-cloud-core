@@ -43,28 +43,26 @@ Module Contents
 
 .. py:class:: PermissionLevelMixin
 
-   Mixin for adding "Permission Level" methods
-   to a model class -- eg role systems where a
-   user has exactly one assigned role with respect to
-   an object representing an "access level"
+   Mixin for adding "Permission Level" methods to a model class -- eg role systems where a user has exactly one assigned role with respect to an object representing an "access level"
 
 
    .. py:method:: get_all_level_info()
 
-      Translates the current object guardian perms into a JSON-like "perm_spec" object in the form:
-      {
-          'users': {
-              <Profile AnonymousUser>: ['view'],
-              <Profile username>: ['perm1','perm2','perm3'],
-              <Profile username2>: ['perm1','perm2','perm3']
-              ...
+      Translates the current object guardian permissions into a JSON-like "perm_spec" object in the form:
+
+      .. code-block:: json
+
+          {
+              "users": {
+                  "<Profile AnonymousUser>": ["view"],
+                  "<Profile username>": ["perm1", "perm2", "perm3"],
+                  "<Profile username2>": ["perm1", "perm2", "perm3"]
+              },
+              "groups": {
+                  "<Group groupname>": ["perm1", "perm2", "perm3"],
+                  "<Group groupname2>": ["perm1", "perm2", "perm3"]
+              }
           }
-          'groups': [
-              <Group groupname>: ['perm1','perm2','perm3'],
-              <Group groupname2>: ['perm1','perm2','perm3'],
-              ...
-              ]
-      }
 
 
 
@@ -77,6 +75,7 @@ Module Contents
    .. py:method:: get_group_managers(group=None)
 
       Given the groups belonging to a "user", this method returns a tuple containing:
+
        - The "groups" perms spec with resource access permissions (at least VIEW ones)
        - The list of "group managers" of the groups above
 
@@ -84,8 +83,7 @@ Module Contents
 
    .. py:method:: set_default_permissions(owner=None, created=False)
 
-      Removes all the permissions except for the owner and assign the
-      view permission to the anonymous group.
+      Removes all the permissions except for the owner and assign the view permission to the anonymous group.
 
 
 
@@ -94,19 +92,22 @@ Module Contents
       Sets an object's the permission levels based on the perm_spec JSON.
 
       the mapping looks like:
-      {
-          'users': {
-              'AnonymousUser': ['view'],
-              'username': ['perm1','perm2','perm3'],
-              'username2': ['perm1','perm2','perm3']
-              ...
-          },
-          'groups': [
-              'groupname': ['perm1','perm2','perm3'],
-              'groupname2': ['perm1','perm2','perm3'],
-              ...
-          ]
-      }
+
+      .. code-block:: bash
+
+          {
+              'users': {
+                  'AnonymousUser': ['view'],
+                  'username': ['perm1','perm2','perm3'],
+                  'username2': ['perm1','perm2','perm3']
+                  ...
+              },
+              'groups': [
+                  'groupname': ['perm1','perm2','perm3'],
+                  'groupname2': ['perm1','perm2','perm3'],
+                  ...
+              ]
+          }
 
 
 
@@ -116,55 +117,62 @@ Module Contents
    .. py:method:: compare_perms(prev_perm_spec, perm_spec)
 
       Compare two perm_specs in the form
-      {
-          'users': {
-              <Profile AnonymousUser>: ['view'],
-              <Profile username>: ['perm1','perm2','perm3'],
-              <Profile username2>: ['perm1','perm2','perm3']
-              ...
-          },
-          'groups': [
-              <Group groupname>: ['perm1','perm2','perm3'],
-              <Group groupname2>: ['perm1','perm2','perm3'],
-              ...
-          ]
-      }
+
+      .. code-block:: bash
+
+          {
+              'users': {
+                  <Profile AnonymousUser>: ['view'],
+                  <Profile username>: ['perm1','perm2','perm3'],
+                  <Profile username2>: ['perm1','perm2','perm3']
+                  ...
+              },
+              'groups': [
+                  <Group groupname>: ['perm1','perm2','perm3'],
+                  <Group groupname2>: ['perm1','perm2','perm3'],
+                  ...
+              ]
+          }
 
 
 
    .. py:method:: fixup_perms(perm_spec)
 
       Transform a perm_spec in the form
-      {
-          'users': {
-              'AnonymousUser': ['view'],
-              'username': ['perm1','perm2','perm3'],
-              'username2': ['perm1','perm2','perm3']
-              ...
-          },
-          'groups': [
-              'groupname': ['perm1','perm2','perm3'],
-              'groupname2': ['perm1','perm2','perm3'],
-              ...
-          ]
-      }
 
-      to the one in the form:
-      {
-          'users': {
-              <Profile AnonymousUser>: ['view'],
-              <Profile username>: ['perm1','perm2','perm3'],
-              <Profile username2>: ['perm1','perm2','perm3']
-              ...
-          },
-          'groups': [
-              <Group groupname>: ['perm1','perm2','perm3'],
-              <Group groupname2>: ['perm1','perm2','perm3'],
-              ...
-          ]
-      }
+      .. code-block:: bash
+
+          {
+              'users': {
+                  'AnonymousUser': ['view'],
+                  'username': ['perm1','perm2','perm3'],
+                  'username2': ['perm1','perm2','perm3']
+                  ...
+              },
+              'groups': [
+                  'groupname': ['perm1','perm2','perm3'],
+                  'groupname2': ['perm1','perm2','perm3'],
+                  ...
+              ]
+          }
+
+          to the one in the form:
+          {
+              'users': {
+                  <Profile AnonymousUser>: ['view'],
+                  <Profile username>: ['perm1','perm2','perm3'],
+                  <Profile username2>: ['perm1','perm2','perm3']
+                  ...
+              },
+              'groups': [
+                  <Group groupname>: ['perm1','perm2','perm3'],
+                  <Group groupname2>: ['perm1','perm2','perm3'],
+                  ...
+              ]
+          }
 
       It also removes items with empty permissions, e.g.:
+
           'AnonymousUser': []  # the item will completely removed
 
 

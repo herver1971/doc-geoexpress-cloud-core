@@ -203,6 +203,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Override of the Guardian get_users_with_perms</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">ctype</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
     <span class="n">ctype_resource_base</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
     <span class="n">permissions</span> <span class="o">=</span> <span class="p">{}</span>
@@ -260,6 +261,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns resources a user has access to.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
 
     <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
@@ -302,8 +304,9 @@
 <span class="k">def</span> <span class="nf">get_geoapp_subtypes</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a list of geoapp subtypes.</span>
-<span class="sd">    eg [&#39;geostory&#39;]</span>
+<span class="sd">    Example [&#39;geostory&#39;]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="kn">from</span> <span class="nn">geonode.geoapps.models</span> <span class="kn">import</span> <span class="n">GeoApp</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoapp_subtypes&quot;</span><span class="p">):</span>
@@ -340,9 +343,11 @@
 <span class="k">def</span> <span class="nf">get_user_visible_groups</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">include_public_invite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieves all the groups accordingly to the following conditions:</span>
+
 <span class="sd">    - The user is member of</span>
 <span class="sd">    - The group is public</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
 
     <span class="n">metadata_author_groups</span> <span class="o">=</span> <span class="p">[]</span>
@@ -429,10 +434,12 @@
 <span class="sd">          - `ADMIN_MODERATE_UPLOADS = False`</span>
 
 <span class="sd">          - When user creates a resource:</span>
+
 <span class="sd">            - OWNER gets all the owner permissions (publish resource included)</span>
 <span class="sd">            - ANONYMOUS can view and download</span>
 <span class="sd">          - No change to the Group Manager is applied</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
 
 
@@ -446,16 +453,19 @@
 <span class="sd">          - `ADMIN_MODERATE_UPLOADS = False`</span>
 
 <span class="sd">          - When user creates a resource:</span>
+
 <span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` INCLUDED)</span>
 <span class="sd">            - Group MANAGERS of the user&#39;s groups will get the owner permissions (`publish_resource` EXCLUDED)</span>
 <span class="sd">            - Group MEMBERS of the user&#39;s groups will get the `view_resourcebase`, `download_resourcebase` permission</span>
 <span class="sd">            - ANONYMOUS can not view and download if the resource is not published</span>
 
 <span class="sd">          - When resource has a group assigned:</span>
+
 <span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` INCLUDED)</span>
 <span class="sd">            - Group MANAGERS of the *resource&#39;s group* will get the owner permissions (`publish_resource` EXCLUDED)</span>
 <span class="sd">            - Group MEMBERS of the *resource&#39;s group* will get the `view_resourcebase`, `download_resourcebase` permission</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
 
 
@@ -469,16 +479,19 @@
 <span class="sd">          - `ADMIN_MODERATE_UPLOADS = True`</span>
 
 <span class="sd">          - When user creates a resource:</span>
+
 <span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` EXCLUDED)</span>
 <span class="sd">            - Group MANAGERS of the user&#39;s groups will get the owner permissions (`publish_resource` INCLUDED)</span>
 <span class="sd">            - Group MEMBERS of the user&#39;s groups will get the `view_resourcebase`, `download_resourcebase` permission</span>
 <span class="sd">            - ANONYMOUS can not view and download if the resource is not published</span>
 
 <span class="sd">          - When resource has a group assigned:</span>
+
 <span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` EXCLUDED)</span>
 <span class="sd">            - Group MANAGERS of the resource&#39;s group will get the owner permissions (`publish_resource` INCLUDED)</span>
 <span class="sd">            - Group MEMBERS of the resource&#39;s group will get the `view_resourcebase`, `download_resourcebase` permission</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
 
 
@@ -488,18 +501,23 @@
     <span class="k">def</span> <span class="nf">is_simplified_workflow</span><span class="p">():</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        **SIMPLIFIED WORKFLOW**</span>
-<span class="sd">          - `RESOURCE_PUBLISHING = False`</span>
-<span class="sd">          - `ADMIN_MODERATE_UPLOADS = True`</span>
 
-<span class="sd">          - **NOTE**: Is it even possibile? when the resource is automatically published, can it be un-published?</span>
-<span class="sd">          If this combination is not allowed, we should either stop the process when reading the settings or log a warning and force a safe combination.</span>
+<span class="sd">            - `RESOURCE_PUBLISHING = False`</span>
+<span class="sd">            - `ADMIN_MODERATE_UPLOADS = True`</span>
 
-<span class="sd">          - When user creates a resource:</span>
-<span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` INCLUDED)</span>
-<span class="sd">            - Group MANAGERS of the user&#39;s groups will get the owner permissions (`publish_resource` INCLUDED)</span>
-<span class="sd">            - Group MEMBERS of the user&#39;s group will get the `view_resourcebase`, `download_resourcebase` permission</span>
-<span class="sd">            - ANONYMOUS can view and download</span>
+<span class="sd">                .. note::</span>
+<span class="sd">                    Is it even possibile? when the resource is automatically published, can it be un-published?</span>
+
+<span class="sd">                    If this combination is not allowed, we should either stop the process when reading the settings or log a warning and force a safe combination.</span>
+
+<span class="sd">            - When user creates a resource:</span>
+
+<span class="sd">                - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` INCLUDED)</span>
+<span class="sd">                - Group MANAGERS of the user&#39;s groups will get the owner permissions (`publish_resource` INCLUDED)</span>
+<span class="sd">                - Group MEMBERS of the user&#39;s group will get the `view_resourcebase`, `download_resourcebase` permission</span>
+<span class="sd">                - ANONYMOUS can view and download</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
 
 
@@ -574,10 +592,12 @@
 <a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.compute_admin_and_view_permissions_set">[docs]</a>
     <span class="k">def</span> <span class="nf">compute_admin_and_view_permissions_set</span><span class="p">(</span><span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdminViewPermissionsSet</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        returns a copy of the ADMIN_PERMISSIONS and VIEW_PERMISISONS of a resource accordinlgy to:</span>
-<span class="sd">         - The resource_type</span>
-<span class="sd">         - The resource_subtype</span>
+<span class="sd">        Returns a copy of the ADMIN_PERMISSIONS and VIEW_PERMISISONS of a resource accordinlgy to:</span>
+
+<span class="sd">        - The resource_type</span>
+<span class="sd">        - The resource_subtype</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">_resource</span> <span class="o">=</span> <span class="n">instance</span> <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
         <span class="n">view_perms</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">admin_perms</span> <span class="o">=</span> <span class="p">[]</span>
@@ -606,13 +626,15 @@
 <a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.compute_resource_groups_and_members_set">[docs]</a>
     <span class="k">def</span> <span class="nf">compute_resource_groups_and_members_set</span><span class="p">(</span><span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        returns a tuple containing:</span>
+<span class="sd">        Returns a tuple containing:</span>
+
 <span class="sd">         - The &quot;Anonymous&quot; Group</span>
 <span class="sd">         - The &quot;Registered Members&quot; Group</span>
 <span class="sd">         - The &quot;Groups&quot; belonging to the Resource Owner</span>
 <span class="sd">         - The &quot;managers&quot; of the Groups affecting the Resource</span>
 <span class="sd">         - The &quot;members&quot; of the Groups affecting the Resource</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">_resource</span> <span class="o">=</span> <span class="n">instance</span> <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
         <span class="n">anonymous_group</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">)</span>
         <span class="n">registered_members_group</span> <span class="o">=</span> <span class="kc">None</span>
@@ -640,30 +662,46 @@
         <span class="n">group_status_changed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Adapts the provided &quot;perm_spec&quot; accordingly to the following schema:</span>
-<span class="sd">                                | RESOURCE_PUBLISHING | ADMIN_MODERATE_UPLOADS</span>
-<span class="sd">          --------------------------------------------------------------------</span>
-<span class="sd">            AUTO PUBLISH        |          X          |           X</span>
-<span class="sd">            SIMPLE PUBLISHING   |          V          |           X</span>
-<span class="sd">            SIMPLIFIED WORKFLOW |          X          |           V</span>
-<span class="sd">            ADVANCED WORKFLOW   |          V          |           V</span>
+<span class="sd">        Adapts the provided &quot;perm_spec&quot; according to the following schema:</span>
 
-<span class="sd">        General Rules:</span>
-<span class="sd">         - OWNER can never publish, except in the AUTO_PUBLISHING workflow</span>
-<span class="sd">         - MANAGERS can always &quot;publish&quot; the resource</span>
-<span class="sd">         - MEMBERS can always &quot;view&quot; and &quot;download&quot; the resource</span>
-<span class="sd">         - When the OWNER is also a MANAGER, the MANAGER wins! Therefore he can publish too</span>
-<span class="sd">         - Others, except in the AUTO_PUBLISHING workflow</span>
+<span class="sd">        **Publishing Workflow Schema**</span>
 
-<span class="sd">                              |  N/PUBLISHED   | PUBLISHED</span>
-<span class="sd">            ----------------------------------------------</span>
-<span class="sd">                N/APPROVED    |     GM/OWR     |     -</span>
-<span class="sd">                APPROVED      |   registerd    |    all</span>
-<span class="sd">            ----------------------------------------------</span>
-<span class="sd">          - There are few exceptions accordingly to the enabled workflow</span>
-<span class="sd">            * SIMPLIFIED WORKFLOW: If the resource will be &quot;approved&quot; or &quot;published&quot; the OWNERS won&#39;t be able change the resource data and perms</span>
-<span class="sd">            * ADVANCED WORKFLOW: If the resource will be &quot;approved&quot; or &quot;published&quot; the OWNERS won&#39;t be able change the resource data, metadata and perms</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        |                     | RESOURCE_PUBLISHING   | ADMIN_MODERATE_UPLOADS  |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        | AUTO PUBLISH        |          X            |           X             |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        | SIMPLE PUBLISHING   |          ✓            |           X             |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        | SIMPLIFIED WORKFLOW |          X            |           ✓             |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        | ADVANCED WORKFLOW   |          ✓            |           ✓             |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+
+<span class="sd">        **General Rules:**</span>
+
+<span class="sd">        - **OWNER** can never publish, except in the **AUTO_PUBLISHING** workflow.</span>
+<span class="sd">        - **MANAGERS** can always &quot;publish&quot; the resource.</span>
+<span class="sd">        - **MEMBERS** can always &quot;view&quot; and &quot;download&quot; the resource.</span>
+<span class="sd">        - When the OWNER is also a MANAGER, the MANAGER wins and can publish.</span>
+<span class="sd">        - Others, except in the AUTO_PUBLISHING workflow.</span>
+
+<span class="sd">        **Approval and Publishing Schema**</span>
+
+<span class="sd">        +----------------+--------------+-------------+</span>
+<span class="sd">        |                | N/PUBLISHED  | PUBLISHED   |</span>
+<span class="sd">        +----------------+--------------+-------------+</span>
+<span class="sd">        | N/APPROVED     | GM/OWR       | -           |</span>
+<span class="sd">        +----------------+--------------+-------------+</span>
+<span class="sd">        | APPROVED       | registered   | all         |</span>
+<span class="sd">        +----------------+--------------+-------------+</span>
+
+<span class="sd">        Exceptions based on the enabled workflow:</span>
+
+<span class="sd">        - **SIMPLIFIED WORKFLOW**: If the resource is &quot;approved&quot; or &quot;published&quot;, OWNERS won&#39;t be able to change the resource data and permissions.</span>
+<span class="sd">        - **ADVANCED WORKFLOW**: If the resource is &quot;approved&quot; or &quot;published&quot;, OWNERS won&#39;t be able to change the resource data, metadata, and permissions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">_resource</span> <span class="o">=</span> <span class="n">instance</span> <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
         <span class="n">_perm_spec</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">)</span>
 

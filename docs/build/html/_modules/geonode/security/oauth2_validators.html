@@ -113,19 +113,25 @@
 <div class="viewcode-block" id="OIDCValidator">
 <a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_validators/index.html#geonode.security.oauth2_validators.OIDCValidator">[docs]</a>
 <span class="k">class</span> <span class="nc">OIDCValidator</span><span class="p">(</span><span class="n">OAuth2Validator</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;e.g.</span>
-<span class="sd">        Check username and password correspond to a valid and active User, if fails</span>
-<span class="sd">        try Facebook token authentication</span>
-<span class="sd">    def validate_user(self, username, password, client, request, *args, **kwargs):</span>
-<span class="sd">        u = authenticate(username=username, password=password)</span>
-<span class="sd">        if u is None or not u.is_active:</span>
-<span class="sd">           u = authenticate_with_facebook()</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Example:</span>
+<span class="sd">        Check if the username and password correspond to a valid and active User.</span>
+<span class="sd">        If authentication fails, try Facebook token authentication.</span>
 
-<span class="sd">        if u is not none and u.is_active:</span>
-<span class="sd">           request.user = u</span>
-<span class="sd">           return True</span>
+<span class="sd">    Example method:</span>
 
-<span class="sd">        return False</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        def validate_user(self, username, password, client, request, *args, **kwargs):</span>
+<span class="sd">            u = authenticate(username=username, password=password)</span>
+<span class="sd">            if u is None or not u.is_active:</span>
+<span class="sd">                u = authenticate_with_facebook()</span>
+
+<span class="sd">            if u is not None and u.is_active:</span>
+<span class="sd">                request.user = u</span>
+<span class="sd">                return True</span>
+
+<span class="sd">            return False</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="OIDCValidator.get_authorization_code_nonce">

@@ -145,7 +145,7 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#geonode.security.oauth2_validators.OIDCValidator" title="geonode.security.oauth2_validators.OIDCValidator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OIDCValidator</span></code></a></p></td>
-<td><p>e.g.</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -161,23 +161,22 @@
 <dt class="sig sig-object py" id="geonode.security.oauth2_validators.OIDCValidator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.security.oauth2_validators.</span></span><span class="sig-name descname"><span class="pre">OIDCValidator</span></span><a class="reference internal" href="../../../../_modules/geonode/security/oauth2_validators.html#OIDCValidator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.oauth2_validators.OIDCValidator" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">oauth2_provider.oauth2_validators.OAuth2Validator</span></code></p>
-<dl>
-<dt>e.g.</dt><dd><p>Check username and password correspond to a valid and active User, if fails
-try Facebook token authentication</p>
-</dd>
-<dt>def validate_user(self, username, password, client, request, <a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs):</dt><dd><p>u = authenticate(username=username, password=password)
-if u is None or not u.is_active:</p>
-<blockquote>
-<div><p>u = authenticate_with_facebook()</p>
-</div></blockquote>
-<dl class="simple">
-<dt>if u is not none and u.is_active:</dt><dd><p>request.user = u
-return True</p>
-</dd>
-</dl>
-<p>return False</p>
-</dd>
-</dl>
+<p class="rubric">Example</p>
+<p>Check if the username and password correspond to a valid and active User.
+If authentication fails, try Facebook token authentication.</p>
+<p>Example method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">validate_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">authenticate</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">u</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">u</span><span class="o">.</span><span class="n">is_active</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">authenticate_with_facebook</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">u</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">u</span><span class="o">.</span><span class="n">is_active</span><span class="p">:</span>
+        <span class="n">request</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">u</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="kc">False</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.oauth2_validators.OIDCValidator.get_authorization_code_nonce">
 <span class="sig-name descname"><span class="pre">get_authorization_code_nonce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">redirect_uri</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/oauth2_validators.html#OIDCValidator.get_authorization_code_nonce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.oauth2_validators.OIDCValidator.get_authorization_code_nonce" title="Link to this definition"></a></dt>

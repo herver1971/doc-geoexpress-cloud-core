@@ -140,31 +140,30 @@
 <a class="viewcode-back" href="../../../autoapi/geonode/security/models/index.html#geonode.security.models.PermissionLevelMixin">[docs]</a>
 <span class="k">class</span> <span class="nc">PermissionLevelMixin</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Mixin for adding &quot;Permission Level&quot; methods</span>
-<span class="sd">    to a model class -- eg role systems where a</span>
-<span class="sd">    user has exactly one assigned role with respect to</span>
-<span class="sd">    an object representing an &quot;access level&quot;</span>
+<span class="sd">    Mixin for adding &quot;Permission Level&quot; methods to a model class -- eg role systems where a user has exactly one assigned role with respect to an object representing an &quot;access level&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PermissionLevelMixin.get_all_level_info">
 <a class="viewcode-back" href="../../../autoapi/geonode/security/models/index.html#geonode.security.models.PermissionLevelMixin.get_all_level_info">[docs]</a>
     <span class="k">def</span> <span class="nf">get_all_level_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Translates the current object guardian perms into a JSON-like &quot;perm_spec&quot; object in the form:</span>
-<span class="sd">        {</span>
-<span class="sd">            &#39;users&#39;: {</span>
-<span class="sd">                &lt;Profile AnonymousUser&gt;: [&#39;view&#39;],</span>
-<span class="sd">                &lt;Profile username&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &lt;Profile username2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
-<span class="sd">                ...</span>
+<span class="sd">        Translates the current object guardian permissions into a JSON-like &quot;perm_spec&quot; object in the form:</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;users&quot;: {</span>
+<span class="sd">                    &quot;&lt;Profile AnonymousUser&gt;&quot;: [&quot;view&quot;],</span>
+<span class="sd">                    &quot;&lt;Profile username&gt;&quot;: [&quot;perm1&quot;, &quot;perm2&quot;, &quot;perm3&quot;],</span>
+<span class="sd">                    &quot;&lt;Profile username2&gt;&quot;: [&quot;perm1&quot;, &quot;perm2&quot;, &quot;perm3&quot;]</span>
+<span class="sd">                },</span>
+<span class="sd">                &quot;groups&quot;: {</span>
+<span class="sd">                    &quot;&lt;Group groupname&gt;&quot;: [&quot;perm1&quot;, &quot;perm2&quot;, &quot;perm3&quot;],</span>
+<span class="sd">                    &quot;&lt;Group groupname2&gt;&quot;: [&quot;perm1&quot;, &quot;perm2&quot;, &quot;perm3&quot;]</span>
+<span class="sd">                }</span>
 <span class="sd">            }</span>
-<span class="sd">            &#39;groups&#39;: [</span>
-<span class="sd">                &lt;Group groupname&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &lt;Group groupname2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                ...</span>
-<span class="sd">                ]</span>
-<span class="sd">        }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">()</span>
         <span class="n">users</span> <span class="o">=</span> <span class="n">get_users_with_perms</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
         <span class="n">groups</span> <span class="o">=</span> <span class="n">get_groups_with_perms</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">attach_perms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -215,6 +214,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the &quot;ResourceBase&quot; associated to this &quot;object&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;resourcebase_ptr_id&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resourcebase_ptr</span>
@@ -228,9 +228,11 @@
     <span class="k">def</span> <span class="nf">get_group_managers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given the groups belonging to a &quot;user&quot;, this method returns a tuple containing:</span>
+
 <span class="sd">         - The &quot;groups&quot; perms spec with resource access permissions (at least VIEW ones)</span>
 <span class="sd">         - The list of &quot;group managers&quot; of the groups above</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">obj_groups</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">obj_group_managers</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">group</span><span class="p">:</span>
@@ -267,9 +269,9 @@
 <a class="viewcode-back" href="../../../autoapi/geonode/security/models/index.html#geonode.security.models.PermissionLevelMixin.set_default_permissions">[docs]</a>
     <span class="k">def</span> <span class="nf">set_default_permissions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Removes all the permissions except for the owner and assign the</span>
-<span class="sd">        view permission to the anonymous group.</span>
+<span class="sd">        Removes all the permissions except for the owner and assign the view permission to the anonymous group.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="kn">from</span> <span class="nn">geonode.resource.manager</span> <span class="kn">import</span> <span class="n">resource_manager</span>
 
         <span class="c1"># default permissions for anonymous users</span>
@@ -318,20 +320,24 @@
 <span class="sd">        Sets an object&#39;s the permission levels based on the perm_spec JSON.</span>
 
 <span class="sd">        the mapping looks like:</span>
-<span class="sd">        {</span>
-<span class="sd">            &#39;users&#39;: {</span>
-<span class="sd">                &#39;AnonymousUser&#39;: [&#39;view&#39;],</span>
-<span class="sd">                &#39;username&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &#39;username2&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
-<span class="sd">                ...</span>
-<span class="sd">            },</span>
-<span class="sd">            &#39;groups&#39;: [</span>
-<span class="sd">                &#39;groupname&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &#39;groupname2&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                ...</span>
-<span class="sd">            ]</span>
-<span class="sd">        }</span>
+
+<span class="sd">        .. code-block:: bash</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &#39;users&#39;: {</span>
+<span class="sd">                    &#39;AnonymousUser&#39;: [&#39;view&#39;],</span>
+<span class="sd">                    &#39;username&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    &#39;username2&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
+<span class="sd">                    ...</span>
+<span class="sd">                },</span>
+<span class="sd">                &#39;groups&#39;: [</span>
+<span class="sd">                    &#39;groupname&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    &#39;groupname2&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    ...</span>
+<span class="sd">                ]</span>
+<span class="sd">            }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="kn">from</span> <span class="nn">geonode.resource.manager</span> <span class="kn">import</span> <span class="n">resource_manager</span>
 
         <span class="k">return</span> <span class="n">resource_manager</span><span class="o">.</span><span class="n">set_permissions</span><span class="p">(</span>
@@ -355,20 +361,24 @@
     <span class="k">def</span> <span class="nf">compare_perms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prev_perm_spec</span><span class="p">,</span> <span class="n">perm_spec</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compare two perm_specs in the form</span>
-<span class="sd">        {</span>
-<span class="sd">            &#39;users&#39;: {</span>
-<span class="sd">                &lt;Profile AnonymousUser&gt;: [&#39;view&#39;],</span>
-<span class="sd">                &lt;Profile username&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &lt;Profile username2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
-<span class="sd">                ...</span>
-<span class="sd">            },</span>
-<span class="sd">            &#39;groups&#39;: [</span>
-<span class="sd">                &lt;Group groupname&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &lt;Group groupname2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                ...</span>
-<span class="sd">            ]</span>
-<span class="sd">        }</span>
+
+<span class="sd">        .. code-block:: bash</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &#39;users&#39;: {</span>
+<span class="sd">                    &lt;Profile AnonymousUser&gt;: [&#39;view&#39;],</span>
+<span class="sd">                    &lt;Profile username&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    &lt;Profile username2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
+<span class="sd">                    ...</span>
+<span class="sd">                },</span>
+<span class="sd">                &#39;groups&#39;: [</span>
+<span class="sd">                    &lt;Group groupname&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    &lt;Group groupname2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    ...</span>
+<span class="sd">                ]</span>
+<span class="sd">            }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">if</span> <span class="s2">&quot;users&quot;</span> <span class="ow">in</span> <span class="n">prev_perm_spec</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;users&quot;</span> <span class="ow">in</span> <span class="n">perm_spec</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prev_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]):</span>
@@ -407,38 +417,43 @@
     <span class="k">def</span> <span class="nf">fixup_perms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">perm_spec</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transform a perm_spec in the form</span>
-<span class="sd">        {</span>
-<span class="sd">            &#39;users&#39;: {</span>
-<span class="sd">                &#39;AnonymousUser&#39;: [&#39;view&#39;],</span>
-<span class="sd">                &#39;username&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &#39;username2&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
-<span class="sd">                ...</span>
-<span class="sd">            },</span>
-<span class="sd">            &#39;groups&#39;: [</span>
-<span class="sd">                &#39;groupname&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &#39;groupname2&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                ...</span>
-<span class="sd">            ]</span>
-<span class="sd">        }</span>
 
-<span class="sd">        to the one in the form:</span>
-<span class="sd">        {</span>
-<span class="sd">            &#39;users&#39;: {</span>
-<span class="sd">                &lt;Profile AnonymousUser&gt;: [&#39;view&#39;],</span>
-<span class="sd">                &lt;Profile username&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &lt;Profile username2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
-<span class="sd">                ...</span>
-<span class="sd">            },</span>
-<span class="sd">            &#39;groups&#39;: [</span>
-<span class="sd">                &lt;Group groupname&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                &lt;Group groupname2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
-<span class="sd">                ...</span>
-<span class="sd">            ]</span>
-<span class="sd">        }</span>
+<span class="sd">        .. code-block:: bash</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &#39;users&#39;: {</span>
+<span class="sd">                    &#39;AnonymousUser&#39;: [&#39;view&#39;],</span>
+<span class="sd">                    &#39;username&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    &#39;username2&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
+<span class="sd">                    ...</span>
+<span class="sd">                },</span>
+<span class="sd">                &#39;groups&#39;: [</span>
+<span class="sd">                    &#39;groupname&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    &#39;groupname2&#39;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    ...</span>
+<span class="sd">                ]</span>
+<span class="sd">            }</span>
+
+<span class="sd">            to the one in the form:</span>
+<span class="sd">            {</span>
+<span class="sd">                &#39;users&#39;: {</span>
+<span class="sd">                    &lt;Profile AnonymousUser&gt;: [&#39;view&#39;],</span>
+<span class="sd">                    &lt;Profile username&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    &lt;Profile username2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;]</span>
+<span class="sd">                    ...</span>
+<span class="sd">                },</span>
+<span class="sd">                &#39;groups&#39;: [</span>
+<span class="sd">                    &lt;Group groupname&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    &lt;Group groupname2&gt;: [&#39;perm1&#39;,&#39;perm2&#39;,&#39;perm3&#39;],</span>
+<span class="sd">                    ...</span>
+<span class="sd">                ]</span>
+<span class="sd">            }</span>
 
 <span class="sd">        It also removes items with empty permissions, e.g.:</span>
+
 <span class="sd">            &#39;AnonymousUser&#39;: []  # the item will completely removed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">perm_spec_fixed</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">)</span>
         <span class="k">if</span> <span class="s2">&quot;users&quot;</span> <span class="ow">in</span> <span class="n">perm_spec</span><span class="p">:</span>
             <span class="n">_users_iterator</span> <span class="o">=</span> <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span>
@@ -465,6 +480,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a list of permissions a user has on a given resource.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="c1"># To avoid circular import</span>
         <span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">Configuration</span>
 
@@ -524,6 +540,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks if a has a given permission to the resource.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">resource</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">()</span>
         <span class="n">user_perms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_user_perms</span><span class="p">(</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">get_user_perms</span><span class="p">(</span><span class="n">user</span><span class="p">))</span>
 

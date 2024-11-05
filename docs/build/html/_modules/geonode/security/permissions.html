@@ -91,6 +91,37 @@
 <span class="c1">#</span>
 <span class="c1">#########################################################################</span>
 
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Permissions will be managed according to a &quot;compact&quot; set:</span>
+
+<span class="sd">- view: view resource</span>
+<span class="sd">- download: view and download</span>
+<span class="sd">- edit: view download and edit (metadata, style, data)</span>
+<span class="sd">- manage: change permissions, delete resource, etc.</span>
+
+<span class="sd">The GET method will return:</span>
+
+<span class="sd">users:</span>
+
+<span class="sd">- username</span>
+<span class="sd">- first name</span>
+<span class="sd">- last name</span>
+<span class="sd">- permissions (view | download | edit | manage)</span>
+
+<span class="sd">organizations:</span>
+
+<span class="sd">- title</span>
+<span class="sd">- name</span>
+<span class="sd">- permissions (view | download | edit | manage)</span>
+
+<span class="sd">groups:</span>
+
+<span class="sd">- title</span>
+<span class="sd">- name</span>
+<span class="sd">- permissions (view | download | edit | manage)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">pprint</span>
@@ -105,34 +136,6 @@
 <span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
 <span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">build_absolute_uri</span>
 <span class="kn">from</span> <span class="nn">geonode.groups.conf</span> <span class="kn">import</span> <span class="n">settings</span> <span class="k">as</span> <span class="n">groups_settings</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Permissions will be managed according to a &quot;compact&quot; set:</span>
-
-<span class="sd"> - view: view resource</span>
-<span class="sd"> - download: view and download</span>
-<span class="sd"> - edit: view download and edit (metadata, style, data)</span>
-<span class="sd"> - manage: change permissions, delete resource, etc.</span>
-
-<span class="sd">The GET method will return:</span>
-
-<span class="sd">users:</span>
-<span class="sd"> - username</span>
-<span class="sd"> - first name</span>
-<span class="sd"> - last name</span>
-<span class="sd"> - permissions (view | download | edit | manage)</span>
-
-<span class="sd">organizations:</span>
-<span class="sd"> - title</span>
-<span class="sd"> - name</span>
-<span class="sd"> - permissions (view | download | edit | manage)</span>
-
-<span class="sd">groups:</span>
-<span class="sd"> - title</span>
-<span class="sd"> - name</span>
-<span class="sd"> - permissions (view | download | edit | manage)</span>
-
-<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># Permissions mapping</span>
 <div class="viewcode-block" id="PERMISSIONS">
@@ -370,7 +373,8 @@
 <span class="k">def</span> <span class="nf">_to_extended_perms</span><span class="p">(</span>
     <span class="n">perm</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resource_subtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">is_owner</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Explode &quot;compact&quot; permissions into an &quot;extended&quot; set, accordingly to the schema below:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Explode &quot;compact&quot; permissions into an &quot;extended&quot; set, accordingly to the schema below:</span>
 
 <span class="sd">    - view: view resource</span>
 <span class="sd">    - download: view and download</span>
@@ -431,7 +435,8 @@
 <span class="k">def</span> <span class="nf">_to_compact_perms</span><span class="p">(</span>
     <span class="n">perms</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">resource_subtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">is_owner</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compress standard permissions into a &quot;compact&quot; set, accordingly to the schema below:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compress standard permissions into a &quot;compact&quot; set, accordingly to the schema below:</span>
 
 <span class="sd">    - view: view resource</span>
 <span class="sd">    - download: view and download</span>
@@ -439,6 +444,7 @@
 <span class="sd">    - manage: change permissions, delete resource, etc.</span>
 <span class="sd">    - owner: admin permissions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="n">is_owner</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">OWNER_RIGHTS</span>
     <span class="k">if</span> <span class="n">perms</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">perms</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -493,7 +499,9 @@
 <div class="viewcode-block" id="BindingFailed">
 <a class="viewcode-back" href="../../../autoapi/geonode/security/permissions/index.html#geonode.security.permissions.BindingFailed">[docs]</a>
 <span class="k">class</span> <span class="nc">BindingFailed</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Something in the API has changed&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Something in the API has changed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">pass</span></div>
 
@@ -613,45 +621,47 @@
 <div class="viewcode-block" id="PermSpec.compact">
 <a class="viewcode-back" href="../../../autoapi/geonode/security/permissions/index.html#geonode.security.permissions.PermSpec.compact">[docs]</a>
     <span class="k">def</span> <span class="nf">compact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a standard and verbose &#39;perm_spec&#39; into &#39;compact mode&#39;.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a standard and verbose &#39;perm_spec&#39; into &#39;compact mode&#39;.</span>
 
-<span class="sd">         - The method also recognizes special/internal security groups, like &#39;anonymous&#39; and &#39;registered-members&#39; and places</span>
-<span class="sd">           their permissions on a specific node called &#39;groups&#39;.</span>
-<span class="sd">         - Every security group, different from the former ones, associated to a GeoNode &#39;GroupProfile&#39;, will be placed on a</span>
-<span class="sd">           node called &#39;organizations&#39; instead.</span>
-<span class="sd">        e.g.:</span>
+<span class="sd">        - This method also recognizes special/internal security groups, such as &#39;anonymous&#39; and &#39;registered-members&#39;,</span>
+<span class="sd">          and places their permissions in a specific node called &#39;groups&#39;.</span>
+<span class="sd">        - Every security group different from the former ones, associated with a GeoNode &#39;GroupProfile&#39;,</span>
+<span class="sd">          will instead be placed in a node called &#39;organizations&#39;.</span>
 
-<span class="sd">        ```</span>
-<span class="sd">        {</span>
-<span class="sd">            &quot;users&quot;: [</span>
-<span class="sd">                {</span>
-<span class="sd">                    &quot;id&quot;: 1001,</span>
-<span class="sd">                    &quot;username&quot;: &quot;afabiani&quot;,</span>
-<span class="sd">                    &quot;first_name&quot;: &quot;&quot;,</span>
-<span class="sd">                    &quot;last_name&quot;: &quot;&quot;,</span>
-<span class="sd">                    &quot;avatar&quot;: &quot;&quot;,</span>
-<span class="sd">                    &quot;permissions&quot;: &quot;manage&quot;,</span>
-<span class="sd">                    &quot;is_superuser&quot;: &lt;bool&gt;,</span>
-<span class="sd">                    &quot;is_staff&quot;: &lt;bool&gt;</span>
-<span class="sd">                }</span>
-<span class="sd">            ],</span>
-<span class="sd">            &quot;organizations&quot;: [],</span>
-<span class="sd">            &quot;groups&quot;: [</span>
-<span class="sd">                {</span>
-<span class="sd">                    &quot;id&quot;: 3,</span>
-<span class="sd">                    &quot;title&quot;: &quot;Registered Members&quot;,</span>
-<span class="sd">                    &quot;name&quot;: &quot;registered-members&quot;,</span>
-<span class="sd">                    &quot;permissions&quot;: &quot;edit&quot;</span>
-<span class="sd">                },</span>
-<span class="sd">                {</span>
-<span class="sd">                    &quot;id&quot;: 2,</span>
-<span class="sd">                    &quot;title&quot;: &quot;anonymous&quot;,</span>
-<span class="sd">                    &quot;name&quot;: &quot;anonymous&quot;,</span>
-<span class="sd">                    &quot;permissions&quot;: &quot;download&quot;</span>
-<span class="sd">                }</span>
-<span class="sd">            ]</span>
-<span class="sd">        }</span>
-<span class="sd">        ```</span>
+<span class="sd">        Example:</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;users&quot;: [</span>
+<span class="sd">                    {</span>
+<span class="sd">                        &quot;id&quot;: 1001,</span>
+<span class="sd">                        &quot;username&quot;: &quot;afabiani&quot;,</span>
+<span class="sd">                        &quot;first_name&quot;: &quot;&quot;,</span>
+<span class="sd">                        &quot;last_name&quot;: &quot;&quot;,</span>
+<span class="sd">                        &quot;avatar&quot;: &quot;&quot;,</span>
+<span class="sd">                        &quot;permissions&quot;: &quot;manage&quot;,</span>
+<span class="sd">                        &quot;is_superuser&quot;: &lt;bool&gt;,</span>
+<span class="sd">                        &quot;is_staff&quot;: &lt;bool&gt;</span>
+<span class="sd">                    }</span>
+<span class="sd">                ],</span>
+<span class="sd">                &quot;organizations&quot;: [],</span>
+<span class="sd">                &quot;groups&quot;: [</span>
+<span class="sd">                    {</span>
+<span class="sd">                        &quot;id&quot;: 3,</span>
+<span class="sd">                        &quot;title&quot;: &quot;Registered Members&quot;,</span>
+<span class="sd">                        &quot;name&quot;: &quot;registered-members&quot;,</span>
+<span class="sd">                        &quot;permissions&quot;: &quot;edit&quot;</span>
+<span class="sd">                    },</span>
+<span class="sd">                    {</span>
+<span class="sd">                        &quot;id&quot;: 2,</span>
+<span class="sd">                        &quot;title&quot;: &quot;anonymous&quot;,</span>
+<span class="sd">                        &quot;name&quot;: &quot;anonymous&quot;,</span>
+<span class="sd">                        &quot;permissions&quot;: &quot;download&quot;</span>
+<span class="sd">                    }</span>
+<span class="sd">                ]</span>
+<span class="sd">            }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">json</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">user_perms</span> <span class="o">=</span> <span class="p">[]</span>
@@ -866,30 +876,39 @@
 <div class="viewcode-block" id="PermSpecCompact.extended">
 <a class="viewcode-back" href="../../../autoapi/geonode/security/permissions/index.html#geonode.security.permissions.PermSpecCompact.extended">[docs]</a>
     <span class="k">def</span> <span class="nf">extended</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts a &#39;perm_spec&#39; in &#39;compact mode&#39; into standard and verbose one.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts a &#39;perm_spec&#39; in &#39;compact mode&#39; into a standard and verbose format.</span>
 
-<span class="sd">        e.g.:</span>
+<span class="sd">        Example:</span>
 
-<span class="sd">        ```</span>
-<span class="sd">        {</span>
-<span class="sd">            &#39;groups&#39;: {</span>
-<span class="sd">                &lt;Group: registered-members&gt;: [&#39;view_resourcebase&#39;,</span>
-<span class="sd">                                             &#39;download_resourcebase&#39;,</span>
-<span class="sd">                                             &#39;change_resourcebase&#39;],</span>
-<span class="sd">                &lt;Group: anonymous&gt;: [&#39;view_resourcebase&#39;]</span>
-<span class="sd">            },</span>
-<span class="sd">            &#39;users&#39;: {</span>
-<span class="sd">                &lt;Profile: AnonymousUser&gt;: [&#39;view_resourcebase&#39;],</span>
-<span class="sd">                &lt;Profile: afabiani&gt;: [&#39;view_resourcebase&#39;,</span>
-<span class="sd">                                    &#39;download_resourcebase&#39;,</span>
-<span class="sd">                                    &#39;change_resourcebase_metadata&#39;,</span>
-<span class="sd">                                    &#39;change_resourcebase&#39;,</span>
-<span class="sd">                                    &#39;delete_resourcebase&#39;,</span>
-<span class="sd">                                    &#39;change_resourcebase_permissions&#39;,</span>
-<span class="sd">                                    &#39;publish_resourcebase&#39;]</span>
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">            {</span>
+<span class="sd">                &quot;groups&quot;: {</span>
+<span class="sd">                    &quot;&lt;Group: registered-members&gt;&quot;: [</span>
+<span class="sd">                        &quot;view_resourcebase&quot;,</span>
+<span class="sd">                        &quot;download_resourcebase&quot;,</span>
+<span class="sd">                        &quot;change_resourcebase&quot;</span>
+<span class="sd">                    ],</span>
+<span class="sd">                    &quot;&lt;Group: anonymous&gt;&quot;: [</span>
+<span class="sd">                        &quot;view_resourcebase&quot;</span>
+<span class="sd">                    ]</span>
+<span class="sd">                },</span>
+<span class="sd">                &quot;users&quot;: {</span>
+<span class="sd">                    &quot;&lt;Profile: AnonymousUser&gt;&quot;: [</span>
+<span class="sd">                        &quot;view_resourcebase&quot;</span>
+<span class="sd">                    ],</span>
+<span class="sd">                    &quot;&lt;Profile: afabiani&gt;&quot;: [</span>
+<span class="sd">                        &quot;view_resourcebase&quot;,</span>
+<span class="sd">                        &quot;download_resourcebase&quot;,</span>
+<span class="sd">                        &quot;change_resourcebase_metadata&quot;,</span>
+<span class="sd">                        &quot;change_resourcebase&quot;,</span>
+<span class="sd">                        &quot;delete_resourcebase&quot;,</span>
+<span class="sd">                        &quot;change_resourcebase_permissions&quot;,</span>
+<span class="sd">                        &quot;publish_resourcebase&quot;</span>
+<span class="sd">                    ]</span>
+<span class="sd">                }</span>
 <span class="sd">            }</span>
-<span class="sd">        }</span>
-<span class="sd">        ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">json</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">{}}</span>
         <span class="k">for</span> <span class="n">_u</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">users</span><span class="p">:</span>

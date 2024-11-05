@@ -155,7 +155,7 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#geonode.security.models.PermissionLevelMixin" title="geonode.security.models.PermissionLevelMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PermissionLevelMixin</span></code></a></p></td>
-<td><p>Mixin for adding &quot;Permission Level&quot; methods</p></td>
+<td><p>Mixin for adding &quot;Permission Level&quot; methods to a model class -- eg role systems where a user has exactly one assigned role with respect to an object representing an &quot;access level&quot;</p></td>
 </tr>
 </tbody>
 </table>
@@ -177,33 +177,24 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="geonode.security.models.PermissionLevelMixin">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.security.models.</span></span><span class="sig-name descname"><span class="pre">PermissionLevelMixin</span></span><a class="reference internal" href="../../../../_modules/geonode/security/models.html#PermissionLevelMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.models.PermissionLevelMixin" title="Link to this definition"></a></dt>
-<dd><p>Mixin for adding “Permission Level” methods
-to a model class – eg role systems where a
-user has exactly one assigned role with respect to
-an object representing an “access level”</p>
+<dd><p>Mixin for adding “Permission Level” methods to a model class – eg role systems where a user has exactly one assigned role with respect to an object representing an “access level”</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.models.PermissionLevelMixin.get_all_level_info">
 <span class="sig-name descname"><span class="pre">get_all_level_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/models.html#PermissionLevelMixin.get_all_level_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.models.PermissionLevelMixin.get_all_level_info" title="Link to this definition"></a></dt>
-<dd><p>Translates the current object guardian perms into a JSON-like “perm_spec” object in the form:
-{</p>
-<blockquote>
-<div><dl class="simple">
-<dt>‘users’: {</dt><dd><p>&lt;Profile AnonymousUser&gt;: [‘view’],
-&lt;Profile username&gt;: [‘perm1’,’perm2’,’perm3’],
-&lt;Profile username2&gt;: [‘perm1’,’perm2’,’perm3’]
-…</p>
-</dd>
-</dl>
-<p>}
-‘groups’: [</p>
-<blockquote>
-<div><p>&lt;Group groupname&gt;: [‘perm1’,’perm2’,’perm3’],
-&lt;Group groupname2&gt;: [‘perm1’,’perm2’,’perm3’],
-…
-]</p>
-</div></blockquote>
-</div></blockquote>
-<p>}</p>
+<dd><p>Translates the current object guardian permissions into a JSON-like “perm_spec” object in the form:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;users&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Profile AnonymousUser&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;view&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Profile username&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;perm1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;perm2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;perm3&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Profile username2&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;perm1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;perm2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;perm3&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;groups&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Group groupname&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;perm1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;perm2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;perm3&quot;</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;&lt;Group groupname2&gt;&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;perm1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;perm2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;perm3&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -215,46 +206,41 @@ an object representing an “access level”</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.models.PermissionLevelMixin.get_group_managers">
 <span class="sig-name descname"><span class="pre">get_group_managers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/models.html#PermissionLevelMixin.get_group_managers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.models.PermissionLevelMixin.get_group_managers" title="Link to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Given the groups belonging to a “user”, this method returns a tuple containing:</dt><dd><ul class="simple">
+<dd><p>Given the groups belonging to a “user”, this method returns a tuple containing:</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>The “groups” perms spec with resource access permissions (at least VIEW ones)</p></li>
 <li><p>The list of “group managers” of the groups above</p></li>
 </ul>
-</dd>
-</dl>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.models.PermissionLevelMixin.set_default_permissions">
 <span class="sig-name descname"><span class="pre">set_default_permissions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">owner</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/models.html#PermissionLevelMixin.set_default_permissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.models.PermissionLevelMixin.set_default_permissions" title="Link to this definition"></a></dt>
-<dd><p>Removes all the permissions except for the owner and assign the
-view permission to the anonymous group.</p>
+<dd><p>Removes all the permissions except for the owner and assign the view permission to the anonymous group.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.models.PermissionLevelMixin.set_permissions">
 <span class="sig-name descname"><span class="pre">set_permissions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">perm_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">approval_status_changed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_status_changed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/models.html#PermissionLevelMixin.set_permissions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.models.PermissionLevelMixin.set_permissions" title="Link to this definition"></a></dt>
 <dd><p>Sets an object’s the permission levels based on the perm_spec JSON.</p>
-<p>the mapping looks like:
-{</p>
-<blockquote>
-<div><dl class="simple">
-<dt>‘users’: {</dt><dd><p>‘AnonymousUser’: [‘view’],
-‘username’: [‘perm1’,’perm2’,’perm3’],
-‘username2’: [‘perm1’,’perm2’,’perm3’]
-…</p>
-</dd>
-</dl>
-<p>},
-‘groups’: [</p>
-<blockquote>
-<div><p>‘groupname’: [‘perm1’,’perm2’,’perm3’],
-‘groupname2’: [‘perm1’,’perm2’,’perm3’],
-…</p>
-</div></blockquote>
-<p>]</p>
-</div></blockquote>
-<p>}</p>
+<p>the mapping looks like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+<span class="w">    </span><span class="s1">&#39;users&#39;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s1">&#39;AnonymousUser&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;view&#39;</span><span class="o">]</span>,
+<span class="w">        </span><span class="s1">&#39;username&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span><span class="s1">&#39;username2&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>
+<span class="w">        </span>...
+<span class="w">    </span><span class="o">}</span>,
+<span class="w">    </span><span class="s1">&#39;groups&#39;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">        </span><span class="s1">&#39;groupname&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span><span class="s1">&#39;groupname2&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span>...
+<span class="w">    </span><span class="o">]</span>
+<span class="o">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -265,75 +251,62 @@ view permission to the anonymous group.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.models.PermissionLevelMixin.compare_perms">
 <span class="sig-name descname"><span class="pre">compare_perms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prev_perm_spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perm_spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/models.html#PermissionLevelMixin.compare_perms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.models.PermissionLevelMixin.compare_perms" title="Link to this definition"></a></dt>
-<dd><p>Compare two perm_specs in the form
-{</p>
-<blockquote>
-<div><dl class="simple">
-<dt>‘users’: {</dt><dd><p>&lt;Profile AnonymousUser&gt;: [‘view’],
-&lt;Profile username&gt;: [‘perm1’,’perm2’,’perm3’],
-&lt;Profile username2&gt;: [‘perm1’,’perm2’,’perm3’]
-…</p>
-</dd>
-</dl>
-<p>},
-‘groups’: [</p>
-<blockquote>
-<div><p>&lt;Group groupname&gt;: [‘perm1’,’perm2’,’perm3’],
-&lt;Group groupname2&gt;: [‘perm1’,’perm2’,’perm3’],
-…</p>
-</div></blockquote>
-<p>]</p>
-</div></blockquote>
-<p>}</p>
+<dd><p>Compare two perm_specs in the form</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+<span class="w">    </span><span class="s1">&#39;users&#39;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>&lt;Profile<span class="w"> </span>AnonymousUser&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;view&#39;</span><span class="o">]</span>,
+<span class="w">        </span>&lt;Profile<span class="w"> </span>username&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span>&lt;Profile<span class="w"> </span>username2&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>
+<span class="w">        </span>...
+<span class="w">    </span><span class="o">}</span>,
+<span class="w">    </span><span class="s1">&#39;groups&#39;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">        </span>&lt;Group<span class="w"> </span>groupname&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span>&lt;Group<span class="w"> </span>groupname2&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span>...
+<span class="w">    </span><span class="o">]</span>
+<span class="o">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geonode.security.models.PermissionLevelMixin.fixup_perms">
 <span class="sig-name descname"><span class="pre">fixup_perms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">perm_spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/security/models.html#PermissionLevelMixin.fixup_perms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.security.models.PermissionLevelMixin.fixup_perms" title="Link to this definition"></a></dt>
-<dd><p>Transform a perm_spec in the form
-{</p>
+<dd><p>Transform a perm_spec in the form</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">{</span>
+<span class="w">    </span><span class="s1">&#39;users&#39;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="s1">&#39;AnonymousUser&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;view&#39;</span><span class="o">]</span>,
+<span class="w">        </span><span class="s1">&#39;username&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span><span class="s1">&#39;username2&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>
+<span class="w">        </span>...
+<span class="w">    </span><span class="o">}</span>,
+<span class="w">    </span><span class="s1">&#39;groups&#39;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">        </span><span class="s1">&#39;groupname&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span><span class="s1">&#39;groupname2&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span>...
+<span class="w">    </span><span class="o">]</span>
+<span class="o">}</span>
+
+to<span class="w"> </span>the<span class="w"> </span>one<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>form:
+<span class="o">{</span>
+<span class="w">    </span><span class="s1">&#39;users&#39;</span>:<span class="w"> </span><span class="o">{</span>
+<span class="w">        </span>&lt;Profile<span class="w"> </span>AnonymousUser&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;view&#39;</span><span class="o">]</span>,
+<span class="w">        </span>&lt;Profile<span class="w"> </span>username&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span>&lt;Profile<span class="w"> </span>username2&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>
+<span class="w">        </span>...
+<span class="w">    </span><span class="o">}</span>,
+<span class="w">    </span><span class="s1">&#39;groups&#39;</span>:<span class="w"> </span><span class="o">[</span>
+<span class="w">        </span>&lt;Group<span class="w"> </span>groupname&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span>&lt;Group<span class="w"> </span>groupname2&gt;:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;perm1&#39;</span>,<span class="s1">&#39;perm2&#39;</span>,<span class="s1">&#39;perm3&#39;</span><span class="o">]</span>,
+<span class="w">        </span>...
+<span class="w">    </span><span class="o">]</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>It also removes items with empty permissions, e.g.:</p>
 <blockquote>
-<div><dl class="simple">
-<dt>‘users’: {</dt><dd><p>‘AnonymousUser’: [‘view’],
-‘username’: [‘perm1’,’perm2’,’perm3’],
-‘username2’: [‘perm1’,’perm2’,’perm3’]
-…</p>
-</dd>
-</dl>
-<p>},
-‘groups’: [</p>
-<blockquote>
-<div><p>‘groupname’: [‘perm1’,’perm2’,’perm3’],
-‘groupname2’: [‘perm1’,’perm2’,’perm3’],
-…</p>
+<div><p>‘AnonymousUser’: []  # the item will completely removed</p>
 </div></blockquote>
-<p>]</p>
-</div></blockquote>
-<p>}</p>
-<p>to the one in the form:
-{</p>
-<blockquote>
-<div><dl class="simple">
-<dt>‘users’: {</dt><dd><p>&lt;Profile AnonymousUser&gt;: [‘view’],
-&lt;Profile username&gt;: [‘perm1’,’perm2’,’perm3’],
-&lt;Profile username2&gt;: [‘perm1’,’perm2’,’perm3’]
-…</p>
-</dd>
-</dl>
-<p>},
-‘groups’: [</p>
-<blockquote>
-<div><p>&lt;Group groupname&gt;: [‘perm1’,’perm2’,’perm3’],
-&lt;Group groupname2&gt;: [‘perm1’,’perm2’,’perm3’],
-…</p>
-</div></blockquote>
-<p>]</p>
-</div></blockquote>
-<p>}</p>
-<dl class="simple">
-<dt>It also removes items with empty permissions, e.g.:</dt><dd><p>‘AnonymousUser’: []  # the item will completely removed</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
