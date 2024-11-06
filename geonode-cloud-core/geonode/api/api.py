@@ -195,13 +195,18 @@ class TagResource(TypeFilteredResource):
 
 
 class ThesaurusKeywordResource(TypeFilteredResource):
-    """ThesaurusKeyword api"""
+    """
+    ThesaurusKeyword api
+    """
 
     thesaurus_identifier = fields.CharField(null=False)
     label_id = fields.CharField(null=False)
 
     def build_filters(self, filters={}, ignore_bad_filters=False):
-        """adds filtering by current language"""
+        """
+        Adds filtering by current language
+        """
+        
         _filters = filters.copy()
         id = _filters.pop("id", None)
         orm_filters = super().build_filters(_filters)
@@ -255,7 +260,9 @@ class ThesaurusKeywordResource(TypeFilteredResource):
 
 
 class RegionResource(TypeFilteredResource):
-    """Regions api"""
+    """
+    Regions api
+    """
 
     def serialize(self, request, data, format, options=None):
         if options is None:
@@ -278,7 +285,9 @@ class RegionResource(TypeFilteredResource):
 
 
 class TopicCategoryResource(TypeFilteredResource):
-    """Category api"""
+    """
+    Category api
+    """
 
     layers_count = fields.IntegerField(default=0)
 
@@ -379,15 +388,24 @@ class GroupProfileResource(ModelResource):
         authorization = GroupProfileAuthorization()
 
     def dehydrate_member_count(self, bundle):
-        """Provide relative URL to the geonode UI's page on the group"""
+        """
+        Provide relative URL to the geonode UI's page on the group
+        """
+        
         return bundle.obj.member_queryset().count()
 
     def dehydrate_manager_count(self, bundle):
-        """Provide relative URL to the geonode UI's page on the group"""
+        """
+        Provide relative URL to the geonode UI's page on the group
+        """
+        
         return bundle.obj.get_managers().count()
 
     def dehydrate_detail_url(self, bundle):
-        """Return relative URL to the geonode UI's page on the group"""
+        """
+        Return relative URL to the geonode UI's page on the group
+        """
+        
         if bundle.obj.slug:
             return reverse("group_detail", args=[bundle.obj.slug])
         else:
@@ -414,7 +432,10 @@ class GroupResource(ModelResource):
         authorization = GroupAuthorization()
 
     def dehydrate(self, bundle):
-        """Provide additional resource counts"""
+        """
+        Provide additional resource counts
+        """
+        
         request = bundle.request
         counts = _get_resource_counts(request, resourcebase_filter_kwargs={"group": bundle.obj, "metadata_only": False})
 
@@ -424,7 +445,6 @@ class GroupResource(ModelResource):
     def get_object_list(self, request):
         """
         Overridden in order to exclude the ``anoymous`` group from the list
-
         """
 
         qs = super().get_object_list(request)
@@ -446,7 +466,10 @@ class ProfileResource(TypeFilteredResource):
     activity_stream_url = fields.CharField(null=True)
 
     def build_filters(self, filters=None, ignore_bad_filters=False):
-        """adds filtering by group functionality"""
+        """
+        Adds filtering by group functionality
+        """
+        
         if filters is None:
             filters = {}
 
@@ -461,7 +484,9 @@ class ProfileResource(TypeFilteredResource):
         return orm_filters
 
     def apply_filters(self, request, applicable_filters):
-        """filter by group if applicable by group functionality"""
+        """
+        Filter by group if applicable by group functionality
+        """
 
         group = applicable_filters.pop("group", None)
         name = applicable_filters.pop("name__icontains", None)
@@ -538,6 +563,7 @@ class ProfileResource(TypeFilteredResource):
         """
         Protects user's personal information from non staff
         """
+        
         is_owner = bundle.request.user == bundle.obj
         is_admin = bundle.request.user.is_staff or bundle.request.user.is_superuser
         if not (is_owner or is_admin):
@@ -596,7 +622,9 @@ class OwnersResource(TypeFilteredResource):
     full_name = fields.CharField(null=True)
 
     def apply_filters(self, request, applicable_filters):
-        """filter by group if applicable by group functionality"""
+        """
+        Filter by group if applicable by group functionality
+        """
 
         semi_filtered = super().apply_filters(request, applicable_filters)
 
@@ -618,6 +646,7 @@ class OwnersResource(TypeFilteredResource):
         """
         Protects user's personal information from non staff
         """
+        
         is_owner = bundle.request.user == bundle.obj
         is_admin = bundle.request.user.is_staff or bundle.request.user.is_superuser
         if not (is_owner or is_admin):
@@ -673,7 +702,10 @@ class GeoserverStyleResource(ModelResource):
         filtering = {"id": ALL, "title": ALL, "name": ALL, "layer": ALL_WITH_RELATIONS}
 
     def build_filters(self, filters=None, **kwargs):
-        """Apply custom filters for layer."""
+        """
+        Apply custom filters for layer.
+        """
+        
         filters = super().build_filters(filters, **kwargs)
         # Convert dataset__ filters into dataset_styles__dataset__
         updated_filters = {}
@@ -690,6 +722,7 @@ class GeoserverStyleResource(ModelResource):
         :type style: Style
         :return:
         """
+        
         style.type = "sld"
         return style
 
@@ -723,6 +756,10 @@ def _get_resource_counts(request, resourcebase_filter_kwargs):
     queryset filter that can be applied to select only the relevant
     ``ResourceBase`` objects to use when retrieving counts. For example::
 
+    Example usage:
+    
+    .. code-block:: python
+    
         _get_resource_counts(
             request,
             {
@@ -732,8 +769,8 @@ def _get_resource_counts(request, resourcebase_filter_kwargs):
 
     The above function call would result in only counting ``ResourceBase``
     objects that belong to the group that has ``my-group`` as slug
-
     """
+    
     resources = get_visible_resources(
         ResourceBase.objects.filter(**resourcebase_filter_kwargs),
         request.user,
