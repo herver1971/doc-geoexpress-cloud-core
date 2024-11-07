@@ -869,8 +869,8 @@ class ResourceBaseViewSet(DynamicModelViewSet):
                 "last_updated": "2021-07-22T15:32:09.096129Z",
                 "input_params": {
                     "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb",
-                    "files": "[\"/mnt/c/Data/flowers.jpg\"]",
-                    "defaults": "{\"owner\":\"admin\",\"title\":\"pippo\"}",
+                    "files": "['/mnt/c/Data/flowers.jpg']",
+                    "defaults": "{'owner':'admin','title':'pippo'}",
                     "resource_type": "dataset"
                 },
                 "output_params": {
@@ -996,7 +996,7 @@ class ResourceBaseViewSet(DynamicModelViewSet):
                 "last_updated": "2021-07-22T15:32:09.096129Z",
                 "input_params": {
                     "uuid": "fa404f64-eb01-11eb-8f91-00155d41f2fb",
-                    "defaults": "{\"owner\":\"admin\",\"title\":\"pippo\"}",
+                    "defaults": "{'owner':'admin','title':'pippo'}",
                     "resource_type": "dataset"
                 },
                 "output_params": {
@@ -1219,7 +1219,7 @@ class ResourceBaseViewSet(DynamicModelViewSet):
 
         OUTPUT:
 
-        .. code-block:: yaml
+        .. code-block:: json
 
             {
                 "user": "admin",
@@ -1230,7 +1230,7 @@ class ResourceBaseViewSet(DynamicModelViewSet):
                 "last_updated": "2021-07-22T14:42:56.284797Z",
                 "input_params": {
                     "uuid": "ee11541c-eaee-11eb-942c-00155d41f2fb",
-                    "vals": "{\"title\":\"pippo\"}",
+                    "vals": "{'title':'pippo'}",
                     "custom": {},
                     "notify": true,
                     "regions": [],

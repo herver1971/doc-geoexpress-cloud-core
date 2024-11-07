@@ -429,8 +429,8 @@ class PermSpec(PermSpecConverterBase):
                         "last_name": "",
                         "avatar": "",
                         "permissions": "manage",
-                        "is_superuser": <bool>,
-                        "is_staff": <bool>
+                        "is_superuser": true,
+                        "is_staff": false
                     }
                 ],
                 "organizations": [],
