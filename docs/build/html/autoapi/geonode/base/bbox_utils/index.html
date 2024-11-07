@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.base.bbox_utils &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="geonode.base.enumerations" href="../enumerations/index.html" />
+    <link rel="prev" title="geonode.base.auth" href="../auth/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">geonode</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../api/index.html">geonode.api</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">geonode.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../br/index.html">geonode.br</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogue/index.html">geonode.catalogue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../client/index.html">geonode.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../documents/index.html">geonode.documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../facets/index.html">geonode.facets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../favorite/index.html">geonode.favorite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoapps/index.html">geonode.geoapps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoserver/index.html">geonode.geoserver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../groups/index.html">geonode.groups</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../harvesting/index.html">geonode.harvesting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../invitations/index.html">geonode.invitations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../layers/index.html">geonode.layers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../management_commands_http/index.html">geonode.management_commands_http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../maps/index.html">geonode.maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../messaging/index.html">geonode.messaging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../monitoring/index.html">geonode.monitoring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../people/index.html">geonode.people</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../proxy/index.html">geonode.proxy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resource/index.html">geonode.resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../security/index.html">geonode.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../services/index.html">geonode.services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../social/index.html">geonode.social</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../storage/index.html">geonode.storage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tasks/index.html">geonode.tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tests/index.html">geonode.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../themes/index.html">geonode.themes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../thumbs/index.html">geonode.thumbs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../upload/index.html">geonode.upload</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">geonode.base</a></li>
+      <li class="breadcrumb-item active">geonode.base.bbox_utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/geonode/base/bbox_utils/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-geonode.base.bbox_utils">
+<span id="geonode-base-bbox-utils"></span><h1>geonode.base.bbox_utils<a class="headerlink" href="#module-geonode.base.bbox_utils" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.bbox_utils.BBOXHelper" title="geonode.base.bbox_utils.BBOXHelper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BBOXHelper</span></code></a></p></td>
+<td><p>A bounding box representation to avoid use of list indices when dealing with bounding boxes.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.bbox_utils.normalize_x_value" title="geonode.base.bbox_utils.normalize_x_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_x_value</span></code></a>(value)</p></td>
+<td><p>Normalise x-axis value/longtitude to fall within [-180, 180]</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.bbox_utils.polygon_from_bbox" title="geonode.base.bbox_utils.polygon_from_bbox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">polygon_from_bbox</span></code></a>(bbox[, srid])</p></td>
+<td><p>Constructs a Polygon object with srid from a provided bbox.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.bbox_utils.filter_bbox" title="geonode.base.bbox_utils.filter_bbox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_bbox</span></code></a>(queryset, bbox)</p></td>
+<td><p>Filters a queryset by a provided bounding box.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.bbox_utils.check_crossing" title="geonode.base.bbox_utils.check_crossing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_crossing</span></code></a>(lon1, lon2[, validate, dlon_threshold])</p></td>
+<td><p>Reference: <a class="reference external" href="https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513">https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513</a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.base.bbox_utils.translate_polygons" title="geonode.base.bbox_utils.translate_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate_polygons</span></code></a>(→ Generator[Union[List[dict], ...)</p></td>
+<td><p>Reference: <a class="reference external" href="https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513">https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513</a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.base.bbox_utils.split_polygon" title="geonode.base.bbox_utils.split_polygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_polygon</span></code></a>(→ Union[List[dict], ...)</p></td>
+<td><p>Reference: <a class="reference external" href="https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513">https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513</a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.BBOXHelper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.base.bbox_utils.</span></span><span class="sig-name descname"><span class="pre">BBOXHelper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">minmaxform</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#BBOXHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.BBOXHelper" title="Link to this definition"></a></dt>
+<dd><p>A bounding box representation to avoid use of list indices when dealing with bounding boxes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.BBOXHelper.from_xy">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#BBOXHelper.from_xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.BBOXHelper.from_xy" title="Link to this definition"></a></dt>
+<dd><p>Constructs a <cite>BBOXHelper</cite> instance from coordinates in “xy” format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>xy</strong> – collection of coordinates as [xmin, xmax, ymin, ymax]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.BBOXHelper.as_polygon">
+<span class="sig-name descname"><span class="pre">as_polygon</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#BBOXHelper.as_polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.BBOXHelper.as_polygon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.normalize_x_value">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.bbox_utils.</span></span><span class="sig-name descname"><span class="pre">normalize_x_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#normalize_x_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.normalize_x_value" title="Link to this definition"></a></dt>
+<dd><p>Normalise x-axis value/longtitude to fall within [-180, 180]</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.polygon_from_bbox">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.bbox_utils.</span></span><span class="sig-name descname"><span class="pre">polygon_from_bbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">srid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4326</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#polygon_from_bbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.polygon_from_bbox" title="Link to this definition"></a></dt>
+<dd><p>Constructs a Polygon object with srid from a provided bbox.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.filter_bbox">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.bbox_utils.</span></span><span class="sig-name descname"><span class="pre">filter_bbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#filter_bbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.filter_bbox" title="Link to this definition"></a></dt>
+<dd><p>Filters a queryset by a provided bounding box.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bbox</strong> – Comma-separated coordinates as “xmin,ymin,xmax,ymax”</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.check_crossing">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.bbox_utils.</span></span><span class="sig-name descname"><span class="pre">check_crossing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lon1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlon_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">180.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#check_crossing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.check_crossing" title="Link to this definition"></a></dt>
+<dd><p>Reference: <a class="reference external" href="https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513">https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513</a></p>
+<p>Assuming a minimum travel distance between two provided longitude coordinates, checks if the 180th meridian (antimeridian) is crossed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.translate_polygons">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.bbox_utils.</span></span><span class="sig-name descname"><span class="pre">translate_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geometry_collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">shapely.geometry.GeometryCollection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'geojson'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">shapely.geometry.Polygon</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#translate_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.translate_polygons" title="Link to this definition"></a></dt>
+<dd><p>Reference: <a class="reference external" href="https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513">https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.base.bbox_utils.split_polygon">
+<span class="sig-prename descclassname"><span class="pre">geonode.base.bbox_utils.</span></span><span class="sig-name descname"><span class="pre">split_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geojson</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'geojson'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">shapely.geometry.Polygon</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">shapely.geometry.GeometryCollection</span></span></span><a class="reference internal" href="../../../../_modules/geonode/base/bbox_utils.html#split_polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.base.bbox_utils.split_polygon" title="Link to this definition"></a></dt>
+<dd><p>Reference: <a class="reference external" href="https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513">https://towardsdatascience.com/around-the-world-in-80-lines-crossing-the-antimeridian-with-python-and-shapely-c87c9b6e1513</a></p>
+<p>Given a GeoJSON representation of a Polygon, returns a collection of ‘antimeridian-safe’ constituent polygons split at the 180th meridian, ensuring compliance with GeoJSON standards (<a class="reference external" href="https://tools.ietf.org/html/rfc7946#section-3.1.9">https://tools.ietf.org/html/rfc7946#section-3.1.9</a>)</p>
+<p>Assumptions:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Any two consecutive points with over 180 degrees difference in
+longitude are assumed to cross the antimeridian</p></li>
+<li><p>The polygon spans less than 360 degrees in longitude (i.e. does not wrap around the globe)</p></li>
+<li><p>However, the polygon may cross the antimeridian on multiple occasions</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>(</strong><strong>dict</strong><strong>)</strong> (<em>geojson</em>) – <p>GeoJSON of input polygon to be split. For example:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Polygon&quot;</span><span class="p">,</span>
+<span class="nt">&quot;coordinates&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">[</span>
+<span class="w">    </span><span class="p">[</span><span class="mf">179.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mf">-179.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mf">-179.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">],</span>
+<span class="w">    </span><span class="p">[</span><span class="mf">179.0</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mf">179.0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">]</span>
+<span class="w">    </span><span class="p">]</span>
+<span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">output_format</span> <span class="p">(</span><span class="nb">str</span><span class="p">):</span> <span class="n">Available</span> <span class="n">options</span><span class="p">:</span> <span class="s2">&quot;geojson&quot;</span><span class="p">,</span> <span class="s2">&quot;polygons&quot;</span><span class="p">,</span> <span class="s2">&quot;geometrycollection&quot;</span>
+
+<span class="n">If</span> <span class="s2">&quot;geometrycollection&quot;</span> <span class="n">returns</span> <span class="n">a</span> <span class="n">Shapely</span> <span class="n">GeometryCollection</span><span class="o">.</span>
+<span class="n">Otherwise</span><span class="p">,</span> <span class="n">returns</span> <span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">either</span> <span class="n">GeoJSONs</span> <span class="ow">or</span> <span class="n">Shapely</span> <span class="n">Polygons</span>
+<span class="n">validate</span> <span class="p">(</span><span class="nb">bool</span><span class="p">):</span> <span class="n">Checks</span> <span class="k">if</span> <span class="nb">all</span> <span class="n">longitudes</span> <span class="n">are</span> <span class="n">within</span> <span class="p">[</span><span class="o">-</span><span class="mf">180.0</span><span class="p">,</span> <span class="mf">180.0</span><span class="p">]</span>
+</pre></div>
+</div>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List[dict]/List[Polygon]/GeometryCollection: antimeridian-safe polygon(s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../auth/index.html" class="btn btn-neutral float-left" title="geonode.base.auth" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../enumerations/index.html" class="btn btn-neutral float-right" title="geonode.base.enumerations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

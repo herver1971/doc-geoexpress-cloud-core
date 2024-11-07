@@ -1,0 +1,769 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.thumbs.utils &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+      <li class="breadcrumb-item active">geonode.thumbs.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.thumbs.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">pyproj</span> <span class="kn">import</span> <span class="n">CRS</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">uuid</span> <span class="kn">import</span> <span class="n">uuid4</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlencode</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">bbox_to_projection</span>
+<span class="kn">from</span> <span class="nn">geonode.base.auth</span> <span class="kn">import</span> <span class="n">get_or_create_token</span>
+<span class="kn">from</span> <span class="nn">geonode.thumbs.exceptions</span> <span class="kn">import</span> <span class="n">ThumbnailError</span>
+<span class="kn">from</span> <span class="nn">geonode.storage.manager</span> <span class="kn">import</span> <span class="n">storage_manager</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MISSING_THUMB">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.MISSING_THUMB">[docs]</a>
+<span class="n">MISSING_THUMB</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">MISSING_THUMBNAIL</span></div>
+
+<div class="viewcode-block" id="BASE64_PATTERN">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.BASE64_PATTERN">[docs]</a>
+<span class="n">BASE64_PATTERN</span> <span class="o">=</span> <span class="s2">&quot;data:image/(jpeg|png|jpg);base64&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="make_bbox_to_pixels_transf">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.make_bbox_to_pixels_transf">[docs]</a>
+<span class="k">def</span> <span class="nf">make_bbox_to_pixels_transf</span><span class="p">(</span><span class="n">src_bbox</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">],</span> <span class="n">dest_bbox</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Linear transformation of a bounding box (BBOX) from a Coordinate Reference System (CRS) to pixel values.</span>
+
+<span class="sd">        .. code-block:: text</span>
+
+<span class="sd">            (xmin, ymax)         (xmax, ymax)                     (0, 0)          (width, 0)</span>
+<span class="sd">                ------------------                                    ------------------</span>
+<span class="sd">                |  x               |                                  |   | y&#39;          |</span>
+<span class="sd">                |----* (x, y)      |              -&gt;                  |----* (x&#39;, y&#39;)   |</span>
+<span class="sd">                |    | y           |                                  | x&#39;              |</span>
+<span class="sd">                ------------------                                    ------------------</span>
+<span class="sd">            (xmin, ymin)         (xmax, ymin)                     (0, height)   (width, height)</span>
+
+<span class="sd">    Transformation based on linear proportions:</span>
+
+<span class="sd">        .. code-block:: text</span>
+
+<span class="sd">            (x - xmin)        x&#39;                         (y - ymin)      (height - y&#39;)</span>
+<span class="sd">            ------------ = -------                    ------------ = ----------------</span>
+<span class="sd">            (xmax - xmin)   width                     (ymax - ymin)        height</span>
+
+<span class="sd">    .. note:: The Y axis directions are opposite between the CRS and pixel coordinates.</span>
+
+<span class="sd">    :param src_bbox: The BBOX of the image in a specific CRS, in the form (xmin, ymin, xmax, ymax).</span>
+<span class="sd">    :type src_bbox: Union[List, Tuple]</span>
+<span class="sd">    :param dest_bbox: The BBOX of the image in pixels, in the form (0, 0, width, height).</span>
+<span class="sd">    :type dest_bbox: Union[List, Tuple]</span>
+<span class="sd">    :return: A function to translate X, Y coordinates from the CRS to pixel coordinates (x, y).</span>
+<span class="sd">    :rtype: Callable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">src_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">dest_bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dest_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">src_bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">dest_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">dest_bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">dest_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">src_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">dest_bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">dest_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">src_bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="transform_bbox">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.transform_bbox">[docs]</a>
+<span class="k">def</span> <span class="nf">transform_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">target_crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;EPSG:3857&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function transforming BBOX in dataset compliant format (xmin, xmax, ymin, ymax, &#39;EPSG:xxxx&#39;) to another CRS,</span>
+<span class="sd">    preserving overflow values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(EPSG:)?(?P&lt;srid&gt;\d{4,6})$&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">target_crs</span><span class="p">))</span>
+    <span class="n">target_srid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;srid&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="n">match</span> <span class="k">else</span> <span class="mi">4326</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">bbox_to_projection</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">target_srid</span><span class="o">=</span><span class="n">target_srid</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">target_crs</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="expand_bbox_to_ratio">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.expand_bbox_to_ratio">[docs]</a>
+<span class="k">def</span> <span class="nf">expand_bbox_to_ratio</span><span class="p">(</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+    <span class="n">target_width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">THUMBNAIL_SIZE</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">],</span>
+    <span class="n">target_height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">THUMBNAIL_SIZE</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function returning an expanded BBOX, ensuring it&#39;s ratio, based on the provided BBOX, and width and height</span>
+<span class="sd">    of the target image.</span>
+
+<span class="sd">    :param bbox: a dataset compliant BBOX in a certain CRS, in (xmin, xmax, ymin, ymax, &#39;EPSG:xxxx&#39;) order</span>
+<span class="sd">    :param target_width: width of the target image in pixels</span>
+<span class="sd">    :param target_height: height of the target image in pixels</span>
+<span class="sd">    :return: BBOX (in input&#39;s format) with provided height/width ratio, and unchanged center point</span>
+<span class="sd">             (in regard to the input BBOX)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">crs</span> <span class="o">=</span> <span class="n">bbox</span>
+
+    <span class="c1"># scale up to ratio</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">target_height</span> <span class="o">/</span> <span class="n">target_width</span>
+
+    <span class="n">bbox_width</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x_max</span> <span class="o">-</span> <span class="n">x_min</span><span class="p">)</span>
+    <span class="n">bbox_height</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y_max</span> <span class="o">-</span> <span class="n">y_min</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">bbox_width</span> <span class="o">&gt;</span> <span class="n">bbox_height</span><span class="p">:</span>
+        <span class="n">new_height</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">bbox_width</span>
+        <span class="n">new_width</span> <span class="o">=</span> <span class="n">bbox_width</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_height</span> <span class="o">=</span> <span class="n">bbox_height</span>
+        <span class="n">new_width</span> <span class="o">=</span> <span class="n">bbox_height</span> <span class="o">/</span> <span class="n">ratio</span>
+
+    <span class="n">x_mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_min</span> <span class="o">+</span> <span class="n">x_max</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">y_mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_min</span> <span class="o">+</span> <span class="n">y_max</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">new_bbox</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">x_mid</span> <span class="o">-</span> <span class="n">new_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">x_mid</span> <span class="o">+</span> <span class="n">new_width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">y_mid</span> <span class="o">-</span> <span class="n">new_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">y_mid</span> <span class="o">+</span> <span class="n">new_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">crs</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1"># make sure we do not fell into a &#39;zero-area&#39; use case</span>
+    <span class="n">TOLERANCE</span> <span class="o">=</span> <span class="mf">1.0e-7</span>
+    <span class="k">if</span> <span class="n">new_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">new_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">new_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">TOLERANCE</span>
+        <span class="n">new_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">TOLERANCE</span>
+    <span class="k">if</span> <span class="n">new_bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">new_bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+        <span class="n">new_bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="n">TOLERANCE</span>
+        <span class="n">new_bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">TOLERANCE</span>
+
+    <span class="c1"># convert bbox to target_crs</span>
+    <span class="k">return</span> <span class="n">new_bbox</span></div>
+
+
+
+<div class="viewcode-block" id="assign_missing_thumbnail">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.assign_missing_thumbnail">[docs]</a>
+<span class="k">def</span> <span class="nf">assign_missing_thumbnail</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function assigning None in thumbnail_url to a provided instance</span>
+
+<span class="sd">    :param instance: instance of Dataset or Map models</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">instance</span><span class="o">.</span><span class="n">save_thumbnail</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_map">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.get_map">[docs]</a>
+<span class="k">def</span> <span class="nf">get_map</span><span class="p">(</span>
+    <span class="n">ogc_server_location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">layers</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+    <span class="n">wms_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">OGC_SERVER</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;WMS_VERSION&quot;</span><span class="p">,</span> <span class="s2">&quot;1.3.0&quot;</span><span class="p">),</span>
+    <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;image/png&quot;</span><span class="p">,</span>
+    <span class="n">styles</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">240</span><span class="p">,</span>
+    <span class="n">height</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function fetching an image from OGC server.</span>
+<span class="sd">    For the requests to the configured OGC backend (ogc_server_settings.LOCATION) the function tries to generate</span>
+<span class="sd">    an access_token and attach it to the URL.</span>
+<span class="sd">    If access_token is not added ant the request is against Geoserver Basic Authentication is used instead.</span>
+<span class="sd">    If image retrieval fails, function retries to fetch the image max_retries times, waiting</span>
+<span class="sd">    retry_delay seconds between consecutive requests.</span>
+
+<span class="sd">    :param ogc_server_location: OGC server URL</span>
+<span class="sd">    :param layers: layers which should be fetched from the OGC server</span>
+<span class="sd">    :param bbox: area&#39;s bounding box in format: [west, east, south, north, CRS]</span>
+<span class="sd">    :param wms_version: WMS version of the query (default: 1.1.1)</span>
+<span class="sd">    :param mime_type: mime type of the returned image</span>
+<span class="sd">    :param styles: styles, which OGC server should use for rendering an image</span>
+<span class="sd">    :param width: width of the returned image</span>
+<span class="sd">    :param height: height of the returned image</span>
+<span class="sd">    :param max_retries: maximum number of retries before skipping retrieval</span>
+<span class="sd">    :param retry_delay: number of seconds waited between retries</span>
+<span class="sd">    :returns: retrieved image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">geonode.geoserver.helpers</span> <span class="kn">import</span> <span class="n">ogc_server_settings</span>
+
+    <span class="k">if</span> <span class="n">ogc_server_location</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">thumbnail_url</span> <span class="o">=</span> <span class="n">ogc_server_location</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">thumbnail_url</span> <span class="o">=</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">LOCATION</span>
+
+    <span class="k">if</span> <span class="n">thumbnail_url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">PUBLIC_LOCATION</span><span class="p">):</span>
+        <span class="n">thumbnail_url</span> <span class="o">=</span> <span class="n">thumbnail_url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">PUBLIC_LOCATION</span><span class="p">,</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">LOCATION</span><span class="p">)</span>
+
+    <span class="n">wms_endpoint</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">additional_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">thumbnail_url</span> <span class="o">==</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">LOCATION</span><span class="p">:</span>
+        <span class="c1"># add access token to requests to Geoserver (logic based on the previous implementation)</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">credentials</span><span class="o">.</span><span class="n">username</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+            <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_or_create_token</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">access_token</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">access_token</span><span class="o">.</span><span class="n">is_expired</span><span class="p">():</span>
+                <span class="n">additional_kwargs</span><span class="p">[</span><span class="s2">&quot;access_token&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">access_token</span><span class="o">.</span><span class="n">token</span>
+
+        <span class="c1"># add WMS endpoint to requests to Geoserver</span>
+        <span class="n">wms_endpoint</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ogc_server_settings</span><span class="p">,</span> <span class="s2">&quot;WMS_ENDPOINT&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;ows&quot;</span>
+
+    <span class="c1"># prepare authorization for WMS service</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">thumbnail_url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">LOCATION</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;access_token&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">additional_kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1"># for the Geoserver backend, use Basic Auth, if access_token is not provided</span>
+            <span class="n">_user</span><span class="p">,</span> <span class="n">_pwd</span> <span class="o">=</span> <span class="n">ogc_server_settings</span><span class="o">.</span><span class="n">credentials</span>
+            <span class="n">encoded_credentials</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_user</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">_pwd</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Basic </span><span class="si">{</span><span class="n">encoded_credentials</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="n">additional_kwargs</span><span class="p">[</span><span class="s1">&#39;access_token&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">image</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">retry</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># fetch data</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">getmap</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">thumbnail_url</span><span class="si">}{</span><span class="n">wms_endpoint</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">version</span><span class="o">=</span><span class="n">wms_version</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+                <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span>
+                <span class="n">styles</span><span class="o">=</span><span class="n">styles</span><span class="p">,</span>
+                <span class="n">srs</span><span class="o">=</span><span class="n">bbox</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">bbox</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">bbox</span><span class="o">=</span><span class="p">[</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span> <span class="k">if</span> <span class="n">bbox</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
+                <span class="nb">format</span><span class="o">=</span><span class="n">mime_type</span><span class="p">,</span>
+                <span class="n">transparent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ogc_server_settings</span><span class="p">,</span> <span class="s2">&quot;TIMEOUT&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="o">**</span><span class="n">additional_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># validate response</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">image</span> <span class="ow">or</span> <span class="s2">&quot;ServiceException&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">read</span><span class="p">()):</span>
+                <span class="k">raise</span> <span class="n">ThumbnailError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Fetching partial thumbnail from </span><span class="si">{</span><span class="n">thumbnail_url</span><span class="si">}</span><span class="s2"> failed with response: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">retry</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="n">max_retries</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">retry_delay</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">image</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="_build_getmap_request">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils._build_getmap_request">[docs]</a>
+<span class="k">def</span> <span class="nf">_build_getmap_request</span><span class="p">(</span>
+    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.3.0&quot;</span><span class="p">,</span>
+    <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">styles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">srs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">dimensions</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">transparent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">bgcolor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">exceptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">owslib.crs</span> <span class="kn">import</span> <span class="n">Crs</span>
+
+    <span class="n">request</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;service&quot;</span><span class="p">:</span> <span class="s2">&quot;WMS&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="n">version</span><span class="p">,</span> <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;GetMap&quot;</span><span class="p">}</span>
+
+    <span class="c1"># check layers and styles</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;layers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">styles</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">styles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+        <span class="n">request</span><span class="p">[</span><span class="s2">&quot;styles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">styles</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s2">&quot;styles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># size</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># remap srs to crs for the actual request</span>
+    <span class="k">if</span> <span class="n">srs</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;EPSG:0&quot;</span><span class="p">:</span>
+        <span class="c1"># if it&#39;s esri&#39;s unknown spatial ref code, bail</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Undefined spatial reference (</span><span class="si">{</span><span class="n">srs</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+
+    <span class="n">sref</span> <span class="o">=</span> <span class="n">Crs</span><span class="p">(</span><span class="n">srs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sref</span><span class="o">.</span><span class="n">axisorder</span> <span class="o">==</span> <span class="s2">&quot;yx&quot;</span><span class="p">:</span>
+        <span class="c1"># remap the given bbox</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="c1"># remapping the srs to crs for the request</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;crs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">srs</span><span class="p">)</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">bbox</span><span class="p">])</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">format</span><span class="p">)</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;transparent&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">transparent</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;bgcolor&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;0x</span><span class="si">{</span><span class="n">bgcolor</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">request</span><span class="p">[</span><span class="s2">&quot;exceptions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">elevation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">request</span><span class="p">[</span><span class="s2">&quot;elevation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">elevation</span><span class="p">)</span>
+
+    <span class="c1"># any other specified dimension, prefixed with &quot;dim_&quot;</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dimensions</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="n">request</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;dim_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">request</span><span class="p">[</span><span class="n">kw</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">kw</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">request</span></div>
+
+
+
+<div class="viewcode-block" id="getmap">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.getmap">[docs]</a>
+<span class="k">def</span> <span class="nf">getmap</span><span class="p">(</span>
+    <span class="n">base_url</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.3.0&quot;</span><span class="p">,</span>
+    <span class="n">headers</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">styles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">srs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">bbox</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">elevation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">dimensions</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">transparent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">bgcolor</span><span class="o">=</span><span class="s2">&quot;#FFFFFF&quot;</span><span class="p">,</span>
+    <span class="n">exceptions</span><span class="o">=</span><span class="s2">&quot;XML&quot;</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;Get&quot;</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Request and return an image from the WMS as a file-like object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    layers : list</span>
+<span class="sd">        List of content layer names.</span>
+<span class="sd">    styles : list</span>
+<span class="sd">        Optional list of named styles, must be the same length as the</span>
+<span class="sd">        layers list.</span>
+<span class="sd">    srs : string</span>
+<span class="sd">        A spatial reference system identifier.</span>
+
+<span class="sd">        .. note:: This is an invalid query parameter key for 1.3.0 but is being retained for standardization with 1.1.1.</span>
+
+<span class="sd">        .. note:: Throws an exception if the spatial reference is ESRI&#39;s &quot;no reference&quot; code (EPSG:0).</span>
+<span class="sd">    bbox : tuple</span>
+<span class="sd">        (left, bottom, right, top) in srs units (note, this order does not</span>
+<span class="sd">            change depending on axis order of the crs).</span>
+
+<span class="sd">        CRS:84: (long, lat)</span>
+<span class="sd">        EPSG:4326: (lat, long)</span>
+<span class="sd">    format : string</span>
+<span class="sd">        Output image format such as &#39;image/jpeg&#39;.</span>
+<span class="sd">    size : tuple</span>
+<span class="sd">        (width, height) in pixels.</span>
+
+<span class="sd">    time : string or list or range</span>
+<span class="sd">        Optional. Time value of the specified layer as ISO-8601 (per value)</span>
+<span class="sd">    elevation : string or list or range</span>
+<span class="sd">        Optional. Elevation value of the specified layer.</span>
+<span class="sd">    dimensions: dict (dimension : string or list or range)</span>
+<span class="sd">        Optional. Any other Dimension option, as specified in the GetCapabilities</span>
+
+<span class="sd">    transparent : bool</span>
+<span class="sd">        Optional. Transparent background if True.</span>
+<span class="sd">    bgcolor : string</span>
+<span class="sd">        Optional. Image background color.</span>
+<span class="sd">    method : string</span>
+<span class="sd">        Optional. HTTP DCP method name: Get or Post.</span>
+<span class="sd">    **kwargs : extra arguments</span>
+<span class="sd">        anything else e.g. vendor specific parameters</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">        wms = WebMapService(&#39;http://webservices.nationalatlas.gov/wms/1million&#39;,\</span>
+<span class="sd">                                version=&#39;1.3.0&#39;)</span>
+<span class="sd">        img = wms.getmap(layers=[&#39;airports1m&#39;],\</span>
+<span class="sd">                                styles=[&#39;default&#39;],\</span>
+<span class="sd">                                srs=&#39;EPSG:4326&#39;,\</span>
+<span class="sd">                                bbox=(-176.646, 17.7016, -64.8017, 71.2854),\</span>
+<span class="sd">                                size=(300, 300),\</span>
+<span class="sd">                                format=&#39;image/jpeg&#39;,\</span>
+<span class="sd">                                transparent=True)</span>
+<span class="sd">        out = open(&#39;example.jpg.jpg&#39;, &#39;wb&#39;)</span>
+<span class="sd">        out.write(img.read())</span>
+<span class="sd">        out.close()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">owslib.etree</span> <span class="kn">import</span> <span class="n">etree</span>
+    <span class="kn">from</span> <span class="nn">owslib.namespaces</span> <span class="kn">import</span> <span class="n">Namespaces</span>
+    <span class="kn">from</span> <span class="nn">owslib.util</span> <span class="kn">import</span> <span class="n">openURL</span><span class="p">,</span> <span class="n">ServiceException</span><span class="p">,</span> <span class="n">nspath</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="n">Namespaces</span><span class="p">()</span>
+
+    <span class="n">request</span> <span class="o">=</span> <span class="n">_build_getmap_request</span><span class="p">(</span>
+        <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+        <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span>
+        <span class="n">styles</span><span class="o">=</span><span class="n">styles</span><span class="p">,</span>
+        <span class="n">srs</span><span class="o">=</span><span class="n">srs</span><span class="p">,</span>
+        <span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">,</span>
+        <span class="n">dimensions</span><span class="o">=</span><span class="n">dimensions</span><span class="p">,</span>
+        <span class="n">elevation</span><span class="o">=</span><span class="n">elevation</span><span class="p">,</span>
+        <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span>
+        <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+        <span class="n">transparent</span><span class="o">=</span><span class="n">transparent</span><span class="p">,</span>
+        <span class="n">bgcolor</span><span class="o">=</span><span class="n">bgcolor</span><span class="p">,</span>
+        <span class="n">exceptions</span><span class="o">=</span><span class="n">exceptions</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+    <span class="n">u</span> <span class="o">=</span> <span class="n">openURL</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+    <span class="c1"># need to handle casing in the header keys</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">info</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="n">headers</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="c1"># handle the potential charset def</span>
+    <span class="k">if</span> <span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;application/vnd.ogc.se_xml&quot;</span><span class="p">,</span> <span class="s2">&quot;text/xml&quot;</span><span class="p">]:</span>
+        <span class="n">se_xml</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">se_tree</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">se_xml</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">err_message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">se_tree</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">nspath</span><span class="p">(</span><span class="s2">&quot;ServiceException&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">.</span><span class="n">get_namespace</span><span class="p">(</span><span class="s2">&quot;ogc&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">err_message</span> <span class="o">=</span> <span class="n">se_xml</span>
+        <span class="k">raise</span> <span class="n">ServiceException</span><span class="p">(</span><span class="n">err_message</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">u</span></div>
+
+
+
+<div class="viewcode-block" id="epsg_3857_area_of_use">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.epsg_3857_area_of_use">[docs]</a>
+<span class="k">def</span> <span class="nf">epsg_3857_area_of_use</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Shortcut function, returning area of use of EPSG:3857 (in EPSG:4326) in a dataset compliant BBOX</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">epsg3857</span> <span class="o">=</span> <span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="s2">&quot;EPSG:3857&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">epsg3857</span><span class="o">.</span><span class="n">area_of_use</span><span class="p">,</span> <span class="s2">&quot;west&quot;</span><span class="p">),</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">epsg3857</span><span class="o">.</span><span class="n">area_of_use</span><span class="p">,</span> <span class="s2">&quot;east&quot;</span><span class="p">),</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">epsg3857</span><span class="o">.</span><span class="n">area_of_use</span><span class="p">,</span> <span class="s2">&quot;south&quot;</span><span class="p">),</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">epsg3857</span><span class="o">.</span><span class="n">area_of_use</span><span class="p">,</span> <span class="s2">&quot;north&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;EPSG:4326&quot;</span><span class="p">,</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="crop_to_3857_area_of_use">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.crop_to_3857_area_of_use">[docs]</a>
+<span class="k">def</span> <span class="nf">crop_to_3857_area_of_use</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+    <span class="c1"># perform the comparison in EPSG:4326 (the pivot for EPSG:3857)</span>
+    <span class="n">bbox4326</span> <span class="o">=</span> <span class="n">transform_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">target_crs</span><span class="o">=</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+
+    <span class="c1"># get area of use of EPSG:3857 in EPSG:4326</span>
+    <span class="n">epsg3857_bounds_bbox</span> <span class="o">=</span> <span class="n">epsg_3857_area_of_use</span><span class="p">()</span>
+
+    <span class="n">bbox</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">coord</span><span class="p">,</span> <span class="n">bound_coord</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bbox4326</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">epsg3857_bounds_bbox</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bound_coord</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Thumbnail generation: cropping BBOX&#39;s coord to EPSG:3857 area of use.&quot;</span><span class="p">)</span>
+            <span class="n">bbox</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bound_coord</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bbox</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span>
+
+    <span class="n">bbox</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">bbox</span></div>
+
+
+
+<div class="viewcode-block" id="exceeds_epsg3857_area_of_use">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.exceeds_epsg3857_area_of_use">[docs]</a>
+<span class="k">def</span> <span class="nf">exceeds_epsg3857_area_of_use</span><span class="p">(</span><span class="n">bbox</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function checking if a provided BBOX extends the are of use of EPSG:3857. Comparison is performed after casting</span>
+<span class="sd">    the BBOX to EPSG:4326 (pivot for EPSG:3857).</span>
+
+<span class="sd">    :param bbox: a dataset compliant BBOX in a certain CRS, in (xmin, xmax, ymin, ymax, &#39;EPSG:xxxx&#39;) order</span>
+<span class="sd">    :returns: List of indicators whether BBOX&#39;s coord exceeds the area of use of EPSG:3857</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># perform the comparison in EPSG:4326 (the pivot for EPSG:3857)</span>
+    <span class="n">bbox4326</span> <span class="o">=</span> <span class="n">transform_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">target_crs</span><span class="o">=</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">)</span>
+
+    <span class="c1"># get area of use of EPSG:3857 in EPSG:4326</span>
+    <span class="n">epsg3857_bounds_bbox</span> <span class="o">=</span> <span class="n">epsg_3857_area_of_use</span><span class="p">()</span>
+
+    <span class="n">exceeds</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">coord</span><span class="p">,</span> <span class="n">bound_coord</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bbox4326</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">epsg3857_bounds_bbox</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bound_coord</span><span class="p">):</span>
+            <span class="n">exceeds</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="n">exceeds</span></div>
+
+
+
+<div class="viewcode-block" id="clean_bbox">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.clean_bbox">[docs]</a>
+<span class="k">def</span> <span class="nf">clean_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">target_crs</span><span class="p">):</span>
+    <span class="c1"># make sure BBOX is provided with the CRS in a correct format</span>
+    <span class="n">source_crs</span> <span class="o">=</span> <span class="n">bbox</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">srid_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;EPSG:\d+&quot;</span><span class="p">,</span> <span class="n">source_crs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">srid_regex</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thumbnail bbox is in a wrong format: </span><span class="si">{</span><span class="n">bbox</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ThumbnailError</span><span class="p">(</span><span class="s2">&quot;Wrong BBOX format&quot;</span><span class="p">)</span>
+
+    <span class="c1"># for the EPSG:3857 (default thumb&#39;s CRS) - make sure received BBOX can be transformed to the target CRS;</span>
+    <span class="c1"># if it can&#39;t be (original coords are outside of the area of use of EPSG:3857), thumbnail generation with</span>
+    <span class="c1"># the provided bbox is impossible.</span>
+    <span class="k">if</span> <span class="n">target_crs</span> <span class="o">==</span> <span class="s2">&quot;EPSG:3857&quot;</span> <span class="ow">and</span> <span class="n">bbox</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;EPSG:3857&quot;</span><span class="p">:</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="n">crop_to_3857_area_of_use</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+
+    <span class="n">bbox</span> <span class="o">=</span> <span class="n">transform_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">target_crs</span><span class="o">=</span><span class="n">target_crs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bbox</span></div>
+
+
+
+<div class="viewcode-block" id="thumb_path">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.thumb_path">[docs]</a>
+<span class="k">def</span> <span class="nf">thumb_path</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the complete path of the provided thumbnail file accessible</span>
+<span class="sd">    via Django storage API&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">THUMBNAIL_LOCATION</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="thumb_exists">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.thumb_exists">[docs]</a>
+<span class="k">def</span> <span class="nf">thumb_exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine if a thumbnail file exists in storage&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">thumb_path</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="thumb_size">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.thumb_size">[docs]</a>
+<span class="k">def</span> <span class="nf">thumb_size</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine if a thumbnail file size in storage&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+
+<div class="viewcode-block" id="thumb_open">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.thumb_open">[docs]</a>
+<span class="k">def</span> <span class="nf">thumb_open</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns file handler of a thumbnail on the storage&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">thumb_path</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="get_thumbs">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.get_thumbs">[docs]</a>
+<span class="k">def</span> <span class="nf">get_thumbs</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetches a list of all stored thumbnails&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">THUMBNAIL_LOCATION</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">subdirs</span><span class="p">,</span> <span class="n">thumbs</span> <span class="o">=</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">THUMBNAIL_LOCATION</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">thumbs</span></div>
+
+
+
+<div class="viewcode-block" id="remove_thumb">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.remove_thumb">[docs]</a>
+<span class="k">def</span> <span class="nf">remove_thumb</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete a thumbnail from storage&quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">thumb_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">storage_manager</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">storage_manager</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="remove_thumbs">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.remove_thumbs">[docs]</a>
+<span class="k">def</span> <span class="nf">remove_thumbs</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes all stored thumbnails that start with the same name as the</span>
+<span class="sd">    file specified&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">thumb</span> <span class="ow">in</span> <span class="n">get_thumbs</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">thumb</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="n">remove_thumb</span><span class="p">(</span><span class="n">thumb</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_unique_upload_path">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils.get_unique_upload_path">[docs]</a>
+<span class="k">def</span> <span class="nf">get_unique_upload_path</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a unique name from the given filename and</span>
+<span class="sd">    creates a unique file upload path&quot;&quot;&quot;</span>
+    <span class="c1"># create an upload path from a unique filename</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">unique_file_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">uuid4</span><span class="p">()</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">upload_path</span> <span class="o">=</span> <span class="n">thumb_path</span><span class="p">(</span><span class="n">unique_file_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">upload_path</span></div>
+
+
+
+<div class="viewcode-block" id="_decode_base64">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/utils/index.html#geonode.thumbs.utils._decode_base64">[docs]</a>
+<span class="k">def</span> <span class="nf">_decode_base64</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode base64, padding being optional.</span>
+
+<span class="sd">    :param data: Base64 data as an ASCII byte string</span>
+<span class="sd">    :returns: The decoded byte string.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_thumbnail_format</span> <span class="o">=</span> <span class="s2">&quot;png&quot;</span>
+    <span class="n">_invalid_padding</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;;base64,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_invalid_padding</span><span class="p">:</span>
+        <span class="n">_thumbnail_format</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;image/&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="s2">&quot;image/&quot;</span><span class="p">)</span> <span class="p">:</span> <span class="n">_invalid_padding</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">_invalid_padding</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="s2">&quot;;base64,&quot;</span><span class="p">)</span> <span class="p">:]</span>
+    <span class="n">missing_padding</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+    <span class="k">if</span> <span class="n">missing_padding</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">+=</span> <span class="sa">b</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="p">(</span><span class="mi">4</span> <span class="o">-</span> <span class="n">missing_padding</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">_thumbnail_format</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,387 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.people.admin &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../people.html">geonode.people</a></li>
+      <li class="breadcrumb-item active">geonode.people.admin</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.people.admin</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2016 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls</span> <span class="kn">import</span> <span class="n">url</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.forms</span> <span class="kn">import</span> <span class="n">AdminPasswordChangeForm</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.utils.decorators</span> <span class="kn">import</span> <span class="n">method_decorator</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.csrf</span> <span class="kn">import</span> <span class="n">csrf_protect</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">transaction</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.debug</span> <span class="kn">import</span> <span class="n">sensitive_post_parameters</span>
+<span class="kn">from</span> <span class="nn">django.contrib.admin.options</span> <span class="kn">import</span> <span class="n">IS_POPUP_VAR</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">get_object_or_404</span>
+<span class="kn">from</span> <span class="nn">django.utils.html</span> <span class="kn">import</span> <span class="n">escape</span>
+<span class="kn">from</span> <span class="nn">django.template.response</span> <span class="kn">import</span> <span class="n">TemplateResponse</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseRedirect</span><span class="p">,</span> <span class="n">Http404</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">PermissionDenied</span>
+<span class="kn">from</span> <span class="nn">django.forms</span> <span class="kn">import</span> <span class="n">modelform_factory</span>
+<span class="kn">from</span> <span class="nn">geonode.base.admin</span> <span class="kn">import</span> <span class="n">set_user_and_group_dataset_permission</span>
+
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Profile</span>
+<span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">ProfileCreationForm</span><span class="p">,</span> <span class="n">ProfileChangeForm</span>
+
+
+<div class="viewcode-block" id="csrf_protect_m">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.csrf_protect_m">[docs]</a>
+<span class="n">csrf_protect_m</span> <span class="o">=</span> <span class="n">method_decorator</span><span class="p">(</span><span class="n">csrf_protect</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="sensitive_post_parameters_m">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.sensitive_post_parameters_m">[docs]</a>
+<span class="n">sensitive_post_parameters_m</span> <span class="o">=</span> <span class="n">method_decorator</span><span class="p">(</span><span class="n">sensitive_post_parameters</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="ProfileAdmin">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin">[docs]</a>
+<span class="k">class</span> <span class="nc">ProfileAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">modelform_factory</span><span class="p">(</span><span class="n">get_user_model</span><span class="p">(),</span> <span class="n">fields</span><span class="o">=</span><span class="s2">&quot;__all__&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="ProfileAdmin.add_form_template">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.add_form_template">[docs]</a>
+    <span class="n">add_form_template</span> <span class="o">=</span> <span class="s2">&quot;admin/auth/user/add_form.html&quot;</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.change_user_password_template">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.change_user_password_template">[docs]</a>
+    <span class="n">change_user_password_template</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.fieldsets">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.fieldsets">[docs]</a>
+    <span class="n">fieldsets</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;password&quot;</span><span class="p">)}),</span>
+        <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Personal info&quot;</span><span class="p">),</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">)}),</span>
+        <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Permissions&quot;</span><span class="p">),</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;is_active&quot;</span><span class="p">,</span> <span class="s2">&quot;is_staff&quot;</span><span class="p">,</span> <span class="s2">&quot;is_superuser&quot;</span><span class="p">,</span> <span class="s2">&quot;groups&quot;</span><span class="p">)}),</span>
+        <span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Important dates&quot;</span><span class="p">),</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;last_login&quot;</span><span class="p">,</span> <span class="s2">&quot;date_joined&quot;</span><span class="p">)}),</span>
+        <span class="p">(</span>
+            <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Extended profile&quot;</span><span class="p">),</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="s2">&quot;organization&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;profile&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;position&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;voice&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;fax&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;delivery&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;city&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;area&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;zipcode&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;country&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;keywords&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">},</span>
+        <span class="p">),</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.add_fieldsets">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.add_fieldsets">[docs]</a>
+    <span class="n">add_fieldsets</span> <span class="o">=</span> <span class="p">((</span><span class="kc">None</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;wide&quot;</span><span class="p">,),</span> <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;password1&quot;</span><span class="p">,</span> <span class="s2">&quot;password2&quot;</span><span class="p">)}),)</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.form">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.form">[docs]</a>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">ProfileChangeForm</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.add_form">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.add_form">[docs]</a>
+    <span class="n">add_form</span> <span class="o">=</span> <span class="n">ProfileCreationForm</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.change_password_form">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.change_password_form">[docs]</a>
+    <span class="n">change_password_form</span> <span class="o">=</span> <span class="n">AdminPasswordChangeForm</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.list_display">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.list_display">[docs]</a>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;organization&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;is_staff&quot;</span><span class="p">,</span> <span class="s2">&quot;is_active&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.list_filter">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.list_filter">[docs]</a>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;is_staff&quot;</span><span class="p">,</span> <span class="s2">&quot;is_superuser&quot;</span><span class="p">,</span> <span class="s2">&quot;is_active&quot;</span><span class="p">,</span> <span class="s2">&quot;groups&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.search_fields">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.search_fields">[docs]</a>
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span> <span class="s2">&quot;organization&quot;</span><span class="p">,</span> <span class="s2">&quot;profile&quot;</span><span class="p">,</span> <span class="s2">&quot;first_name&quot;</span><span class="p">,</span> <span class="s2">&quot;last_name&quot;</span><span class="p">,</span> <span class="s2">&quot;email&quot;</span><span class="p">)</span></div>
+
+    <span class="c1"># readonly_fields = (&quot;groups&quot;, )</span>
+<div class="viewcode-block" id="ProfileAdmin.ordering">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.ordering">[docs]</a>
+    <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.filter_horizontal">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.filter_horizontal">[docs]</a>
+    <span class="n">filter_horizontal</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;groups&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_permissions&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProfileAdmin.actions">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.actions">[docs]</a>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">set_user_and_group_dataset_permission</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ProfileAdmin.get_fieldsets">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.get_fieldsets">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_fieldsets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">obj</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_fieldsets</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_fieldsets</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileAdmin.get_form">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.get_form">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_form</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use special form during user creation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;form&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_form</span><span class="p">,</span>
+                    <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="n">admin</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">flatten_fieldsets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_fieldsets</span><span class="p">),</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
+        <span class="n">defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="o">**</span><span class="n">defaults</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProfileAdmin.get_urls">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.get_urls">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span>  <span class="c1"># &#39;&#39;,</span>
+            <span class="n">url</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^(\d+)/password/$&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">admin_site</span><span class="o">.</span><span class="n">admin_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_change_password</span><span class="p">))</span>
+        <span class="p">]</span> <span class="o">+</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_urls</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ProfileAdmin.lookup_allowed">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.lookup_allowed">[docs]</a>
+    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># See #20078: we don&#39;t want to allow any lookups involving passwords.</span>
+        <span class="k">if</span> <span class="n">lookup</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;password&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">lookup_allowed</span><span class="p">(</span><span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+    <span class="nd">@sensitive_post_parameters_m</span>
+    <span class="nd">@csrf_protect_m</span>
+    <span class="nd">@transaction</span><span class="o">.</span><span class="n">atomic</span>
+<div class="viewcode-block" id="ProfileAdmin.add_view">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.add_view">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">form_url</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">extra_context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># It&#39;s an error for a user to have add permission but NOT change</span>
+        <span class="c1"># permission for users. If we allowed such users to add users, they</span>
+        <span class="c1"># could create superusers, which would mean they would essentially have</span>
+        <span class="c1"># the permission to change users. To avoid the problem entirely, we</span>
+        <span class="c1"># disallow users from adding users if they don&#39;t have change</span>
+        <span class="c1"># permission.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_change_permission</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_add_permission</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+                <span class="c1"># Raise Http404 in debug mode so that the user gets a helpful</span>
+                <span class="c1"># error message.</span>
+                <span class="k">raise</span> <span class="n">Http404</span><span class="p">(</span>
+                    <span class="s1">&#39;Your user does not have the &quot;Change user&quot; permission. In &#39;</span>
+                    <span class="s2">&quot;order to add users, Django requires that your user &quot;</span>
+                    <span class="s1">&#39;account have both the &quot;Add user&quot; and &quot;Change user&quot; &#39;</span>
+                    <span class="s2">&quot;permissions set.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span>
+        <span class="k">if</span> <span class="n">extra_context</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">extra_context</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">username_field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">get_field</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">USERNAME_FIELD</span><span class="p">)</span>
+
+        <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;auto_populated_fields&quot;</span><span class="p">:</span> <span class="p">(),</span>
+            <span class="s2">&quot;username_help_text&quot;</span><span class="p">:</span> <span class="n">username_field</span><span class="o">.</span><span class="n">help_text</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">extra_context</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">add_view</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">form_url</span><span class="p">,</span> <span class="n">extra_context</span><span class="p">)</span></div>
+
+
+    <span class="nd">@sensitive_post_parameters_m</span>
+<div class="viewcode-block" id="ProfileAdmin.user_change_password">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.user_change_password">[docs]</a>
+    <span class="k">def</span> <span class="nf">user_change_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">form_url</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_change_permission</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">(</span><span class="n">request</span><span class="p">),</span> <span class="n">pk</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_password_form</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="n">form</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="n">change_message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">construct_change_message</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_change</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">change_message</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Password changed successfully.&quot;</span><span class="p">)</span>
+                <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">form</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_password_form</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="n">fieldsets</span> <span class="o">=</span> <span class="p">[(</span><span class="kc">None</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">form</span><span class="o">.</span><span class="n">base_fields</span><span class="p">)})]</span>
+        <span class="n">adminForm</span> <span class="o">=</span> <span class="n">admin</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">AdminForm</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">fieldsets</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Change password: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">escape</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">get_username</span><span class="p">()),</span>
+            <span class="s2">&quot;adminForm&quot;</span><span class="p">:</span> <span class="n">adminForm</span><span class="p">,</span>
+            <span class="s2">&quot;form_url&quot;</span><span class="p">:</span> <span class="n">form_url</span><span class="p">,</span>
+            <span class="s2">&quot;form&quot;</span><span class="p">:</span> <span class="n">form</span><span class="p">,</span>
+            <span class="s2">&quot;is_popup&quot;</span><span class="p">:</span> <span class="n">IS_POPUP_VAR</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="p">,</span>
+            <span class="s2">&quot;add&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;change&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;has_delete_permission&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;has_change_permission&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;has_absolute_url&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;opts&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_meta</span><span class="p">,</span>
+            <span class="s2">&quot;original&quot;</span><span class="p">:</span> <span class="n">user</span><span class="p">,</span>
+            <span class="s2">&quot;save_as&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;show_save&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">TemplateResponse</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_user_password_template</span> <span class="ow">or</span> <span class="s2">&quot;admin/auth/user/change_password.html&quot;</span><span class="p">,</span> <span class="n">context</span>
+        <span class="p">)</span>  <span class="c1"># , using=self.admin_site.name)</span></div>
+
+
+<div class="viewcode-block" id="ProfileAdmin.response_add">
+<a class="viewcode-back" href="../../../autoapi/geonode/people/admin/index.html#geonode.people.admin.ProfileAdmin.response_add">[docs]</a>
+    <span class="k">def</span> <span class="nf">response_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">post_url_continue</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines the HttpResponse for the add_view stage. It mostly defers to</span>
+<span class="sd">        its superclass implementation but is customized because the User model</span>
+<span class="sd">        has a slightly different workflow.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># We should allow further modification of the user just added i.e. the</span>
+        <span class="c1"># &#39;Save&#39; button should behave like the &#39;Save and continue editing&#39;</span>
+        <span class="c1"># button except in two scenarios:</span>
+        <span class="c1"># * The user has pressed the &#39;Save and add another&#39; button</span>
+        <span class="c1"># * We are adding a user in a popup</span>
+        <span class="k">if</span> <span class="s2">&quot;_addanother&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span> <span class="ow">and</span> <span class="n">IS_POPUP_VAR</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">:</span>
+            <span class="n">mutable</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">_mutable</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">_mutable</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s2">&quot;_continue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">_mutable</span> <span class="o">=</span> <span class="n">mutable</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">response_add</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">post_url_continue</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Profile</span><span class="p">,</span> <span class="n">ProfileAdmin</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

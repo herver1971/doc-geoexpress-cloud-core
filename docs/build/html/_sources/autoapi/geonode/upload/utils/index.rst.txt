@@ -1,0 +1,241 @@
+geonode.upload.utils
+====================
+
+.. py:module:: geonode.upload.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.upload.utils.logger
+   geonode.upload.utils.iso8601
+   geonode.upload.utils._SUPPORTED_CRS
+   geonode.upload.utils._SUPPORTED_CRS
+   geonode.upload.utils._SUPPORTED_EXT
+   geonode.upload.utils._SUPPORTED_EXT
+   geonode.upload.utils._ALLOW_TIME_STEP
+   geonode.upload.utils._ALLOW_TIME_STEP
+   geonode.upload.utils._ALLOW_MOSAIC_STEP
+   geonode.upload.utils._ALLOW_MOSAIC_STEP
+   geonode.upload.utils._ASYNC_UPLOAD
+   geonode.upload.utils._geoserver_down_error_msg
+   geonode.upload.utils._unexpected_error_msg
+   geonode.upload.utils._pages
+   geonode.upload.utils._latitude_names
+   geonode.upload.utils._longitude_names
+   geonode.upload.utils.steps
+   geonode.upload.utils.steps
+   geonode.upload.utils.steps
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.upload.utils.JSONResponse
+   geonode.upload.utils.UploadLimitValidator
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.upload.utils._log
+   geonode.upload.utils.json_response
+   geonode.upload.utils.json_load_byteified
+   geonode.upload.utils.json_loads_byteified
+   geonode.upload.utils._byteify
+   geonode.upload.utils.get_kml_doc
+   geonode.upload.utils.get_max_amount_of_steps
+   geonode.upload.utils.get_next_step
+   geonode.upload.utils._advance_step
+   geonode.upload.utils.is_async_step
+   geonode.upload.utils._get_time_dimensions
+   geonode.upload.utils._fixup_base_file
+   geonode.upload.utils._get_dataset_values
+   geonode.upload.utils.dataset_eligible_for_time_dimension
+   geonode.upload.utils.run_import
+   geonode.upload.utils.progress_redirect
+   geonode.upload.utils.get_max_upload_size
+   geonode.upload.utils.get_max_upload_parallelism_limit
+   geonode.upload.utils._get_time_regex
+   geonode.upload.utils.import_imagemosaic_granules
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: _log(msg, *args, level='error')
+
+.. py:data:: iso8601
+
+.. py:data:: _SUPPORTED_CRS
+
+.. py:data:: _SUPPORTED_CRS
+
+.. py:data:: _SUPPORTED_EXT
+
+.. py:data:: _SUPPORTED_EXT
+
+.. py:data:: _ALLOW_TIME_STEP
+
+.. py:data:: _ALLOW_TIME_STEP
+
+.. py:data:: _ALLOW_MOSAIC_STEP
+
+.. py:data:: _ALLOW_MOSAIC_STEP
+
+.. py:data:: _ASYNC_UPLOAD
+
+.. py:data:: _geoserver_down_error_msg
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      GeoServer is not responding. Please try again later and sorry for the inconvenience.
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:data:: _unexpected_error_msg
+   :value: Multiline-String
+
+   .. raw:: html
+
+      <details><summary>Show Value</summary>
+
+   .. code-block:: python
+
+      """
+      An error occurred while trying to process your request.  Our administrator has
+      been notified, but if you'd like, please note this error code
+      below and details on what you were doing when you encountered this error.
+      That information can help us identify the cause of the problem and help us with
+      fixing it.  Thank you!
+      """
+
+   .. raw:: html
+
+      </details>
+
+
+
+.. py:class:: JSONResponse(obj='', json_opts=None, content_type='application/json', *args, **kwargs)
+
+   Bases: :py:obj:`django.http.HttpResponse`
+
+
+   JSON response class.
+
+
+   .. py:attribute:: content
+
+
+.. py:function:: json_response(*args, **kw)
+
+.. py:function:: json_load_byteified(file_handle)
+
+.. py:function:: json_loads_byteified(json_text, charset)
+
+.. py:function:: _byteify(data, ignore_dicts=False)
+
+.. py:function:: get_kml_doc(kml_bytes)
+
+   Parse and return an etree element with the kml file's content
+
+
+.. py:data:: _pages
+
+.. py:data:: _latitude_names
+
+.. py:data:: _longitude_names
+
+.. py:data:: steps
+
+.. py:data:: steps
+
+.. py:data:: steps
+
+.. py:function:: get_max_amount_of_steps()
+
+.. py:function:: get_next_step(upload_session, offset=1)
+
+.. py:function:: _advance_step(req, upload_session)
+
+.. py:function:: is_async_step(upload_session)
+
+.. py:function:: _get_time_dimensions(layer, upload_session, values=None)
+
+.. py:function:: _fixup_base_file(absolute_base_file, tempdir=None)
+
+.. py:function:: _get_dataset_values(layer, upload_session, expand=0)
+
+.. py:function:: dataset_eligible_for_time_dimension(request, layer, values=None, upload_session=None)
+
+.. py:function:: run_import(upload_session, async_upload=_ASYNC_UPLOAD)
+
+   Run the import, possibly asynchronously.
+
+   Returns the target datastore.
+
+
+.. py:function:: progress_redirect(step, upload_id)
+
+.. py:function:: get_max_upload_size(slug)
+
+.. py:function:: get_max_upload_parallelism_limit(slug)
+
+.. py:function:: _get_time_regex(spatial_files, base_file_name)
+
+.. py:function:: import_imagemosaic_granules(spatial_files, append_to_mosaic_opts, append_to_mosaic_name, mosaic_time_regex, mosaic_time_value, time_presentation, time_presentation_res, time_presentation_default_value, time_presentation_reference_value)
+
+.. py:class:: UploadLimitValidator(user)
+
+   .. py:attribute:: user
+
+
+   .. py:method:: validate_parallelism_limit_per_user()
+
+
+   .. py:method:: validate_files_sum_of_sizes(file_dict)
+
+
+   .. py:method:: _get_uploads_max_size()
+
+
+   .. py:method:: _get_uploaded_files()
+
+      Return a list with all of the uploaded files
+
+
+
+   .. py:method:: _get_uploaded_files_total_size(file_dict)
+
+      Return a list with all of the uploaded files
+
+
+
+   .. py:method:: _get_max_parallel_uploads()
+
+
+   .. py:method:: _get_parallel_uploads_count()
+
+      Count the total layers that are part of the running import
+
+
+

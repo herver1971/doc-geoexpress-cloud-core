@@ -1,0 +1,255 @@
+geonode.thumbs.utils
+====================
+
+.. py:module:: geonode.thumbs.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.thumbs.utils.logger
+   geonode.thumbs.utils.MISSING_THUMB
+   geonode.thumbs.utils.BASE64_PATTERN
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.thumbs.utils.make_bbox_to_pixels_transf
+   geonode.thumbs.utils.transform_bbox
+   geonode.thumbs.utils.expand_bbox_to_ratio
+   geonode.thumbs.utils.assign_missing_thumbnail
+   geonode.thumbs.utils.get_map
+   geonode.thumbs.utils._build_getmap_request
+   geonode.thumbs.utils.getmap
+   geonode.thumbs.utils.epsg_3857_area_of_use
+   geonode.thumbs.utils.crop_to_3857_area_of_use
+   geonode.thumbs.utils.exceeds_epsg3857_area_of_use
+   geonode.thumbs.utils.clean_bbox
+   geonode.thumbs.utils.thumb_path
+   geonode.thumbs.utils.thumb_exists
+   geonode.thumbs.utils.thumb_size
+   geonode.thumbs.utils.thumb_open
+   geonode.thumbs.utils.get_thumbs
+   geonode.thumbs.utils.remove_thumb
+   geonode.thumbs.utils.remove_thumbs
+   geonode.thumbs.utils.get_unique_upload_path
+   geonode.thumbs.utils._decode_base64
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: MISSING_THUMB
+
+.. py:data:: BASE64_PATTERN
+   :value: 'data:image/(jpeg|png|jpg);base64'
+
+
+.. py:function:: make_bbox_to_pixels_transf(src_bbox: Union[List, Tuple], dest_bbox: Union[List, Tuple]) -> Callable
+
+   Linear transformation of a bounding box (BBOX) from a Coordinate Reference System (CRS) to pixel values.
+
+       .. code-block:: text
+
+           (xmin, ymax)         (xmax, ymax)                     (0, 0)          (width, 0)
+               ------------------                                    ------------------
+               |  x               |                                  |   | y'          |
+               |----* (x, y)      |              ->                  |----* (x', y')   |
+               |    | y           |                                  | x'              |
+               ------------------                                    ------------------
+           (xmin, ymin)         (xmax, ymin)                     (0, height)   (width, height)
+
+   Transformation based on linear proportions:
+
+       .. code-block:: text
+
+           (x - xmin)        x'                         (y - ymin)      (height - y')
+           ------------ = -------                    ------------ = ----------------
+           (xmax - xmin)   width                     (ymax - ymin)        height
+
+   .. note:: The Y axis directions are opposite between the CRS and pixel coordinates.
+
+   :param src_bbox: The BBOX of the image in a specific CRS, in the form (xmin, ymin, xmax, ymax).
+   :type src_bbox: Union[List, Tuple]
+   :param dest_bbox: The BBOX of the image in pixels, in the form (0, 0, width, height).
+   :type dest_bbox: Union[List, Tuple]
+   :return: A function to translate X, Y coordinates from the CRS to pixel coordinates (x, y).
+   :rtype: Callable
+
+
+.. py:function:: transform_bbox(bbox: List, target_crs: str = 'EPSG:3857')
+
+   Function transforming BBOX in dataset compliant format (xmin, xmax, ymin, ymax, 'EPSG:xxxx') to another CRS,
+   preserving overflow values.
+
+
+.. py:function:: expand_bbox_to_ratio(bbox: List, target_width: int = settings.THUMBNAIL_SIZE['width'], target_height: int = settings.THUMBNAIL_SIZE['height'])
+
+   Function returning an expanded BBOX, ensuring it's ratio, based on the provided BBOX, and width and height
+   of the target image.
+
+   :param bbox: a dataset compliant BBOX in a certain CRS, in (xmin, xmax, ymin, ymax, 'EPSG:xxxx') order
+   :param target_width: width of the target image in pixels
+   :param target_height: height of the target image in pixels
+   :return: BBOX (in input's format) with provided height/width ratio, and unchanged center point
+            (in regard to the input BBOX)
+
+
+.. py:function:: assign_missing_thumbnail(instance) -> None
+
+   Function assigning None in thumbnail_url to a provided instance
+
+   :param instance: instance of Dataset or Map models
+
+
+.. py:function:: get_map(ogc_server_location: str, layers: List, bbox: List, wms_version: str = settings.OGC_SERVER['default'].get('WMS_VERSION', '1.3.0'), mime_type: str = 'image/png', styles: List = None, width: int = 240, height: int = 200, max_retries: int = 3, retry_delay: int = 1)
+
+   Function fetching an image from OGC server.
+   For the requests to the configured OGC backend (ogc_server_settings.LOCATION) the function tries to generate
+   an access_token and attach it to the URL.
+   If access_token is not added ant the request is against Geoserver Basic Authentication is used instead.
+   If image retrieval fails, function retries to fetch the image max_retries times, waiting
+   retry_delay seconds between consecutive requests.
+
+   :param ogc_server_location: OGC server URL
+   :param layers: layers which should be fetched from the OGC server
+   :param bbox: area's bounding box in format: [west, east, south, north, CRS]
+   :param wms_version: WMS version of the query (default: 1.1.1)
+   :param mime_type: mime type of the returned image
+   :param styles: styles, which OGC server should use for rendering an image
+   :param width: width of the returned image
+   :param height: height of the returned image
+   :param max_retries: maximum number of retries before skipping retrieval
+   :param retry_delay: number of seconds waited between retries
+   :returns: retrieved image
+
+
+.. py:function:: _build_getmap_request(version='1.3.0', layers=None, styles=None, srs=None, bbox=None, format=None, size=None, time=None, dimensions={}, elevation=None, transparent=False, bgcolor=None, exceptions=None, **kwargs)
+
+.. py:function:: getmap(base_url, version='1.3.0', headers={}, layers=None, styles=None, srs=None, bbox=None, format=None, size=None, time=None, elevation=None, dimensions={}, transparent=False, bgcolor='#FFFFFF', exceptions='XML', method='Get', timeout=None, **kwargs)
+
+   Request and return an image from the WMS as a file-like object.
+
+   :param layers: List of content layer names.
+   :type layers: list
+   :param styles: Optional list of named styles, must be the same length as the
+                  layers list.
+   :type styles: list
+   :param srs: A spatial reference system identifier.
+
+               .. note:: This is an invalid query parameter key for 1.3.0 but is being retained for standardization with 1.1.1.
+
+               .. note:: Throws an exception if the spatial reference is ESRI's "no reference" code (EPSG:0).
+   :type srs: string
+   :param bbox:
+                (left, bottom, right, top) in srs units (note, this order does not
+                    change depending on axis order of the crs).
+
+                CRS:84: (long, lat)
+                EPSG:4326: (lat, long)
+   :type bbox: tuple
+   :param format: Output image format such as 'image/jpeg'.
+   :type format: string
+   :param size: (width, height) in pixels.
+   :type size: tuple
+   :param time: Optional. Time value of the specified layer as ISO-8601 (per value)
+   :type time: string or list or range
+   :param elevation: Optional. Elevation value of the specified layer.
+   :type elevation: string or list or range
+   :param dimensions: Optional. Any other Dimension option, as specified in the GetCapabilities
+   :type dimensions: dict (dimension : string or list or range)
+   :param transparent: Optional. Transparent background if True.
+   :type transparent: bool
+   :param bgcolor: Optional. Image background color.
+   :type bgcolor: string
+   :param method: Optional. HTTP DCP method name: Get or Post.
+   :type method: string
+   :param \*\*kwargs: anything else e.g. vendor specific parameters
+   :type \*\*kwargs: extra arguments
+
+   .. rubric:: Example
+
+   wms = WebMapService('http://webservices.nationalatlas.gov/wms/1million',                                version='1.3.0')
+   img = wms.getmap(layers=['airports1m'],                                styles=['default'],                                srs='EPSG:4326',                                bbox=(-176.646, 17.7016, -64.8017, 71.2854),                                size=(300, 300),                                format='image/jpeg',                                transparent=True)
+   out = open('example.jpg.jpg', 'wb')
+   out.write(img.read())
+   out.close()
+
+
+.. py:function:: epsg_3857_area_of_use()
+
+   Shortcut function, returning area of use of EPSG:3857 (in EPSG:4326) in a dataset compliant BBOX
+
+
+.. py:function:: crop_to_3857_area_of_use(bbox: List) -> List
+
+.. py:function:: exceeds_epsg3857_area_of_use(bbox: List) -> bool
+
+   Function checking if a provided BBOX extends the are of use of EPSG:3857. Comparison is performed after casting
+   the BBOX to EPSG:4326 (pivot for EPSG:3857).
+
+   :param bbox: a dataset compliant BBOX in a certain CRS, in (xmin, xmax, ymin, ymax, 'EPSG:xxxx') order
+   :returns: List of indicators whether BBOX's coord exceeds the area of use of EPSG:3857
+
+
+.. py:function:: clean_bbox(bbox, target_crs)
+
+.. py:function:: thumb_path(filename)
+
+   Return the complete path of the provided thumbnail file accessible
+   via Django storage API
+
+
+.. py:function:: thumb_exists(filename)
+
+   Determine if a thumbnail file exists in storage
+
+
+.. py:function:: thumb_size(filepath)
+
+   Determine if a thumbnail file size in storage
+
+
+.. py:function:: thumb_open(filename)
+
+   Returns file handler of a thumbnail on the storage
+
+
+.. py:function:: get_thumbs()
+
+   Fetches a list of all stored thumbnails
+
+
+.. py:function:: remove_thumb(filename)
+
+   Delete a thumbnail from storage
+
+
+.. py:function:: remove_thumbs(name)
+
+   Removes all stored thumbnails that start with the same name as the
+   file specified
+
+
+.. py:function:: get_unique_upload_path(filename)
+
+   Generates a unique name from the given filename and
+   creates a unique file upload path
+
+
+.. py:function:: _decode_base64(data)
+
+   Decode base64, padding being optional.
+
+   :param data: Base64 data as an ASCII byte string
+   :returns: The decoded byte string.
+
+
+

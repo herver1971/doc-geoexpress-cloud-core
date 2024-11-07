@@ -1,0 +1,728 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.security.oauth2_grant_types &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../security.html">geonode.security</a></li>
+      <li class="breadcrumb-item active">geonode.security.oauth2_grant_types</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.security.oauth2_grant_types</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">oauthlib</span> <span class="kn">import</span> <span class="n">common</span>
+
+<span class="kn">from</span> <span class="nn">oauthlib.oauth2.rfc6749</span> <span class="kn">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">oauthlib.oauth2.rfc6749.grant_types.base</span> <span class="kn">import</span> <span class="n">GrantTypeBase</span>
+
+<span class="kn">from</span> <span class="nn">oauthlib.openid.connect.core.grant_types.base</span> <span class="kn">import</span> <span class="n">GrantTypeBase</span> <span class="k">as</span> <span class="n">OpenIDGrantTypeBase</span>
+
+<div class="viewcode-block" id="log">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.log">[docs]</a>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="code_challenge_method_s256">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.code_challenge_method_s256">[docs]</a>
+<span class="k">def</span> <span class="nf">code_challenge_method_s256</span><span class="p">(</span><span class="n">verifier</span><span class="p">,</span> <span class="n">challenge</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If the &quot;code_challenge_method&quot; from `Section 4.3`_ was &quot;S256&quot;, the</span>
+<span class="sd">    received &quot;code_verifier&quot; is hashed by SHA-256, base64url-encoded, and</span>
+<span class="sd">    then compared to the &quot;code_challenge&quot;, i.e.:</span>
+
+<span class="sd">    BASE64URL-ENCODE(SHA256(ASCII(code_verifier))) == code_challenge</span>
+
+<span class="sd">    How to implement a base64url-encoding</span>
+<span class="sd">    function without padding, based upon the standard base64-encoding</span>
+<span class="sd">    function that uses padding.</span>
+
+<span class="sd">    To be concrete, example C# code implementing these functions is shown</span>
+<span class="sd">    below.  Similar code could be used in other languages.</span>
+
+<span class="sd">    .. code-block:: c</span>
+
+<span class="sd">        static string base64urlencode(byte[] arg)</span>
+<span class="sd">        {</span>
+<span class="sd">            string s = Convert.ToBase64String(arg); // Regular base64 encoder</span>
+<span class="sd">            s = s.Split(&#39;=&#39;)[0]; // Remove any trailing &#39;=&#39;s</span>
+<span class="sd">            s = s.Replace(&#39;+&#39;, &#39;-&#39;); // 62nd char of encoding</span>
+<span class="sd">            s = s.Replace(&#39;/&#39;, &#39;_&#39;); // 63rd char of encoding</span>
+<span class="sd">            return s;</span>
+<span class="sd">        }</span>
+
+<span class="sd">    In python urlsafe_b64encode is already replacing &#39;+&#39; and &#39;/&#39;, but preserve</span>
+<span class="sd">    the trailing &#39;=&#39;. So we have to remove it.</span>
+
+<span class="sd">    .. _`Section 4.3`: https://tools.ietf.org/html/rfc7636#section-4.3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">verifier</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">digest</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">challenge</span></div>
+
+
+
+<div class="viewcode-block" id="code_challenge_method_plain">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.code_challenge_method_plain">[docs]</a>
+<span class="k">def</span> <span class="nf">code_challenge_method_plain</span><span class="p">(</span><span class="n">verifier</span><span class="p">,</span> <span class="n">challenge</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    If the &quot;code_challenge_method&quot; from `Section 4.3`_ was &quot;plain&quot;, they are</span>
+<span class="sd">    compared directly, i.e.:</span>
+
+<span class="sd">    code_verifier == code_challenge.</span>
+
+<span class="sd">    .. _`Section 4.3`: https://tools.ietf.org/html/rfc7636#section-4.3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">verifier</span> <span class="o">==</span> <span class="n">challenge</span></div>
+
+
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant">[docs]</a>
+<span class="k">class</span> <span class="nc">OAuth2AuthorizationCodeGrant</span><span class="p">(</span><span class="n">GrantTypeBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;`Authorization Code Grant`_</span>
+
+<span class="sd">    The authorization code grant type is used to obtain both access</span>
+<span class="sd">    tokens and refresh tokens and is optimized for confidential clients.</span>
+<span class="sd">    Since this is a redirection-based flow, the client must be capable of</span>
+<span class="sd">    interacting with the resource owner&#39;s user-agent (typically a web</span>
+<span class="sd">    browser) and capable of receiving incoming requests (via redirection)</span>
+<span class="sd">    from the authorization server::</span>
+
+<span class="sd">        +----------+</span>
+<span class="sd">        | Resource |</span>
+<span class="sd">        |   Owner  |</span>
+<span class="sd">        |          |</span>
+<span class="sd">        +----------+</span>
+<span class="sd">             ^</span>
+<span class="sd">             |</span>
+<span class="sd">            (B)</span>
+<span class="sd">        +----|-----+          Client Identifier      +---------------+</span>
+<span class="sd">        |         -+----(A)-- &amp; Redirection URI ----&gt;|               |</span>
+<span class="sd">        |  User-   |                                 | Authorization |</span>
+<span class="sd">        |  Agent  -+----(B)-- User authenticates ---&gt;|     Server    |</span>
+<span class="sd">        |          |                                 |               |</span>
+<span class="sd">        |         -+----(C)-- Authorization Code ---&lt;|               |</span>
+<span class="sd">        +-|----|---+                                 +---------------+</span>
+<span class="sd">          |    |                                         ^      v</span>
+<span class="sd">         (A)  (C)                                        |      |</span>
+<span class="sd">          |    |                                         |      |</span>
+<span class="sd">          ^    v                                         |      |</span>
+<span class="sd">        +---------+                                      |      |</span>
+<span class="sd">        |         |&gt;---(D)-- Authorization Code ---------&#39;      |</span>
+<span class="sd">        |  Client |          &amp; Redirection URI                  |</span>
+<span class="sd">        |         |                                             |</span>
+<span class="sd">        |         |&lt;---(E)----- Access Token -------------------&#39;</span>
+<span class="sd">        +---------+       (w/ Optional Refresh Token)</span>
+
+<span class="sd">    Note: The lines illustrating steps (A), (B), and (C) are broken into</span>
+<span class="sd">    two parts as they pass through the user-agent.</span>
+
+<span class="sd">    Figure 3: Authorization Code Flow</span>
+
+<span class="sd">    The flow illustrated in Figure 3 includes the following steps:</span>
+
+<span class="sd">    (A)  The client initiates the flow by directing the resource owner&#39;s</span>
+<span class="sd">         user-agent to the authorization endpoint.  The client includes</span>
+<span class="sd">         its client identifier, requested scope, local state, and a</span>
+<span class="sd">         redirection URI to which the authorization server will send the</span>
+<span class="sd">         user-agent back once access is granted (or denied).</span>
+
+<span class="sd">    (B)  The authorization server authenticates the resource owner (via</span>
+<span class="sd">         the user-agent) and establishes whether the resource owner</span>
+<span class="sd">         grants or denies the client&#39;s access request.</span>
+
+<span class="sd">    (C)  Assuming the resource owner grants access, the authorization</span>
+<span class="sd">         server redirects the user-agent back to the client using the</span>
+<span class="sd">         redirection URI provided earlier (in the request or during</span>
+<span class="sd">         client registration).  The redirection URI includes an</span>
+<span class="sd">         authorization code and any local state provided by the client</span>
+<span class="sd">         earlier.</span>
+
+<span class="sd">    (D)  The client requests an access token from the authorization</span>
+<span class="sd">         server&#39;s token endpoint by including the authorization code</span>
+<span class="sd">         received in the previous step.  When making the request, the</span>
+<span class="sd">         client authenticates with the authorization server.  The client</span>
+<span class="sd">         includes the redirection URI used to obtain the authorization</span>
+<span class="sd">         code for verification.</span>
+
+<span class="sd">    (E)  The authorization server authenticates the client, validates the</span>
+<span class="sd">         authorization code, and ensures that the redirection URI</span>
+<span class="sd">         received matches the URI used to redirect the client in</span>
+<span class="sd">         step (C).  If valid, the authorization server responds back with</span>
+<span class="sd">         an access token and, optionally, a refresh token.</span>
+
+<span class="sd">    OAuth 2.0 public clients utilizing the Authorization Code Grant are</span>
+<span class="sd">    susceptible to the authorization code interception attack.</span>
+
+<span class="sd">    A technique to mitigate against the threat through the use of Proof Key for Code</span>
+<span class="sd">    Exchange (PKCE, pronounced &quot;pixy&quot;) is implemented in the current oauthlib</span>
+<span class="sd">    implementation.</span>
+
+<span class="sd">    .. _`Authorization Code Grant`: https://tools.ietf.org/html/rfc6749#section-4.1</span>
+<span class="sd">    .. _`PKCE`: https://tools.ietf.org/html/rfc7636</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant.default_response_mode">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant.default_response_mode">[docs]</a>
+    <span class="n">default_response_mode</span> <span class="o">=</span> <span class="s2">&quot;query&quot;</span></div>
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant.response_types">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant.response_types">[docs]</a>
+    <span class="n">response_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span></div>
+
+
+    <span class="c1"># This dict below is private because as RFC mention it:</span>
+    <span class="c1"># &quot;S256&quot; is Mandatory To Implement (MTI) on the server.</span>
+    <span class="c1">#</span>
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant._code_challenge_methods">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant._code_challenge_methods">[docs]</a>
+    <span class="n">_code_challenge_methods</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;plain&quot;</span><span class="p">:</span> <span class="n">code_challenge_method_plain</span><span class="p">,</span> <span class="s2">&quot;S256&quot;</span><span class="p">:</span> <span class="n">code_challenge_method_s256</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant.create_authorization_code">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant.create_authorization_code">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_authorization_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates an authorization grant represented as a dictionary.</span>
+
+<span class="sd">        :param request: OAuthlib request.</span>
+<span class="sd">        :type request: oauthlib.common.Request</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">grant</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">common</span><span class="o">.</span><span class="n">generate_token</span><span class="p">()}</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="n">grant</span><span class="p">[</span><span class="s2">&quot;state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">state</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Created authorization code grant </span><span class="si">%r</span><span class="s2"> for request </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">grant</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">grant</span></div>
+
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant.create_authorization_response">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant.create_authorization_response">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_authorization_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">token_handler</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The client constructs the request URI by adding the following</span>
+<span class="sd">        parameters to the query component of the authorization endpoint URI</span>
+<span class="sd">        using the &quot;application/x-www-form-urlencoded&quot; format, per `Appendix B`_:</span>
+
+<span class="sd">        response_type</span>
+<span class="sd">                REQUIRED.  Value MUST be set to &quot;code&quot; for standard OAuth2</span>
+<span class="sd">                authorization flow.  For OpenID Connect it must be one of</span>
+<span class="sd">                &quot;code token&quot;, &quot;code id_token&quot;, or &quot;code token id_token&quot; - we</span>
+<span class="sd">                essentially test that &quot;code&quot; appears in the response_type.</span>
+<span class="sd">        client_id</span>
+<span class="sd">                REQUIRED.  The client identifier as described in `Section 2.2`_.</span>
+<span class="sd">        redirect_uri</span>
+<span class="sd">                OPTIONAL.  As described in `Section 3.1.2`_.</span>
+<span class="sd">        scope</span>
+<span class="sd">                OPTIONAL.  The scope of the access request as described by</span>
+<span class="sd">                `Section 3.3`_.</span>
+<span class="sd">        state</span>
+<span class="sd">                RECOMMENDED.  An opaque value used by the client to maintain</span>
+<span class="sd">                state between the request and callback.  The authorization</span>
+<span class="sd">                server includes this value when redirecting the user-agent back</span>
+<span class="sd">                to the client.  The parameter SHOULD be used for preventing</span>
+<span class="sd">                cross-site request forgery as described in `Section 10.12`_.</span>
+
+<span class="sd">        The client directs the resource owner to the constructed URI using an</span>
+<span class="sd">        HTTP redirection response, or by other means available to it via the</span>
+<span class="sd">        user-agent.</span>
+
+<span class="sd">        :param request: OAuthlib request.</span>
+<span class="sd">        :type request: oauthlib.common.Request</span>
+<span class="sd">        :param token_handler: A token handler instance, for example of type</span>
+<span class="sd">                              oauthlib.oauth2.BearerToken.</span>
+<span class="sd">        :returns: headers, body, status</span>
+<span class="sd">        :raises: FatalClientError on invalid redirect URI or client id.</span>
+
+<span class="sd">        A few examples::</span>
+
+<span class="sd">            &gt;&gt;&gt; from your_validator import your_validator</span>
+<span class="sd">            &gt;&gt;&gt; request = Request(&#39;https://example.com/authorize?client_id=valid&#39;</span>
+<span class="sd">            ...                   &#39;&amp;redirect_uri=http%3A%2F%2Fclient.com%2F&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; from oauthlib.common import Request</span>
+<span class="sd">            &gt;&gt;&gt; from oauthlib.oauth2 import AuthorizationCodeGrant, BearerToken</span>
+<span class="sd">            &gt;&gt;&gt; token = BearerToken(your_validator)</span>
+<span class="sd">            &gt;&gt;&gt; grant = AuthorizationCodeGrant(your_validator)</span>
+<span class="sd">            &gt;&gt;&gt; request.scopes = [&#39;authorized&#39;, &#39;in&#39;, &#39;some&#39;, &#39;form&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; grant.create_authorization_response(request, token)</span>
+<span class="sd">            (u&#39;http://client.com/?error=invalid_request&amp;error_description=Missing+response_type+parameter.&#39;,</span>
+<span class="sd">            None, None, 400)</span>
+<span class="sd">            &gt;&gt;&gt; request = Request(&#39;https://example.com/authorize?client_id=valid&#39;</span>
+<span class="sd">            ...                   &#39;&amp;redirect_uri=http%3A%2F%2Fclient.com%2F&#39;</span>
+<span class="sd">            ...                   &#39;&amp;response_type=code&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; request.scopes = [&#39;authorized&#39;, &#39;in&#39;, &#39;some&#39;, &#39;form&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; grant.create_authorization_response(request, token)</span>
+<span class="sd">            (u&#39;http://client.com/?code=u3F05aEObJuP2k7DordviIgW5wl52N&#39;, None, None, 200)</span>
+<span class="sd">            &gt;&gt;&gt; # If the client id or redirect uri fails validation</span>
+<span class="sd">            &gt;&gt;&gt; grant.create_authorization_response(request, token)</span>
+<span class="sd">            Traceback (most recent call last):</span>
+<span class="sd">                File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;</span>
+<span class="sd">                File &quot;oauthlib/oauth2/rfc6749/grant_types.py&quot;, line 515, in create_authorization_response</span>
+<span class="sd">                    &gt;&gt;&gt; grant.create_authorization_response(request, token)</span>
+<span class="sd">                File &quot;oauthlib/oauth2/rfc6749/grant_types.py&quot;, line 591, in validate_authorization_request</span>
+<span class="sd">            oauthlib.oauth2.rfc6749.errors.InvalidClientIdError</span>
+
+<span class="sd">        .. _`Appendix B`: https://tools.ietf.org/html/rfc6749#appendix-B</span>
+<span class="sd">        .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2</span>
+<span class="sd">        .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2</span>
+<span class="sd">        .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3</span>
+<span class="sd">        .. _`Section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validate_authorization_request</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Pre resource owner authorization validation ok for </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+
+        <span class="c1"># If the request fails due to a missing, invalid, or mismatching</span>
+        <span class="c1"># redirection URI, or if the client identifier is missing or invalid,</span>
+        <span class="c1"># the authorization server SHOULD inform the resource owner of the</span>
+        <span class="c1"># error and MUST NOT automatically redirect the user-agent to the</span>
+        <span class="c1"># invalid redirection URI.</span>
+        <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">FatalClientError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Fatal client error during validation of </span><span class="si">%r</span><span class="s2">. </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># If the resource owner denies the access request or if the request</span>
+        <span class="c1"># fails for reasons other than a missing or invalid redirection URI,</span>
+        <span class="c1"># the authorization server informs the client by adding the following</span>
+        <span class="c1"># parameters to the query component of the redirection URI using the</span>
+        <span class="c1"># &quot;application/x-www-form-urlencoded&quot; format, per Appendix B:</span>
+        <span class="c1"># https://tools.ietf.org/html/rfc6749#appendix-B</span>
+        <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">OAuth2Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Client error during validation of </span><span class="si">%r</span><span class="s2">. </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_uri</span>
+            <span class="n">redirect_uri</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">add_params_to_uri</span><span class="p">(</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">twotuples</span><span class="p">,</span> <span class="n">fragment</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">response_mode</span> <span class="o">==</span> <span class="s2">&quot;fragment&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;Location&quot;</span><span class="p">:</span> <span class="n">redirect_uri</span><span class="p">},</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">302</span>
+
+        <span class="n">grant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_authorization_code</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">modifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_modifiers</span><span class="p">:</span>
+            <span class="n">grant</span> <span class="o">=</span> <span class="n">modifier</span><span class="p">(</span><span class="n">grant</span><span class="p">,</span> <span class="n">token_handler</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Saving grant </span><span class="si">%r</span><span class="s2"> for </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">grant</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">save_authorization_code</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">grant</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_authorization_response</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">grant</span><span class="p">,</span> <span class="p">{},</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">302</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant.create_token_response">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant.create_token_response">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_token_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">token_handler</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate the authorization code.</span>
+
+<span class="sd">        The client MUST NOT use the authorization code more than once. If an</span>
+<span class="sd">        authorization code is used more than once, the authorization server</span>
+<span class="sd">        MUST deny the request and SHOULD revoke (when possible) all tokens</span>
+<span class="sd">        previously issued based on that authorization code. The authorization</span>
+<span class="sd">        code is bound to the client identifier and redirection URI.</span>
+
+<span class="sd">        :param request: OAuthlib request.</span>
+<span class="sd">        :type request: oauthlib.common.Request</span>
+<span class="sd">        :param token_handler: A token handler instance, for example of type</span>
+<span class="sd">                              oauthlib.oauth2.BearerToken.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_default_headers</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validate_token_request</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Token request validation ok for </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">OAuth2Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Client error during validation of </span><span class="si">%r</span><span class="s2">. </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">headers</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">headers</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">json</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">status_code</span>
+
+        <span class="n">token</span> <span class="o">=</span> <span class="n">token_handler</span><span class="o">.</span><span class="n">create_token</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">refresh_token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_token</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">modifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token_modifiers</span><span class="p">:</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">modifier</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">token_handler</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">save_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">invalidate_authorization_code</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">headers</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">token</span><span class="p">),</span> <span class="mi">200</span></div>
+
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant.validate_authorization_request">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant.validate_authorization_request">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate_authorization_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check the authorization request for normal and fatal errors.</span>
+
+<span class="sd">        A normal error could be a missing response_type parameter or the client</span>
+<span class="sd">        attempting to access scope it is not allowed to ask authorization for.</span>
+<span class="sd">        Normal errors can safely be included in the redirection URI and</span>
+<span class="sd">        sent back to the client.</span>
+
+<span class="sd">        Fatal errors occur when the client_id or redirect_uri is invalid or</span>
+<span class="sd">        missing. These must be caught by the provider and handled, how this</span>
+<span class="sd">        is done is outside of the scope of OAuthLib but showing an error</span>
+<span class="sd">        page describing the issue is a good idea.</span>
+
+<span class="sd">        :param request: OAuthlib request.</span>
+<span class="sd">        :type request: oauthlib.common.Request</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># First check for fatal errors</span>
+
+        <span class="c1"># If the request fails due to a missing, invalid, or mismatching</span>
+        <span class="c1"># redirection URI, or if the client identifier is missing or invalid,</span>
+        <span class="c1"># the authorization server SHOULD inform the resource owner of the</span>
+        <span class="c1"># error and MUST NOT automatically redirect the user-agent to the</span>
+        <span class="c1"># invalid redirection URI.</span>
+
+        <span class="c1"># First check duplicate parameters</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;client_id&quot;</span><span class="p">,</span> <span class="s2">&quot;response_type&quot;</span><span class="p">,</span> <span class="s2">&quot;redirect_uri&quot;</span><span class="p">,</span> <span class="s2">&quot;scope&quot;</span><span class="p">,</span> <span class="s2">&quot;state&quot;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">duplicate_params</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">duplicate_params</span>
+                <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">duplicate_params</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidRequestFatalError</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Duplicate </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2"> parameter.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                    <span class="n">errors</span><span class="o">.</span><span class="n">InvalidRequestFatalError</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Unable to parse query string&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="c1"># REQUIRED. The client identifier as described in Section 2.2.</span>
+        <span class="c1"># https://tools.ietf.org/html/rfc6749#section-2.2</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">MissingClientIdError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">validate_client_id</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidClientIdError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="c1"># OPTIONAL. As described in Section 3.1.2.</span>
+        <span class="c1"># https://tools.ietf.org/html/rfc6749#section-3.1.2</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Validating redirection uri </span><span class="si">%s</span><span class="s2"> for client </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span>
+
+        <span class="c1"># OPTIONAL. As described in Section 3.1.2.</span>
+        <span class="c1"># https://tools.ietf.org/html/rfc6749#section-3.1.2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_redirects</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="c1"># Then check for normal errors.</span>
+
+        <span class="c1"># If the resource owner denies the access request or if the request</span>
+        <span class="c1"># fails for reasons other than a missing or invalid redirection URI,</span>
+        <span class="c1"># the authorization server informs the client by adding the following</span>
+        <span class="c1"># parameters to the query component of the redirection URI using the</span>
+        <span class="c1"># &quot;application/x-www-form-urlencoded&quot; format, per Appendix B.</span>
+        <span class="c1"># https://tools.ietf.org/html/rfc6749#appendix-B</span>
+
+        <span class="c1"># Note that the correct parameters to be added are automatically</span>
+        <span class="c1"># populated through the use of specific exceptions.</span>
+
+        <span class="n">request_info</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">validator</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_validators</span><span class="o">.</span><span class="n">pre_auth</span><span class="p">:</span>
+            <span class="n">request_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+
+        <span class="c1"># REQUIRED.</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">response_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">MissingResponseTypeError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+        <span class="c1"># Value MUST be set to &quot;code&quot; or one of the OpenID authorization code including</span>
+        <span class="c1"># response_types &quot;code token&quot;, &quot;code id_token&quot;, &quot;code token id_token&quot;</span>
+        <span class="k">elif</span> <span class="s2">&quot;code&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">response_type</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">response_type</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">UnsupportedResponseTypeError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">validate_response_type</span><span class="p">(</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">response_type</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="n">request</span>
+        <span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Client </span><span class="si">%s</span><span class="s2"> is not authorized to use response_type </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">response_type</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">UnauthorizedClientError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="c1"># OPTIONAL. Validate PKCE request or reply with &quot;error&quot;/&quot;invalid_request&quot;</span>
+        <span class="c1"># https://tools.ietf.org/html/rfc6749#section-4.4.1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">is_pkce_required</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">code_challenge</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">MissingCodeChallengeError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">code_challenge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">request_info</span><span class="p">[</span><span class="s2">&quot;code_challenge&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">code_challenge</span>
+
+            <span class="c1"># OPTIONAL, defaults to &quot;plain&quot; if not present in the request.</span>
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">code_challenge_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">code_challenge_method</span> <span class="o">=</span> <span class="s2">&quot;plain&quot;</span>
+
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">code_challenge_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_challenge_methods</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">UnsupportedCodeChallengeMethodError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+            <span class="n">request_info</span><span class="p">[</span><span class="s2">&quot;code_challenge_method&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">code_challenge_method</span>
+
+        <span class="c1"># OPTIONAL. The scope of the access request as described by Section 3.3</span>
+        <span class="c1"># https://tools.ietf.org/html/rfc6749#section-3.3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_scopes</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="n">request_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+                <span class="s2">&quot;redirect_uri&quot;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span>
+                <span class="s2">&quot;response_type&quot;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">response_type</span><span class="p">,</span>
+                <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+                <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">validator</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_validators</span><span class="o">.</span><span class="n">post_auth</span><span class="p">:</span>
+            <span class="n">request_info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">validator</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">scopes</span><span class="p">,</span> <span class="n">request_info</span></div>
+
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant.validate_token_request">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant.validate_token_request">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate_token_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param request: OAuthlib request.</span>
+<span class="sd">        :type request: oauthlib.common.Request</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># REQUIRED. Value MUST be set to &quot;authorization_code&quot;.</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">grant_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;authorization_code&quot;</span><span class="p">,</span> <span class="s2">&quot;openid&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">UnsupportedGrantTypeError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">validator</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_validators</span><span class="o">.</span><span class="n">pre_token</span><span class="p">:</span>
+            <span class="n">validator</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidRequestError</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Missing code parameter.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;client_id&quot;</span><span class="p">,</span> <span class="s2">&quot;grant_type&quot;</span><span class="p">,</span> <span class="s2">&quot;redirect_uri&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">duplicate_params</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidRequestError</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Duplicate </span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2"> parameter.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">client_authentication_required</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+            <span class="c1"># If the client type is confidential or the client was issued client</span>
+            <span class="c1"># credentials (or assigned other authentication requirements), the</span>
+            <span class="c1"># client MUST authenticate with the authorization server as described</span>
+            <span class="c1"># in Section 3.2.1.</span>
+            <span class="c1"># https://tools.ietf.org/html/rfc6749#section-3.2.1</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">authenticate_client</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Client authentication failed, </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidClientError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">authenticate_client_id</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+            <span class="c1"># REQUIRED, if the client is not authenticating with the</span>
+            <span class="c1"># authorization server as described in Section 3.2.1.</span>
+            <span class="c1"># https://tools.ietf.org/html/rfc6749#section-3.2.1</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Client authentication failed, </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidClientError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="s2">&quot;client_id&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;Authenticate client must set the &quot;</span> <span class="s2">&quot;request.client.client_id attribute &quot;</span> <span class="s2">&quot;in authenticate_client.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">request</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">client_id</span> <span class="ow">or</span> <span class="n">request</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">client_id</span>
+
+        <span class="c1"># Ensure client is authorized use of this grant type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate_grant_type</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="c1"># REQUIRED. The authorization code received from the</span>
+        <span class="c1"># authorization server.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">validate_code</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Client, </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%r</span><span class="s2">), is not allowed access to scopes </span><span class="si">%r</span><span class="s2">.&quot;</span><span class="p">,</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">client</span><span class="p">,</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">scopes</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidGrantError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="c1"># OPTIONAL. Validate PKCE code_verifier</span>
+        <span class="n">challenge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">get_code_challenge</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">challenge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">code_verifier</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">MissingCodeVerifierError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+            <span class="n">challenge_method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">get_code_challenge_method</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">challenge_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidGrantError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Challenge method not found&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">challenge_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_challenge_methods</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">ServerError</span><span class="p">(</span>
+                    <span class="n">description</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;code_challenge_method </span><span class="si">{</span><span class="n">challenge_method</span><span class="si">}</span><span class="s2"> is not supported.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_code_challenge</span><span class="p">(</span><span class="n">challenge</span><span class="p">,</span> <span class="n">challenge_method</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">code_verifier</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;request provided a invalid code_verifier.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidGrantError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">is_pkce_required</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">code_verifier</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">MissingCodeVerifierError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">InvalidGrantError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Challenge not found&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;scopes&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;request.</span><span class="si">%s</span><span class="s2"> was not set on code validation.&quot;</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+
+        <span class="c1"># REQUIRED, if the &quot;redirect_uri&quot; parameter was included in the</span>
+        <span class="c1"># authorization request as described in Section 4.1.1, and their</span>
+        <span class="c1"># values MUST be identical.</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">using_default_redirect_uri</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">get_default_redirect_uri</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Using default redirect_uri </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">MissingRedirectURIError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">using_default_redirect_uri</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Using provided redirect_uri </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">confirm_redirect_uri</span><span class="p">(</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">client</span><span class="p">,</span> <span class="n">request</span>
+        <span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Redirect_uri (</span><span class="si">%r</span><span class="s2">) invalid for client </span><span class="si">%r</span><span class="s2"> (</span><span class="si">%r</span><span class="s2">).&quot;</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">client</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">MismatchingRedirectURIError</span><span class="p">(</span><span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">validator</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_validators</span><span class="o">.</span><span class="n">post_token</span><span class="p">:</span>
+            <span class="n">validator</span><span class="p">(</span><span class="n">request</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OAuth2AuthorizationCodeGrant.validate_code_challenge">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OAuth2AuthorizationCodeGrant.validate_code_challenge">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate_code_challenge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">challenge</span><span class="p">,</span> <span class="n">challenge_method</span><span class="p">,</span> <span class="n">verifier</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">challenge_method</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_challenge_methods</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_code_challenge_methods</span><span class="p">[</span><span class="n">challenge_method</span><span class="p">](</span><span class="n">verifier</span><span class="p">,</span> <span class="n">challenge</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown challenge_method </span><span class="si">{</span><span class="n">challenge_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="OpenIDAuthorizationCodeGrant">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OpenIDAuthorizationCodeGrant">[docs]</a>
+<span class="k">class</span> <span class="nc">OpenIDAuthorizationCodeGrant</span><span class="p">(</span><span class="n">OpenIDGrantTypeBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request_validator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="OpenIDAuthorizationCodeGrant.proxy_target">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OpenIDAuthorizationCodeGrant.proxy_target">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxy_target</span> <span class="o">=</span> <span class="n">OAuth2AuthorizationCodeGrant</span><span class="p">(</span><span class="n">request_validator</span><span class="o">=</span><span class="n">request_validator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_validators</span><span class="o">.</span><span class="n">post_auth</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">openid_authorization_validator</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_token_modifier</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_id_token</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OpenIDAuthorizationCodeGrant.add_id_token">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/oauth2_grant_types/index.html#geonode.security.oauth2_grant_types.OpenIDAuthorizationCodeGrant.add_id_token">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_id_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">token_handler</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct an initial version of id_token, and let the</span>
+<span class="sd">        request_validator sign or encrypt it.</span>
+
+<span class="sd">        The authorization_code version of this method is used to</span>
+<span class="sd">        retrieve the nonce accordingly to the code storage.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Treat it as normal OAuth 2 auth code request if openid is not present</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">scopes</span> <span class="ow">or</span> <span class="s2">&quot;openid&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">scopes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">token</span>
+
+        <span class="n">nonce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request_validator</span><span class="o">.</span><span class="n">get_authorization_code_nonce</span><span class="p">(</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">redirect_uri</span><span class="p">,</span> <span class="n">request</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">add_id_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">token_handler</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">nonce</span><span class="o">=</span><span class="n">nonce</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

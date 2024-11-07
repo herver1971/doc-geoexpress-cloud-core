@@ -1,0 +1,1008 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.security.utils &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../security.html">geonode.security</a></li>
+      <li class="breadcrumb-item active">geonode.security.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.security.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2018 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">Group</span><span class="p">,</span> <span class="n">Permission</span>
+<span class="kn">from</span> <span class="nn">guardian.utils</span> <span class="kn">import</span> <span class="n">get_user_obj_perms_model</span>
+<span class="kn">from</span> <span class="nn">guardian.shortcuts</span> <span class="kn">import</span> <span class="n">get_objects_for_user</span><span class="p">,</span> <span class="n">get_objects_for_group</span>
+
+<span class="kn">from</span> <span class="nn">geonode.groups.conf</span> <span class="kn">import</span> <span class="n">settings</span> <span class="k">as</span> <span class="n">groups_settings</span>
+<span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+<span class="kn">from</span> <span class="nn">geonode.security.permissions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PermSpecCompact</span><span class="p">,</span>
+    <span class="n">EDIT_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">VIEW_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">ADMIN_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">SERVICE_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">DOWNLOAD_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">DOWNLOADABLE_RESOURCES</span><span class="p">,</span>
+    <span class="n">BASIC_MANAGE_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">DATASET_ADMIN_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">DATASET_EDIT_DATA_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">DATASET_EDIT_STYLE_PERMISSIONS</span><span class="p">,</span>
+    <span class="n">DATA_EDITABLE_RESOURCES_SUBTYPES</span><span class="p">,</span>
+    <span class="n">DATA_STYLABLE_RESOURCES_SUBTYPES</span><span class="p">,</span>
+<span class="p">)</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_visible_resources">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.get_visible_resources">[docs]</a>
+<span class="k">def</span> <span class="nf">get_visible_resources</span><span class="p">(</span>
+    <span class="n">queryset</span><span class="p">,</span>
+    <span class="n">user</span><span class="p">,</span>
+    <span class="n">request</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">metadata_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">admin_approval_required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="c1"># Get the list of objects the user has access to</span>
+    <span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+
+    <span class="n">is_admin</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span> <span class="k">if</span> <span class="n">user</span> <span class="ow">and</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="k">else</span> <span class="kc">False</span>
+    <span class="n">anonymous_group</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">public_groups</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;group&quot;</span><span class="p">)</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">group_list_all</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">group_list_all</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">group_list_all</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;group&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">anonymous_group</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">anonymous_group</span> <span class="ow">and</span> <span class="n">anonymous_group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+            <span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">anonymous_group</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="n">filter_set</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">dirty_state</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">metadata_only</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Hide Dirty State Resources</span>
+        <span class="n">filter_set</span> <span class="o">=</span> <span class="n">filter_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">metadata_only</span><span class="o">=</span><span class="n">metadata_only</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_admin</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">user</span><span class="p">:</span>
+            <span class="n">_allowed_resources</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span>
+                <span class="n">user</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;base.change_resourcebase&quot;</span><span class="p">],</span> <span class="n">any_perm</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">filter_set</span> <span class="o">=</span> <span class="n">filter_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="n">_allowed_resources</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">admin_approval_required</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_simplified_workflow</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">or</span> <span class="n">user</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">:</span>
+                <span class="n">filter_set</span> <span class="o">=</span> <span class="n">filter_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                    <span class="n">Q</span><span class="p">(</span><span class="n">is_published</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">group__in</span><span class="o">=</span><span class="n">public_groups</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">group__in</span><span class="o">=</span><span class="n">groups</span><span class="p">)</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">is_approved</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Hide Unpublished Resources to Anonymous Users</span>
+        <span class="k">if</span> <span class="n">unpublished_not_visible</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span> <span class="ow">or</span> <span class="n">user</span><span class="o">.</span><span class="n">is_anonymous</span><span class="p">:</span>
+                <span class="n">filter_set</span> <span class="o">=</span> <span class="n">filter_set</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">is_published</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Hide Resources Belonging to Private Groups</span>
+        <span class="k">if</span> <span class="n">private_groups_not_visibile</span><span class="p">:</span>
+            <span class="n">private_groups</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;group&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">user</span> <span class="ow">and</span> <span class="n">user</span><span class="o">.</span><span class="n">is_authenticated</span><span class="p">:</span>
+                <span class="n">filter_set</span> <span class="o">=</span> <span class="n">filter_set</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span>
+                    <span class="n">Q</span><span class="p">(</span><span class="n">group__in</span><span class="o">=</span><span class="n">private_groups</span><span class="p">)</span> <span class="o">&amp;</span> <span class="o">~</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">owner__username__iexact</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">user</span><span class="p">))</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">group__in</span><span class="o">=</span><span class="n">group_list_all</span><span class="p">))</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">filter_set</span> <span class="o">=</span> <span class="n">filter_set</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">group__in</span><span class="o">=</span><span class="n">private_groups</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">filter_set</span></div>
+
+
+
+<div class="viewcode-block" id="get_users_with_perms">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.get_users_with_perms">[docs]</a>
+<span class="k">def</span> <span class="nf">get_users_with_perms</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Override of the Guardian get_users_with_perms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ctype</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="n">ctype_resource_base</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
+    <span class="n">permissions</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">PERMISSIONS_TO_FETCH</span> <span class="o">=</span> <span class="n">VIEW_PERMISSIONS</span> <span class="o">+</span> <span class="n">DOWNLOAD_PERMISSIONS</span> <span class="o">+</span> <span class="n">ADMIN_PERMISSIONS</span> <span class="o">+</span> <span class="n">SERVICE_PERMISSIONS</span>
+    <span class="c1"># include explicit permissions appliable to &quot;subtype == &#39;vector&#39;&quot;</span>
+    <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">subtype</span> <span class="o">==</span> <span class="s2">&quot;vector&quot;</span><span class="p">:</span>
+        <span class="n">PERMISSIONS_TO_FETCH</span> <span class="o">+=</span> <span class="n">DATASET_ADMIN_PERMISSIONS</span>
+        <span class="k">for</span> <span class="n">perm</span> <span class="ow">in</span> <span class="n">Permission</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">codename__in</span><span class="o">=</span><span class="n">PERMISSIONS_TO_FETCH</span><span class="p">,</span> <span class="n">content_type_id__in</span><span class="o">=</span><span class="p">[</span><span class="n">ctype</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">ctype_resource_base</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">permissions</span><span class="p">[</span><span class="n">perm</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">perm</span><span class="o">.</span><span class="n">codename</span>
+    <span class="k">elif</span> <span class="n">obj</span><span class="o">.</span><span class="n">subtype</span> <span class="o">==</span> <span class="s2">&quot;raster&quot;</span><span class="p">:</span>
+        <span class="n">PERMISSIONS_TO_FETCH</span> <span class="o">+=</span> <span class="n">DATASET_EDIT_STYLE_PERMISSIONS</span>
+        <span class="k">for</span> <span class="n">perm</span> <span class="ow">in</span> <span class="n">Permission</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">codename__in</span><span class="o">=</span><span class="n">PERMISSIONS_TO_FETCH</span><span class="p">,</span> <span class="n">content_type_id__in</span><span class="o">=</span><span class="p">[</span><span class="n">ctype</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">ctype_resource_base</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">permissions</span><span class="p">[</span><span class="n">perm</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">perm</span><span class="o">.</span><span class="n">codename</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">PERMISSIONS_TO_FETCH</span> <span class="o">+=</span> <span class="n">DATASET_EDIT_DATA_PERMISSIONS</span>
+        <span class="k">for</span> <span class="n">perm</span> <span class="ow">in</span> <span class="n">Permission</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">codename__in</span><span class="o">=</span><span class="n">PERMISSIONS_TO_FETCH</span><span class="p">):</span>
+            <span class="n">permissions</span><span class="p">[</span><span class="n">perm</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">perm</span><span class="o">.</span><span class="n">codename</span>
+
+    <span class="n">user_model</span> <span class="o">=</span> <span class="n">get_user_obj_perms_model</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="n">users_with_perms</span> <span class="o">=</span> <span class="n">user_model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">object_pk</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">permission_id__in</span><span class="o">=</span><span class="n">permissions</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+        <span class="s2">&quot;user_id&quot;</span><span class="p">,</span> <span class="s2">&quot;permission_id&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">users</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">users_with_perms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">users</span><span class="p">:</span>
+            <span class="n">users</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">permissions</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;permission_id&quot;</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">users</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">permissions</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;permission_id&quot;</span><span class="p">]],</span>
+            <span class="p">]</span>
+
+    <span class="n">profiles</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">id__in</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">users</span><span class="o">.</span><span class="n">keys</span><span class="p">())):</span>
+        <span class="n">profiles</span><span class="p">[</span><span class="n">profile</span><span class="p">]</span> <span class="o">=</span> <span class="n">users</span><span class="p">[</span><span class="n">profile</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">profiles</span></div>
+
+
+
+<div class="viewcode-block" id="perms_as_set">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.perms_as_set">[docs]</a>
+<span class="k">def</span> <span class="nf">perms_as_set</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">perm</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">perm</span><span class="p">,</span> <span class="nb">set</span><span class="p">)</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="n">perm</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">perm</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">perm</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="get_resources_with_perms">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.get_resources_with_perms">[docs]</a>
+<span class="k">def</span> <span class="nf">get_resources_with_perms</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">filter_options</span><span class="o">=</span><span class="p">{},</span> <span class="n">shortcut_kwargs</span><span class="o">=</span><span class="p">{}):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns resources a user has access to.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">SKIP_PERMS_FILTER</span><span class="p">:</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">resources</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span>
+            <span class="n">user</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;base.change_resourcebase&quot;</span><span class="p">],</span> <span class="n">any_perm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">shortcut_kwargs</span>
+        <span class="p">)</span>
+
+    <span class="n">resources_with_perms</span> <span class="o">=</span> <span class="n">get_visible_resources</span><span class="p">(</span>
+        <span class="n">resources</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">,</span>
+        <span class="n">admin_approval_required</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">,</span>
+        <span class="n">unpublished_not_visible</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span><span class="p">,</span>
+        <span class="n">private_groups_not_visibile</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">filter_options</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">resources_with_perms</span> <span class="ow">and</span> <span class="n">resources_with_perms</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">filter_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title_filter&quot;</span><span class="p">):</span>
+                <span class="n">resources_with_perms</span> <span class="o">=</span> <span class="n">resources_with_perms</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">filter_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title_filter&quot;</span><span class="p">))</span>
+            <span class="n">type_filters</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">filter_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type_filter&quot;</span><span class="p">):</span>
+                <span class="n">_type_filter</span> <span class="o">=</span> <span class="n">filter_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type_filter&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">_type_filter</span><span class="p">:</span>
+                    <span class="n">type_filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_type_filter</span><span class="p">)</span>
+                <span class="c1"># get subtypes for geoapps</span>
+                <span class="k">if</span> <span class="n">_type_filter</span> <span class="o">==</span> <span class="s2">&quot;geoapp&quot;</span><span class="p">:</span>
+                    <span class="n">type_filters</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_geoapp_subtypes</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="n">type_filters</span><span class="p">:</span>
+                <span class="n">resources_with_perms</span> <span class="o">=</span> <span class="n">resources_with_perms</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">polymorphic_ctype__model__in</span><span class="o">=</span><span class="n">type_filters</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resources_with_perms</span></div>
+
+
+
+<div class="viewcode-block" id="get_geoapp_subtypes">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.get_geoapp_subtypes">[docs]</a>
+<span class="k">def</span> <span class="nf">get_geoapp_subtypes</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a list of geoapp subtypes.</span>
+<span class="sd">    Example [&#39;geostory&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">geonode.geoapps.models</span> <span class="kn">import</span> <span class="n">GeoApp</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoapp_subtypes&quot;</span><span class="p">):</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="s2">&quot;geoapp_subtypes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">GeoApp</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;resource_type&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">())</span>
+    <span class="k">return</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoapp_subtypes&quot;</span><span class="p">,</span> <span class="p">[])</span></div>
+
+
+
+<div class="viewcode-block" id="skip_registered_members_common_group">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.skip_registered_members_common_group">[docs]</a>
+<span class="k">def</span> <span class="nf">skip_registered_members_common_group</span><span class="p">(</span><span class="n">user_group</span><span class="p">):</span>
+    <span class="n">_members_group_name</span> <span class="o">=</span> <span class="n">groups_settings</span><span class="o">.</span><span class="n">REGISTERED_MEMBERS_GROUP_NAME</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">or</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_members_group_name</span> <span class="o">==</span> <span class="n">user_group</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="get_user_groups">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.get_user_groups">[docs]</a>
+<span class="k">def</span> <span class="nf">get_user_groups</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns all the groups belonging to the &quot;owner&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user_groups</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name__in</span><span class="o">=</span><span class="n">owner</span><span class="o">.</span><span class="n">groupmember_set</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;group__slug&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">group</span><span class="p">:</span>
+        <span class="n">user_groups</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">user_groups</span><span class="p">,</span> <span class="p">[</span><span class="n">group</span><span class="o">.</span><span class="n">group</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s2">&quot;group&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">group</span><span class="p">])</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">user_groups</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="get_user_visible_groups">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.get_user_visible_groups">[docs]</a>
+<span class="k">def</span> <span class="nf">get_user_visible_groups</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">include_public_invite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves all the groups accordingly to the following conditions:</span>
+
+<span class="sd">    - The user is member of</span>
+<span class="sd">    - The group is public</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+
+    <span class="n">metadata_author_groups</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span> <span class="ow">or</span> <span class="n">user</span><span class="o">.</span><span class="n">is_staff</span><span class="p">:</span>
+        <span class="n">metadata_author_groups</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">include_public_invite</span><span class="p">:</span>
+            <span class="n">group_profile_queryset</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">group_profile_queryset</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;private&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">access</span><span class="o">=</span><span class="s2">&quot;public-invite&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">all_metadata_author_groups</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">group_list_all</span><span class="p">(),</span> <span class="n">group_profile_queryset</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">all_metadata_author_groups</span> <span class="o">=</span> <span class="n">group_profile_queryset</span>
+        <span class="p">[</span>
+            <span class="n">metadata_author_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">all_metadata_author_groups</span>
+            <span class="k">if</span> <span class="n">item</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata_author_groups</span>
+        <span class="p">]</span>
+    <span class="k">return</span> <span class="n">metadata_author_groups</span></div>
+
+
+
+<div class="viewcode-block" id="AdminViewPermissionsSet">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdminViewPermissionsSet">[docs]</a>
+<span class="n">AdminViewPermissionsSet</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;AdminViewPermissionsSet&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;admin_perms&quot;</span><span class="p">,</span> <span class="s2">&quot;view_perms&quot;</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="ResourceGroupsAndMembersSet">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.ResourceGroupsAndMembersSet">[docs]</a>
+<span class="n">ResourceGroupsAndMembersSet</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+    <span class="s2">&quot;ResourceGroupsAndMembersSet&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;anonymous_group&quot;</span><span class="p">,</span> <span class="s2">&quot;registered_members_group&quot;</span><span class="p">,</span> <span class="s2">&quot;owner_groups&quot;</span><span class="p">,</span> <span class="s2">&quot;resource_groups&quot;</span><span class="p">,</span> <span class="s2">&quot;managers&quot;</span><span class="p">],</span>
+<span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager">[docs]</a>
+<span class="k">class</span> <span class="nc">AdvancedSecurityWorkflowManager</span><span class="p">:</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_anonymous_can_view">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_anonymous_can_view">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_anonymous_can_view</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEFAULT_ANONYMOUS_VIEW_PERMISSION</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_anonymous_can_download">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_anonymous_can_download">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_anonymous_can_download</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEFAULT_ANONYMOUS_DOWNLOAD_PERMISSION</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_group_private_mode">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_group_private_mode">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_group_private_mode</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">GROUP_PRIVATE_RESOURCES</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_manager_publish_mode">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_manager_publish_mode">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_manager_publish_mode</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_admin_moderate_mode">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_admin_moderate_mode">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_admin_moderate_mode</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_auto_publishing_workflow">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_auto_publishing_workflow">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_auto_publishing_workflow</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        **AUTO PUBLISHING**</span>
+<span class="sd">          - `RESOURCE_PUBLISHING = False`</span>
+<span class="sd">          - `ADMIN_MODERATE_UPLOADS = False`</span>
+
+<span class="sd">          - When user creates a resource:</span>
+
+<span class="sd">            - OWNER gets all the owner permissions (publish resource included)</span>
+<span class="sd">            - ANONYMOUS can view and download</span>
+<span class="sd">          - No change to the Group Manager is applied</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_simple_publishing_workflow">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_simple_publishing_workflow">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_simple_publishing_workflow</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        **SIMPLE PUBLISHING**</span>
+<span class="sd">          - `RESOURCE_PUBLISHING = True` (Autopublishing is disabled)</span>
+<span class="sd">          - `ADMIN_MODERATE_UPLOADS = False`</span>
+
+<span class="sd">          - When user creates a resource:</span>
+
+<span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` INCLUDED)</span>
+<span class="sd">            - Group MANAGERS of the user&#39;s groups will get the owner permissions (`publish_resource` EXCLUDED)</span>
+<span class="sd">            - Group MEMBERS of the user&#39;s groups will get the `view_resourcebase`, `download_resourcebase` permission</span>
+<span class="sd">            - ANONYMOUS can not view and download if the resource is not published</span>
+
+<span class="sd">          - When resource has a group assigned:</span>
+
+<span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` INCLUDED)</span>
+<span class="sd">            - Group MANAGERS of the *resource&#39;s group* will get the owner permissions (`publish_resource` EXCLUDED)</span>
+<span class="sd">            - Group MEMBERS of the *resource&#39;s group* will get the `view_resourcebase`, `download_resourcebase` permission</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_advanced_workflow">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_advanced_workflow">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_advanced_workflow</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        **ADVANCED WORKFLOW**</span>
+<span class="sd">          - `RESOURCE_PUBLISHING = True`</span>
+<span class="sd">          - `ADMIN_MODERATE_UPLOADS = True`</span>
+
+<span class="sd">          - When user creates a resource:</span>
+
+<span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` EXCLUDED)</span>
+<span class="sd">            - Group MANAGERS of the user&#39;s groups will get the owner permissions (`publish_resource` INCLUDED)</span>
+<span class="sd">            - Group MEMBERS of the user&#39;s groups will get the `view_resourcebase`, `download_resourcebase` permission</span>
+<span class="sd">            - ANONYMOUS can not view and download if the resource is not published</span>
+
+<span class="sd">          - When resource has a group assigned:</span>
+
+<span class="sd">            - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` EXCLUDED)</span>
+<span class="sd">            - Group MANAGERS of the resource&#39;s group will get the owner permissions (`publish_resource` INCLUDED)</span>
+<span class="sd">            - Group MEMBERS of the resource&#39;s group will get the `view_resourcebase`, `download_resourcebase` permission</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_simplified_workflow">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_simplified_workflow">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_simplified_workflow</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        **SIMPLIFIED WORKFLOW**</span>
+
+<span class="sd">            - `RESOURCE_PUBLISHING = False`</span>
+<span class="sd">            - `ADMIN_MODERATE_UPLOADS = True`</span>
+
+<span class="sd">                .. note::</span>
+<span class="sd">                    Is it even possibile? when the resource is automatically published, can it be un-published?</span>
+
+<span class="sd">                    If this combination is not allowed, we should either stop the process when reading the settings or log a warning and force a safe combination.</span>
+
+<span class="sd">            - When user creates a resource:</span>
+
+<span class="sd">                - OWNER gets all the owner permissions (`publish_resource` and `change_resourcebase_permissions` INCLUDED)</span>
+<span class="sd">                - Group MANAGERS of the user&#39;s groups will get the owner permissions (`publish_resource` INCLUDED)</span>
+<span class="sd">                - Group MEMBERS of the user&#39;s group will get the `view_resourcebase`, `download_resourcebase` permission</span>
+<span class="sd">                - ANONYMOUS can view and download</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">settings</span><span class="o">.</span><span class="n">RESOURCE_PUBLISHING</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">ADMIN_MODERATE_UPLOADS</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_allowed_to_approve">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_allowed_to_approve">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_allowed_to_approve</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="n">ResourceGroupsAndMembersSet</span> <span class="o">=</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">compute_resource_groups_and_members_set</span><span class="p">(</span>
+            <span class="n">resource</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">resource</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">group</span>
+        <span class="p">)</span>
+        <span class="n">is_superuser</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span>
+        <span class="n">is_owner</span> <span class="o">=</span> <span class="n">user</span> <span class="o">==</span> <span class="n">resource</span><span class="o">.</span><span class="n">owner</span>
+        <span class="n">is_manager</span> <span class="o">=</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">managers</span>
+
+        <span class="n">can_change_metadata</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">has_perm</span><span class="p">(</span><span class="s2">&quot;change_resourcebase_metadata&quot;</span><span class="p">,</span> <span class="n">resource</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">is_superuser</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_admin_moderate_mode</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">is_manager</span> <span class="ow">and</span> <span class="n">can_change_metadata</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">is_owner</span> <span class="ow">or</span> <span class="n">is_manager</span> <span class="ow">or</span> <span class="n">can_change_metadata</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.is_allowed_to_publish">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.is_allowed_to_publish">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_allowed_to_publish</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="n">ResourceGroupsAndMembersSet</span> <span class="o">=</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">compute_resource_groups_and_members_set</span><span class="p">(</span>
+            <span class="n">resource</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">resource</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">resource</span><span class="o">.</span><span class="n">group</span>
+        <span class="p">)</span>
+        <span class="n">is_superuser</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span>
+        <span class="n">is_owner</span> <span class="o">=</span> <span class="n">user</span> <span class="o">==</span> <span class="n">resource</span><span class="o">.</span><span class="n">owner</span>
+        <span class="n">is_manager</span> <span class="o">=</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">managers</span>
+
+        <span class="n">can_publish</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">has_perm</span><span class="p">(</span><span class="s2">&quot;publish_resourcebase&quot;</span><span class="p">,</span> <span class="n">resource</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">is_superuser</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_manager_publish_mode</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">is_manager</span> <span class="ow">and</span> <span class="n">can_publish</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">is_owner</span> <span class="ow">or</span> <span class="n">is_manager</span> <span class="ow">or</span> <span class="n">can_publish</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.assignable_perm_condition">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.assignable_perm_condition">[docs]</a>
+    <span class="k">def</span> <span class="nf">assignable_perm_condition</span><span class="p">(</span><span class="n">perm</span><span class="p">,</span> <span class="n">resource_type</span><span class="p">):</span>
+        <span class="n">_assignable_perm_policy_condition</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">perm</span> <span class="ow">in</span> <span class="n">DOWNLOAD_PERMISSIONS</span> <span class="ow">and</span> <span class="n">resource_type</span> <span class="ow">in</span> <span class="n">DOWNLOADABLE_RESOURCES</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="n">perm</span> <span class="ow">in</span> <span class="n">DATASET_EDIT_DATA_PERMISSIONS</span> <span class="ow">and</span> <span class="n">resource_type</span> <span class="ow">in</span> <span class="n">DATA_EDITABLE_RESOURCES_SUBTYPES</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="n">perm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DOWNLOAD_PERMISSIONS</span> <span class="o">+</span> <span class="n">DATASET_EDIT_DATA_PERMISSIONS</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot; perm: </span><span class="si">{</span><span class="n">perm</span><span class="si">}</span><span class="s2"> - resource_type: </span><span class="si">{</span><span class="n">resource_type</span><span class="si">}</span><span class="s2"> --&gt; assignable: </span><span class="si">{</span><span class="n">_assignable_perm_policy_condition</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">_assignable_perm_policy_condition</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.get_instance">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.get_instance">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+
+        <span class="k">return</span> <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.compute_admin_and_view_permissions_set">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.compute_admin_and_view_permissions_set">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_admin_and_view_permissions_set</span><span class="p">(</span><span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdminViewPermissionsSet</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a copy of the ADMIN_PERMISSIONS and VIEW_PERMISISONS of a resource accordinlgy to:</span>
+
+<span class="sd">        - The resource_type</span>
+<span class="sd">        - The resource_subtype</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">_resource</span> <span class="o">=</span> <span class="n">instance</span> <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">view_perms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">admin_perms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">_resource</span><span class="o">.</span><span class="n">polymorphic_ctype</span><span class="p">:</span>
+            <span class="n">_resource_type</span> <span class="o">=</span> <span class="n">_resource</span><span class="o">.</span><span class="n">resource_type</span> <span class="ow">or</span> <span class="n">_resource</span><span class="o">.</span><span class="n">polymorphic_ctype</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">_resource_subtype</span> <span class="o">=</span> <span class="n">_resource</span><span class="o">.</span><span class="n">subtype</span>
+            <span class="n">view_perms</span> <span class="o">=</span> <span class="n">VIEW_PERMISSIONS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">_resource_type</span> <span class="ow">in</span> <span class="n">DOWNLOADABLE_RESOURCES</span><span class="p">:</span>
+                <span class="n">view_perms</span> <span class="o">+=</span> <span class="n">DOWNLOAD_PERMISSIONS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="n">admin_perms</span> <span class="o">=</span> <span class="n">ADMIN_PERMISSIONS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">_resource</span><span class="o">.</span><span class="n">polymorphic_ctype</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dataset&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_resource_subtype</span> <span class="ow">in</span> <span class="n">DATA_EDITABLE_RESOURCES_SUBTYPES</span><span class="p">:</span>
+                    <span class="n">admin_perms</span> <span class="o">+=</span> <span class="n">DATASET_EDIT_DATA_PERMISSIONS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">_resource_subtype</span> <span class="ow">in</span> <span class="n">DATA_STYLABLE_RESOURCES_SUBTYPES</span><span class="p">:</span>
+                    <span class="n">admin_perms</span> <span class="o">+=</span> <span class="n">DATASET_EDIT_STYLE_PERMISSIONS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">_resource</span><span class="o">.</span><span class="n">polymorphic_ctype</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;service&quot;</span><span class="p">:</span>
+                <span class="n">admin_perms</span> <span class="o">+=</span> <span class="n">SERVICE_PERMISSIONS</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">AdminViewPermissionsSet</span><span class="p">(</span><span class="n">admin_perms</span><span class="p">,</span> <span class="n">view_perms</span><span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.compute_resource_groups_and_members_set">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.compute_resource_groups_and_members_set">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_resource_groups_and_members_set</span><span class="p">(</span><span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a tuple containing:</span>
+
+<span class="sd">         - The &quot;Anonymous&quot; Group</span>
+<span class="sd">         - The &quot;Registered Members&quot; Group</span>
+<span class="sd">         - The &quot;Groups&quot; belonging to the Resource Owner</span>
+<span class="sd">         - The &quot;managers&quot; of the Groups affecting the Resource</span>
+<span class="sd">         - The &quot;members&quot; of the Groups affecting the Resource</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">_resource</span> <span class="o">=</span> <span class="n">instance</span> <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">anonymous_group</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;anonymous&quot;</span><span class="p">)</span>
+        <span class="n">registered_members_group</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">registered_members_group_name</span> <span class="o">=</span> <span class="n">groups_settings</span><span class="o">.</span><span class="n">REGISTERED_MEMBERS_GROUP_NAME</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">groups_settings</span><span class="p">,</span> <span class="s2">&quot;AUTO_ASSIGN_REGISTERED_MEMBERS_TO_REGISTERED_MEMBERS_GROUP_NAME&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">registered_members_group</span> <span class="o">=</span> <span class="n">Group</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">registered_members_group_name</span><span class="p">)</span>
+        <span class="n">user_groups</span> <span class="o">=</span> <span class="n">get_user_groups</span><span class="p">(</span><span class="n">_resource</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+        <span class="n">resource_groups</span><span class="p">,</span> <span class="n">group_managers</span> <span class="o">=</span> <span class="n">_resource</span><span class="o">.</span><span class="n">get_group_managers</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="p">(</span>
+            <span class="n">anonymous_group</span><span class="p">,</span> <span class="n">registered_members_group</span><span class="p">,</span> <span class="n">user_groups</span><span class="p">,</span> <span class="n">resource_groups</span><span class="p">,</span> <span class="n">group_managers</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.get_workflow_permissions">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.get_workflow_permissions">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_workflow_permissions</span><span class="p">(</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">perm_spec</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;groups&quot;</span><span class="p">:</span> <span class="p">{}},</span>
+        <span class="n">created</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">approval_status_changed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">group_status_changed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adapts the provided &quot;perm_spec&quot; according to the following schema:</span>
+
+<span class="sd">        **Publishing Workflow Schema**</span>
+
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        |                     | RESOURCE_PUBLISHING   | ADMIN_MODERATE_UPLOADS  |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        | AUTO PUBLISH        |          X            |           X             |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        | SIMPLE PUBLISHING   |          ✓            |           X             |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        | SIMPLIFIED WORKFLOW |          X            |           ✓             |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+<span class="sd">        | ADVANCED WORKFLOW   |          ✓            |           ✓             |</span>
+<span class="sd">        +---------------------+-----------------------+-------------------------+</span>
+
+<span class="sd">        **General Rules:**</span>
+
+<span class="sd">        - **OWNER** can never publish, except in the **AUTO_PUBLISHING** workflow.</span>
+<span class="sd">        - **MANAGERS** can always &quot;publish&quot; the resource.</span>
+<span class="sd">        - **MEMBERS** can always &quot;view&quot; and &quot;download&quot; the resource.</span>
+<span class="sd">        - When the OWNER is also a MANAGER, the MANAGER wins and can publish.</span>
+<span class="sd">        - Others, except in the AUTO_PUBLISHING workflow.</span>
+
+<span class="sd">        **Approval and Publishing Schema**</span>
+
+<span class="sd">        +----------------+--------------+-------------+</span>
+<span class="sd">        |                | N/PUBLISHED  | PUBLISHED   |</span>
+<span class="sd">        +----------------+--------------+-------------+</span>
+<span class="sd">        | N/APPROVED     | GM/OWR       | -           |</span>
+<span class="sd">        +----------------+--------------+-------------+</span>
+<span class="sd">        | APPROVED       | registered   | all         |</span>
+<span class="sd">        +----------------+--------------+-------------+</span>
+
+<span class="sd">        Exceptions based on the enabled workflow:</span>
+
+<span class="sd">        - **SIMPLIFIED WORKFLOW**: If the resource is &quot;approved&quot; or &quot;published&quot;, OWNERS won&#39;t be able to change the resource data and permissions.</span>
+<span class="sd">        - **ADVANCED WORKFLOW**: If the resource is &quot;approved&quot; or &quot;published&quot;, OWNERS won&#39;t be able to change the resource data, metadata, and permissions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">_resource</span> <span class="o">=</span> <span class="n">instance</span> <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">_perm_spec</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">safe_remove</span><span class="p">(</span><span class="n">perms</span><span class="p">,</span> <span class="n">perm</span><span class="p">):</span>
+            <span class="n">perms</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="k">if</span> <span class="n">perm</span> <span class="ow">in</span> <span class="n">perms</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">_resource</span><span class="p">:</span>
+            <span class="n">_resource</span> <span class="o">=</span> <span class="n">_resource</span><span class="o">.</span><span class="n">get_real_instance</span><span class="p">()</span>
+
+            <span class="n">AdminViewPermissionsSet</span> <span class="o">=</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">compute_admin_and_view_permissions_set</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">_resource</span>
+            <span class="p">)</span>
+            <span class="n">ResourceGroupsAndMembersSet</span> <span class="o">=</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">compute_resource_groups_and_members_set</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">_resource</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">_resource</span><span class="o">.</span><span class="n">group</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Computing the OWNER Permissions</span>
+            <span class="n">prev_perms</span> <span class="o">=</span> <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_resource</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="n">prev_perms</span> <span class="o">+=</span> <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">view_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="o">+</span> <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">admin_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">prev_perms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_auto_publishing_workflow</span><span class="p">():</span>
+                <span class="c1"># Check if owner is a manager of any group and add admin_manager_perms accordingly</span>
+                <span class="k">if</span> <span class="n">_resource</span><span class="o">.</span><span class="n">owner</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">managers</span><span class="p">:</span>
+                    <span class="n">safe_remove</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">,</span> <span class="s2">&quot;publish_resourcebase&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_simple_publishing_workflow</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span>
+                        <span class="n">_resource</span><span class="o">.</span><span class="n">is_approved</span> <span class="ow">or</span> <span class="n">_resource</span><span class="o">.</span><span class="n">is_published</span>
+                    <span class="p">):</span>
+                        <span class="k">for</span> <span class="n">_perm</span> <span class="ow">in</span> <span class="n">EDIT_PERMISSIONS</span><span class="p">:</span>
+                            <span class="n">safe_remove</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">,</span> <span class="n">_perm</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">_resource</span><span class="o">.</span><span class="n">resource_type</span> <span class="o">==</span> <span class="s2">&quot;dataset&quot;</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">_perm</span> <span class="ow">in</span> <span class="n">DATASET_ADMIN_PERMISSIONS</span><span class="p">:</span>
+                                <span class="n">safe_remove</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">,</span> <span class="n">_perm</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_advanced_workflow</span><span class="p">():</span>
+                        <span class="k">for</span> <span class="n">_perm</span> <span class="ow">in</span> <span class="n">BASIC_MANAGE_PERMISSIONS</span><span class="p">:</span>
+                            <span class="n">safe_remove</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">,</span> <span class="n">_perm</span><span class="p">)</span>
+            <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">][</span><span class="n">_resource</span><span class="o">.</span><span class="n">owner</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+
+            <span class="c1"># Computing the MANAGERs and MEMBERs Permissions</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_auto_publishing_workflow</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">group_status_changed</span><span class="p">:</span>
+                    <span class="c1"># Reset Groups/Manager Perms</span>
+                    <span class="n">_owner_perms</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_resource</span><span class="o">.</span><span class="n">owner</span><span class="p">,</span> <span class="p">[]))</span>
+                    <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">_resource</span><span class="o">.</span><span class="n">owner</span><span class="p">:</span> <span class="n">_owner_perms</span><span class="p">}</span>
+                    <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+                <span class="k">if</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">managers</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">managers</span><span class="p">:</span>
+                        <span class="n">prev_perms</span> <span class="o">=</span> <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="s2">&quot;users&quot;</span> <span class="ow">in</span> <span class="n">_perm_spec</span> <span class="k">else</span> <span class="p">[]</span>
+                        <span class="n">prev_perms</span> <span class="o">+=</span> <span class="p">(</span>
+                            <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">view_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="o">+</span> <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">admin_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                        <span class="p">)</span>
+                        <span class="n">prev_perms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+                        <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">][</span><span class="n">user</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">resource_groups</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">resource_groups</span><span class="p">:</span>
+                        <span class="n">prev_perms</span> <span class="o">=</span> <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="p">[])</span> <span class="k">if</span> <span class="s2">&quot;groups&quot;</span> <span class="ow">in</span> <span class="n">_perm_spec</span> <span class="k">else</span> <span class="p">[]</span>
+                        <span class="n">prev_perms</span> <span class="o">+=</span> <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">view_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                        <span class="n">prev_perms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+                        <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">][</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]):</span>
+                    <span class="n">groups</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span>
+                            <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">anonymous_group</span><span class="p">,</span>
+                            <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">registered_members_group</span><span class="p">,</span>
+                        <span class="p">):</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">group</span> <span class="o">=</span> <span class="n">group</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s2">&quot;group&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+                                <span class="n">users</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">get_managers</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">get_members</span><span class="p">())</span>
+                                <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">users</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                                        <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                                    <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">group</span><span class="p">)</span>
+                            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+            <span class="c1"># Computing the &#39;All Others&#39; Permissions</span>
+            <span class="k">if</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">anonymous_group</span><span class="p">:</span>
+                <span class="n">prev_perms</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">anonymous_group</span><span class="p">,</span> <span class="p">[])</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span>
+                    <span class="k">else</span> <span class="p">[]</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">approval_status_changed</span> <span class="ow">and</span> <span class="p">(</span><span class="n">_resource</span><span class="o">.</span><span class="n">is_approved</span> <span class="ow">or</span> <span class="n">_resource</span><span class="o">.</span><span class="n">is_published</span><span class="p">):</span>
+                    <span class="n">prev_perms</span> <span class="o">+=</span> <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">view_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="n">prev_perms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">created</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_anonymous_can_view</span><span class="p">():</span>
+                        <span class="n">safe_remove</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">,</span> <span class="s2">&quot;view_resourcebase&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_anonymous_can_download</span><span class="p">():</span>
+                        <span class="n">safe_remove</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">,</span> <span class="s2">&quot;download_resourcebase&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_auto_publishing_workflow</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="p">(</span>
+                            <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_simple_publishing_workflow</span><span class="p">()</span>
+                            <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_advanced_workflow</span><span class="p">()</span>
+                        <span class="p">)</span>
+                        <span class="ow">and</span> <span class="ow">not</span> <span class="n">_resource</span><span class="o">.</span><span class="n">is_published</span>
+                    <span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                        <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_simplified_workflow</span><span class="p">()</span>
+                        <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">_resource</span><span class="o">.</span><span class="n">is_approved</span> <span class="ow">or</span> <span class="n">_resource</span><span class="o">.</span><span class="n">is_published</span><span class="p">)</span>
+                    <span class="p">):</span>
+                        <span class="k">for</span> <span class="n">_perm</span> <span class="ow">in</span> <span class="n">VIEW_PERMISSIONS</span> <span class="o">+</span> <span class="n">DOWNLOAD_PERMISSIONS</span><span class="p">:</span>
+                            <span class="n">safe_remove</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">,</span> <span class="n">_perm</span><span class="p">)</span>
+            <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">][</span><span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">anonymous_group</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">registered_members_group</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span>
+                <span class="n">groups_settings</span><span class="p">,</span> <span class="s2">&quot;AUTO_ASSIGN_REGISTERED_MEMBERS_TO_REGISTERED_MEMBERS_GROUP_NAME&quot;</span><span class="p">,</span> <span class="kc">False</span>
+            <span class="p">):</span>
+                <span class="n">prev_perms</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">registered_members_group</span><span class="p">,</span> <span class="p">[])</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)</span>
+                    <span class="k">else</span> <span class="p">[]</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">approval_status_changed</span> <span class="ow">and</span> <span class="p">(</span><span class="n">_resource</span><span class="o">.</span><span class="n">is_approved</span> <span class="ow">or</span> <span class="n">_resource</span><span class="o">.</span><span class="n">is_published</span><span class="p">):</span>
+                    <span class="n">prev_perms</span> <span class="o">+=</span> <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">view_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="n">prev_perms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_auto_publishing_workflow</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_resource</span><span class="o">.</span><span class="n">is_approved</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">_perm</span> <span class="ow">in</span> <span class="n">VIEW_PERMISSIONS</span> <span class="o">+</span> <span class="n">DOWNLOAD_PERMISSIONS</span><span class="p">:</span>
+                        <span class="n">safe_remove</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">,</span> <span class="n">_perm</span><span class="p">)</span>
+                <span class="n">_perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">][</span><span class="n">ResourceGroupsAndMembersSet</span><span class="o">.</span><span class="n">registered_members_group</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">_perm_spec</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.get_permissions">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.get_permissions">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_permissions</span><span class="p">(</span>
+        <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">/</span><span class="p">,</span>
+        <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">permissions</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="n">created</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">approval_status_changed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">group_status_changed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fix-ups the perm_spec accordingly to the enabled workflow (if any).</span>
+<span class="sd">        For more details check the &quot;get_workflow_permissions&quot; method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_resource</span> <span class="o">=</span> <span class="n">instance</span> <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+
+        <span class="n">_permissions</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">permissions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">PermSpecCompact</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">permissions</span><span class="p">):</span>
+                <span class="n">_permissions</span> <span class="o">=</span> <span class="n">PermSpecCompact</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">permissions</span><span class="p">),</span> <span class="n">_resource</span><span class="p">)</span><span class="o">.</span><span class="n">extended</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_permissions</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">permissions</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_resource</span><span class="p">:</span>
+            <span class="n">perm_spec</span> <span class="o">=</span> <span class="n">_permissions</span> <span class="ow">or</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">_resource</span><span class="o">.</span><span class="n">get_all_level_info</span><span class="p">())</span>
+
+            <span class="c1"># Sanity checks</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">perm_spec</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;users&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">perm_spec</span><span class="p">:</span>
+                <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">_users</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">_item</span> <span class="ow">in</span> <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]:</span>
+                    <span class="n">_users</span><span class="p">[</span><span class="n">_item</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_users</span>
+
+            <span class="k">if</span> <span class="s2">&quot;groups&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">perm_spec</span><span class="p">:</span>
+                <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">_groups</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">_item</span> <span class="ow">in</span> <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]:</span>
+                    <span class="n">_groups</span><span class="p">[</span><span class="n">_item</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_groups</span>
+
+            <span class="c1"># Make sure we&#39;re dealing with &quot;Profile&quot;s and &quot;Group&quot;s...</span>
+            <span class="n">perm_spec</span> <span class="o">=</span> <span class="n">_resource</span><span class="o">.</span><span class="n">fixup_perms</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">)</span>
+            <span class="n">perm_spec</span> <span class="o">=</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_workflow_permissions</span><span class="p">(</span>
+                <span class="n">_resource</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                <span class="n">instance</span><span class="o">=</span><span class="n">_resource</span><span class="p">,</span>
+                <span class="n">perm_spec</span><span class="o">=</span><span class="n">perm_spec</span><span class="p">,</span>
+                <span class="n">created</span><span class="o">=</span><span class="n">created</span><span class="p">,</span>
+                <span class="n">approval_status_changed</span><span class="o">=</span><span class="n">approval_status_changed</span><span class="p">,</span>
+                <span class="n">group_status_changed</span><span class="o">=</span><span class="n">group_status_changed</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">perm_spec</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.handle_moderated_uploads">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.handle_moderated_uploads">[docs]</a>
+    <span class="k">def</span> <span class="nf">handle_moderated_uploads</span><span class="p">(</span><span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+        <span class="n">_resource</span> <span class="o">=</span> <span class="n">instance</span> <span class="ow">or</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">get_instance</span><span class="p">(</span><span class="n">uuid</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_resource</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_auto_publishing_workflow</span><span class="p">():</span>
+                <span class="n">_resource</span><span class="o">.</span><span class="n">is_approved</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">_resource</span><span class="o">.</span><span class="n">was_approved</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">_resource</span><span class="o">.</span><span class="n">is_published</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">_resource</span><span class="o">.</span><span class="n">was_published</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">ResourceBase</span>
+
+                <span class="n">ResourceBase</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">_resource</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="n">is_approved</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">was_approved</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_published</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">was_published</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_resource</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AdvancedSecurityWorkflowManager.set_group_member_permissions">
+<a class="viewcode-back" href="../../../autoapi/geonode/security/utils/index.html#geonode.security.utils.AdvancedSecurityWorkflowManager.set_group_member_permissions">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_group_member_permissions</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">role</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_auto_publishing_workflow</span><span class="p">():</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Internally the set_permissions function will automatically handle the permissions</span>
+<span class="sd">            that needs to be assigned to the resource.</span>
+<span class="sd">            Background at: https://github.com/GeoNode/geonode/pull/8145</span>
+<span class="sd">            If the user is demoted, we assign by default at least the view and the download permission</span>
+<span class="sd">            to the resource</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c1"># Fetching all the resources belonging to Group &quot;group&quot;; i.e. assgined to &quot;group&quot; metadata</span>
+            <span class="n">queryset</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span>
+                <span class="n">user</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;base.change_resourcebase&quot;</span><span class="p">],</span> <span class="n">any_perm</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="o">.</span><span class="n">group</span><span class="p">)</span>
+            <span class="c1"># Fetching and chaining all the resources belonging to Owner Group &quot;group&quot;</span>
+            <span class="n">queryset</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span>
+                <span class="n">queryset</span><span class="p">,</span>
+                <span class="p">(</span>
+                    <span class="n">get_objects_for_group</span><span class="p">(</span>
+                        <span class="n">group</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;base.change_resourcebase&quot;</span><span class="p">],</span> <span class="n">any_perm</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">owner__groupmember__group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">_resources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">queryset</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_resources</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">queryset</span> <span class="o">=</span> <span class="n">get_objects_for_user</span><span class="p">(</span>
+                    <span class="n">user</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="s2">&quot;base.change_resourcebase&quot;</span><span class="p">],</span> <span class="n">any_perm</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">owner</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+                <span class="n">_resources</span> <span class="o">=</span> <span class="n">queryset</span><span class="o">.</span><span class="n">iterator</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">_r</span> <span class="ow">in</span> <span class="n">_resources</span><span class="p">:</span>
+                <span class="n">perm_spec</span> <span class="o">=</span> <span class="n">_r</span><span class="o">.</span><span class="n">get_all_level_info</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s2">&quot;users&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">perm_spec</span><span class="p">:</span>
+                    <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">if</span> <span class="s2">&quot;groups&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">perm_spec</span><span class="p">:</span>
+                    <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+                <span class="n">AdminViewPermissionsSet</span> <span class="o">=</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">compute_admin_and_view_permissions_set</span><span class="p">(</span>
+                    <span class="n">_r</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">_r</span>
+                <span class="p">)</span>
+
+                <span class="n">prev_perms</span> <span class="o">=</span> <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">view_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">role</span><span class="p">:</span>
+                    <span class="n">prev_perms</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">if</span> <span class="n">user</span> <span class="o">==</span> <span class="n">_r</span><span class="o">.</span><span class="n">owner</span><span class="p">:</span>
+                        <span class="n">_group</span> <span class="o">=</span> <span class="n">group</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s2">&quot;group&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+                        <span class="n">_users</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_group</span><span class="o">.</span><span class="n">get_managers</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">_group</span><span class="o">.</span><span class="n">get_members</span><span class="p">())</span>
+                        <span class="k">for</span> <span class="n">_m</span> <span class="ow">in</span> <span class="n">_users</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_m</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                                <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">_m</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">_group</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                            <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;groups&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">_group</span><span class="o">.</span><span class="n">group</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;manager&quot;</span><span class="p">:</span>
+                    <span class="n">prev_perms</span> <span class="o">+=</span> <span class="n">AdminViewPermissionsSet</span><span class="o">.</span><span class="n">admin_perms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="n">prev_perms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+                <span class="n">perm_spec</span><span class="p">[</span><span class="s2">&quot;users&quot;</span><span class="p">][</span><span class="n">user</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">prev_perms</span><span class="p">))</span>
+
+                <span class="c1"># Let&#39;s the ResourceManager finally decide which are the correct security settings to apply</span>
+                <span class="n">_r</span><span class="o">.</span><span class="n">set_permissions</span><span class="p">(</span><span class="n">perm_spec</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

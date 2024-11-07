@@ -1,0 +1,171 @@
+geonode.documents.forms
+=======================
+
+.. py:module:: geonode.documents.forms
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.documents.forms.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.documents.forms.SizeRestrictedFileField
+   geonode.documents.forms.DocumentForm
+   geonode.documents.forms.DocumentDescriptionForm
+   geonode.documents.forms.DocumentCreateForm
+   geonode.documents.forms.DocumentReplaceForm
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: SizeRestrictedFileField(*args, **kwargs)
+
+   Bases: :py:obj:`django.forms.FileField`
+
+
+   Same as FileField, but checks file max_size based on the value stored on `field_slug`.
+
+       * field_slug - a slug indicating the database object from where the max_size will be retrieved.
+
+
+
+   .. py:attribute:: field_slug
+
+
+   .. py:method:: clean(*args, **kwargs)
+
+
+   .. py:method:: _get_file_size(data)
+
+
+   .. py:method:: _get_max_size()
+
+
+.. py:class:: DocumentForm(*args, **kwargs)
+
+   Bases: :py:obj:`geonode.base.forms.ResourceBaseForm`
+
+
+   .. py:attribute:: title
+
+
+   .. py:attribute:: choices
+
+
+   .. py:class:: Meta
+
+      Bases: :py:obj:`geonode.base.forms.ResourceBaseForm.Meta`
+
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: exclude
+
+
+
+.. py:class:: DocumentDescriptionForm
+
+   Bases: :py:obj:`django.forms.Form`
+
+
+   .. py:attribute:: title
+
+
+   .. py:attribute:: abstract
+
+
+   .. py:attribute:: keywords
+
+
+.. py:class:: DocumentCreateForm(*args, **kwargs)
+
+   Bases: :py:obj:`modeltranslation.forms.TranslationModelForm`
+
+
+   The document upload form.
+
+
+   .. py:attribute:: permissions
+
+
+   .. py:attribute:: doc_file
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ['title', 'doc_file', 'doc_url', 'extension']
+
+
+
+      .. py:attribute:: widgets
+
+
+
+   .. py:method:: clean_permissions()
+
+      Ensures the JSON field is JSON.
+
+
+
+   .. py:method:: clean()
+
+      Ensures the doc_file or the doc_url field is populated.
+
+
+
+   .. py:method:: clean_doc_file()
+
+      Ensures the doc_file is valid.
+
+
+
+.. py:class:: DocumentReplaceForm
+
+   Bases: :py:obj:`django.forms.ModelForm`
+
+
+   The form used to replace a document.
+
+
+   .. py:attribute:: doc_file
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: model
+
+
+      .. py:attribute:: fields
+         :value: ['doc_file']
+
+
+
+
+   .. py:method:: clean()
+
+      Ensures the doc_file field is populated.
+
+
+
+   .. py:method:: clean_doc_file()
+
+      Ensures the doc_file is valid.
+
+
+
