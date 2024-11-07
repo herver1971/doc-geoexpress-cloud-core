@@ -1,0 +1,217 @@
+geonode.storage.manager
+=======================
+
+.. py:module:: geonode.storage.manager
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.storage.manager.logger
+   geonode.storage.manager.storage_manager
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.storage.manager.StorageManagerInterface
+   geonode.storage.manager.StorageManager
+   geonode.storage.manager.DefaultStorageManager
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: StorageManagerInterface
+
+   .. py:method:: delete(name)
+      :abstractmethod:
+
+
+
+   .. py:method:: exists(name)
+      :abstractmethod:
+
+
+
+   .. py:method:: listdir(path)
+      :abstractmethod:
+
+
+
+   .. py:method:: rmtree(path, ignore_errors=False)
+
+
+   .. py:method:: open(name, mode='rb')
+      :abstractmethod:
+
+
+
+   .. py:method:: path(name)
+      :abstractmethod:
+
+
+
+   .. py:method:: save(name, content, max_length=None)
+      :abstractmethod:
+
+
+
+   .. py:method:: url(name)
+      :abstractmethod:
+
+
+
+   .. py:method:: size(name)
+      :abstractmethod:
+
+
+
+   .. py:method:: generate_filename(filename)
+      :abstractmethod:
+
+
+
+   .. py:method:: replace(resource, files: Union[list, BinaryIO])
+
+
+   .. py:method:: copy(resource)
+
+
+.. py:class:: StorageManager(remote_files: Mapping = {})
+
+   Bases: :py:obj:`StorageManagerInterface`
+
+
+   Manage the files with different filestorages configured by default is the Filesystem one.
+   If the file is not in the FileSystem, we try to transfer it on the local filesystem and then
+   treat as a file_system file
+
+
+   .. py:attribute:: _concrete_storage_manager
+
+
+   .. py:attribute:: data_retriever
+
+
+   .. py:method:: _get_concrete_manager()
+
+
+   .. py:method:: delete(name)
+
+
+   .. py:method:: exists(name)
+
+
+   .. py:method:: listdir(path)
+
+
+   .. py:method:: rmtree(path, ignore_errors=False)
+
+
+   .. py:method:: open(name, mode='rb')
+
+
+   .. py:method:: path(name)
+
+
+   .. py:method:: save(name, content, max_length=None)
+
+
+   .. py:method:: size(name)
+
+
+   .. py:method:: url(name)
+
+
+   .. py:method:: replace(resource, files: Union[list, BinaryIO])
+
+
+   .. py:method:: copy(resource)
+
+
+   .. py:method:: copy_files_list(files: List[str])
+
+
+   .. py:method:: copy_single_file(old_file: BinaryIO, new_file: str)
+
+
+   .. py:method:: replace_files_list(old_files: List[str], new_files: List[str])
+
+
+   .. py:method:: replace_single_file(old_file: str, new_file: BinaryIO, prefix: str = None)
+
+
+   .. py:method:: generate_filename(filename)
+
+
+   .. py:method:: clone_remote_files() -> Mapping
+
+      Using the data retriever object clone the remote path into a local temporary storage
+
+
+
+   .. py:method:: get_retrieved_paths() -> Mapping
+
+      Return the path of the local objects in the temporary folder.
+      We convert them as string instead of PosixPath
+
+
+
+   .. py:method:: delete_retrieved_paths(force=False) -> None
+
+      Delete cloned object from the temporary folder.
+      By default if the folder is under the MEDIA_ROOT the file is not deleted.
+      In case should be deleted, the force=True is required
+
+
+
+.. py:class:: DefaultStorageManager
+
+   Bases: :py:obj:`StorageManagerInterface`
+
+
+   .. py:attribute:: _fsm
+
+
+   .. py:method:: _get_concrete_manager()
+
+
+   .. py:method:: delete(name)
+
+
+   .. py:method:: exists(name)
+
+
+   .. py:method:: listdir(path)
+
+
+   .. py:method:: rmtree(path, ignore_errors=False)
+
+
+   .. py:method:: open(name, mode='rb')
+
+
+   .. py:method:: path(name)
+
+
+   .. py:method:: save(name, content, max_length=None)
+
+
+   .. py:method:: size(name)
+
+
+   .. py:method:: url(name)
+
+
+   .. py:method:: generate_filename(filename)
+
+
+.. py:data:: storage_manager
+

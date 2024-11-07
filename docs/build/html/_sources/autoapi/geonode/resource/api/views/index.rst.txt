@@ -1,0 +1,113 @@
+geonode.resource.api.views
+==========================
+
+.. py:module:: geonode.resource.api.views
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.resource.api.views.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.resource.api.views.ExecutionRequestViewset
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.resource.api.views.resource_service_search
+   geonode.resource.api.views.resource_service_exists
+   geonode.resource.api.views.resource_service_execution_status
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: resource_service_search(request, resource_type: str = None)
+
+   Return a list of resources matching the filtering criteria.
+
+   Sample requests:
+
+    - Get all ResourceBases the user has access to:
+       http://localhost:8000/api/v2/resource-service/search
+
+    - Get all ResourceBases filtered by type criteria the user has access to:
+       http://localhost:8000/api/v2/resource-service/search/layer
+
+    - Get ResourceBases filtered by model criteria the user has access to:
+       http://localhost:8000/api/v2/resource-service/search/?filter={"title__icontains":"foo"}
+
+
+
+.. py:function:: resource_service_exists(request, uuid: str)
+
+   Returns a JSON boolean `success` field indicating the outcome of the 'exists' operation.
+
+   - Example:
+     GET http://localhost:8000/api/v2/resource-service/exists/13decd74-df04-11eb-a0c1-00155dc3de71
+
+     Response:
+
+     .. code-block:: bash
+
+        200 OK
+        {
+            "success": true
+        }
+
+
+.. py:function:: resource_service_execution_status(request, execution_id: str)
+
+   Main dispatcher endpoint to follow an API request status progress
+
+   - GET input: <str: execution id>
+   - output: <ExecutionRequest>
+
+
+.. py:class:: ExecutionRequestViewset
+
+   Bases: :py:obj:`dynamic_rest.viewsets.WithDynamicViewSetMixin`, :py:obj:`rest_framework.mixins.ListModelMixin`, :py:obj:`rest_framework.mixins.RetrieveModelMixin`, :py:obj:`rest_framework.viewsets.GenericViewSet`
+
+
+   API endpoint that allows users to be viewed or edited.
+
+
+   .. py:attribute:: authentication_classes
+
+
+   .. py:attribute:: permission_classes
+
+
+   .. py:attribute:: filter_backends
+
+
+   .. py:attribute:: serializer_class
+
+
+   .. py:attribute:: pagination_class
+
+
+   .. py:attribute:: http_method_names
+      :value: ['get', 'delete']
+
+
+
+   .. py:method:: get_queryset(queryset=None)
+
+
+   .. py:method:: delete(*args, **kwargs)
+
+

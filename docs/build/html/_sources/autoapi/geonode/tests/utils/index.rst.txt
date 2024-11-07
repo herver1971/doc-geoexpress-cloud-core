@@ -1,0 +1,147 @@
+geonode.tests.utils
+===================
+
+.. py:module:: geonode.tests.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.tests.utils.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.tests.utils.Client
+   geonode.tests.utils.NotificationsTestsHelper
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.tests.utils.upload_step
+   geonode.tests.utils.get_web_page
+   geonode.tests.utils.check_dataset
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: upload_step(step=None)
+
+.. py:class:: Client(url, user, passwd, *args, **kwargs)
+
+   Bases: :py:obj:`django.test.client.Client`
+
+
+   client for making http requests
+
+
+   .. py:attribute:: url
+
+
+   .. py:attribute:: user
+
+
+   .. py:attribute:: passwd
+
+
+   .. py:attribute:: csrf_token
+      :value: None
+
+
+
+   .. py:attribute:: response_cookies
+      :value: None
+
+
+
+   .. py:attribute:: _session
+
+
+   .. py:attribute:: _retry
+
+
+   .. py:attribute:: _adapter
+
+
+   .. py:method:: _register_user()
+
+
+   .. py:method:: make_request(path, data=None, ajax=False, debug=True, force_login=False)
+
+
+   .. py:method:: get(path, debug=True)
+
+
+   .. py:method:: login()
+
+      Method to login the GeoNode site
+
+
+
+   .. py:method:: upload_file(_file, perms=None)
+
+      function that uploads a file, or a collection of files, to
+      the GeoNode
+
+
+
+   .. py:method:: get_html(path, debug=True)
+
+      Method that make a get request and passes the results to bs4
+      Takes a path and returns a tuple
+
+
+
+   .. py:method:: get_json(path)
+
+
+   .. py:method:: get_csrf_token(last=False)
+
+      Get a csrf_token from the home page or read from the cookie jar
+      based on the last response
+
+
+
+.. py:function:: get_web_page(url, username=None, password=None, login_url=None)
+
+   Get url page possible with username and password.
+
+
+.. py:function:: check_dataset(uploaded)
+
+   Verify if an object is a valid Dataset.
+
+
+.. py:class:: NotificationsTestsHelper
+
+   Bases: :py:obj:`geonode.tests.base.GeoNodeBaseTestSupport`
+
+
+   Helper class for notification tests
+
+   This provides:
+
+
+   .. py:method:: setup_notifications_for(notifications_list, user)
+
+
+   .. py:method:: clear_notifications_queue()
+
+
+   .. py:method:: check_notification_out(notification_name, user)
+
+      Return True if user received notification
+
+
+

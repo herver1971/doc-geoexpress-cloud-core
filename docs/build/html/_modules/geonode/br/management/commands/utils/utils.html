@@ -1,0 +1,680 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.br.management.commands.utils.utils &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../../../br.html">geonode.br</a></li>
+      <li class="breadcrumb-item active">geonode.br.management.commands.utils.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.br.management.commands.utils.utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2018 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">Formatter</span><span class="p">,</span> <span class="n">StreamHandler</span>
+
+<span class="kn">import</span> <span class="nn">psycopg2</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">dateutil.parser</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="kn">from</span> <span class="nn">configparser</span> <span class="kn">import</span> <span class="n">ConfigParser</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">CommandError</span>
+
+
+<div class="viewcode-block" id="MEDIA_ROOT">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.MEDIA_ROOT">[docs]</a>
+<span class="n">MEDIA_ROOT</span> <span class="o">=</span> <span class="s2">&quot;uploaded&quot;</span></div>
+
+<div class="viewcode-block" id="STATIC_ROOT">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.STATIC_ROOT">[docs]</a>
+<span class="n">STATIC_ROOT</span> <span class="o">=</span> <span class="s2">&quot;static_root&quot;</span></div>
+
+<div class="viewcode-block" id="STATICFILES_DIRS">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.STATICFILES_DIRS">[docs]</a>
+<span class="n">STATICFILES_DIRS</span> <span class="o">=</span> <span class="s2">&quot;static_dirs&quot;</span></div>
+
+<div class="viewcode-block" id="TEMPLATE_DIRS">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.TEMPLATE_DIRS">[docs]</a>
+<span class="n">TEMPLATE_DIRS</span> <span class="o">=</span> <span class="s2">&quot;template_dirs&quot;</span></div>
+
+<div class="viewcode-block" id="LOCALE_PATHS">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.LOCALE_PATHS">[docs]</a>
+<span class="n">LOCALE_PATHS</span> <span class="o">=</span> <span class="s2">&quot;locale_dirs&quot;</span></div>
+
+<div class="viewcode-block" id="EXTERNAL_ROOT">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.EXTERNAL_ROOT">[docs]</a>
+<span class="n">EXTERNAL_ROOT</span> <span class="o">=</span> <span class="s2">&quot;external&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="option">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.option">[docs]</a>
+<span class="k">def</span> <span class="nf">option</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Named (optional) arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;--config&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use custom settings.ini configuration file&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="geoserver_option_list">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.geoserver_option_list">[docs]</a>
+<span class="k">def</span> <span class="nf">geoserver_option_list</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Named (optional) arguments</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--geoserver-data-dir&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;gs_data_dir&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Geoserver data directory&quot;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--dump-geoserver-vector-data&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;dump_gs_vector_data&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Dump geoserver vector data&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no-geoserver-vector-data&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;dump_gs_vector_data&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_false&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Don&#39;t dump geoserver vector data&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--dump-geoserver-raster-data&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;dump_gs_raster_data&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Dump geoserver raster data&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no-geoserver-raster-data&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;dump_gs_raster_data&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_false&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Don&#39;t dump geoserver raster data&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Config">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.Config">[docs]</a>
+<span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">apply_options_override</span><span class="p">(</span><span class="n">options</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">get_option</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">fallback</span><span class="p">):</span>
+                <span class="n">o</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">o</span> <span class="k">if</span> <span class="n">o</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">fallback</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_data_dir</span> <span class="o">=</span> <span class="n">get_option</span><span class="p">(</span><span class="s2">&quot;gs_data_dir&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs_data_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_dump_vector_data</span> <span class="o">=</span> <span class="n">get_option</span><span class="p">(</span><span class="s2">&quot;dump_gs_vector_data&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs_dump_vector_data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_dump_raster_data</span> <span class="o">=</span> <span class="n">get_option</span><span class="p">(</span><span class="s2">&quot;dump_gs_raster_data&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs_dump_raster_data</span><span class="p">)</span>
+
+            <span class="c1"># store back overrides as current config (needed for saving it into the backup zip)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_parser</span><span class="p">[</span><span class="s2">&quot;geoserver&quot;</span><span class="p">][</span><span class="s2">&quot;datadir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gs_data_dir</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_parser</span><span class="p">[</span><span class="s2">&quot;geoserver&quot;</span><span class="p">][</span><span class="s2">&quot;dumpvectordata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gs_dump_vector_data</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_parser</span><span class="p">[</span><span class="s2">&quot;geoserver&quot;</span><span class="p">][</span><span class="s2">&quot;dumprasterdata&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gs_dump_raster_data</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">load_settings</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pg_dump_cmd</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database&quot;</span><span class="p">,</span> <span class="s2">&quot;pgdump&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pg_restore_cmd</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database&quot;</span><span class="p">,</span> <span class="s2">&quot;pgrestore&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">psql_cmd</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;database&quot;</span><span class="p">,</span> <span class="s2">&quot;psql&quot;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="s2">&quot;psql&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_data_dir</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;datadir&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_exclude_file_path</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;datadir_exclude_file_path&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;datadir_exclude_file_path&quot;</span><span class="p">)</span>
+                <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_dump_vector_data</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;dumpvectordata&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_dump_raster_data</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;dumprasterdata&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_data_dt_filter</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;data_dt_filter&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;data_dt_filter&quot;</span><span class="p">)</span>
+                <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_data_datasetname_filter</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;data_datasetname_filter&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;data_datasetname_filter&quot;</span><span class="p">)</span>
+                <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">gs_data_datasetname_exclude_filter</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;data_datasetname_exclude_filter&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="s2">&quot;geoserver&quot;</span><span class="p">,</span> <span class="s2">&quot;data_datasetname_exclude_filter&quot;</span><span class="p">)</span>
+                <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">app_names</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fixtures&quot;</span><span class="p">,</span> <span class="s2">&quot;apps&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dump_names</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fixtures&quot;</span><span class="p">,</span> <span class="s2">&quot;dumps&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Start init code</span>
+<div class="viewcode-block" id="Config.settings_path">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.Config.settings_path">[docs]</a>
+        <span class="n">settings_path</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;config&quot;</span><span class="p">)</span></div>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">settings_path</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="s2">&quot;Missing mandatory option (-c / --config)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">settings_path</span><span class="p">):</span>
+            <span class="n">settings_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)),</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">,</span> <span class="n">settings_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">settings_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Provided &#39;-c&#39; / &#39;--config&#39; file does not exist: </span><span class="si">{</span><span class="n">settings_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Config.config_parser">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.Config.config_parser">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_parser</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span></div>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_parser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">settings_path</span><span class="p">)</span>
+
+        <span class="c1"># set config from file</span>
+        <span class="n">load_settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_parser</span><span class="p">)</span>
+        <span class="c1"># override config from command line</span>
+        <span class="n">apply_options_override</span><span class="p">(</span><span class="n">options</span><span class="p">)</span></div>
+
+
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;lib&quot;</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="get_db_conn">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.get_db_conn">[docs]</a>
+<span class="k">def</span> <span class="nf">get_db_conn</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">db_port</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get db conn (GeoNode)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">db_host</span> <span class="o">=</span> <span class="n">db_host</span> <span class="k">if</span> <span class="n">db_host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;localhost&quot;</span>
+    <span class="n">db_port</span> <span class="o">=</span> <span class="n">db_port</span> <span class="k">if</span> <span class="n">db_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">5432</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">psycopg2</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;dbname=&#39;</span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">&#39; user=&#39;</span><span class="si">{</span><span class="n">db_user</span><span class="si">}</span><span class="s2">&#39; port=&#39;</span><span class="si">{</span><span class="n">db_port</span><span class="si">}</span><span class="s2">&#39; host=&#39;</span><span class="si">{</span><span class="n">db_host</span><span class="si">}</span><span class="s2">&#39; password=&#39;</span><span class="si">{</span><span class="n">db_passwd</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">conn</span></div>
+
+
+
+<div class="viewcode-block" id="get_tables">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.get_tables">[docs]</a>
+<span class="k">def</span> <span class="nf">get_tables</span><span class="p">(</span><span class="n">db_user</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">db_port</span><span class="o">=</span><span class="mi">5432</span><span class="p">):</span>
+    <span class="n">select</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SELECT tablename FROM pg_tables WHERE tableowner = &#39;</span><span class="si">{</span><span class="n">db_user</span><span class="si">}</span><span class="s2">&#39; and schemaname = &#39;public&#39;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Retrieving table list from DB </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">db_host</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">select</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">get_db_conn</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">db_port</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">)</span>
+        <span class="n">curs</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">curs</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">select</span><span class="p">)</span>
+        <span class="n">pg_tables</span> <span class="o">=</span> <span class="p">[</span><span class="n">table</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">curs</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">pg_tables</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="n">e</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">curs</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="truncate_tables">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.truncate_tables">[docs]</a>
+<span class="k">def</span> <span class="nf">truncate_tables</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">db_port</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    HARD Truncate all DB Tables</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">db_host</span> <span class="o">=</span> <span class="n">db_host</span> <span class="k">if</span> <span class="n">db_host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;localhost&quot;</span>
+    <span class="n">db_port</span> <span class="o">=</span> <span class="n">db_port</span> <span class="k">if</span> <span class="n">db_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">5432</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Truncating the tables in DB </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2"> @</span><span class="si">{</span><span class="n">db_host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">db_port</span><span class="si">}</span><span class="s2"> for user </span><span class="si">{</span><span class="n">db_user</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">pg_tables</span> <span class="o">=</span> <span class="n">get_tables</span><span class="p">(</span><span class="n">db_user</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_port</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tables found: </span><span class="si">{</span><span class="n">pg_tables</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">get_db_conn</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">db_port</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">)</span>
+    <span class="n">bad_tables</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pg_tables</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">table</span> <span class="o">==</span> <span class="s2">&quot;br_restoredbackup&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Truncating table : </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">curs</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+                <span class="n">curs</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TRUNCATE </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2"> CASCADE;&quot;</span><span class="p">)</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not truncate table </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">bad_tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bad_tables</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not truncate tables </span><span class="si">{</span><span class="n">bad_tables</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">curs</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="dump_db">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.dump_db">[docs]</a>
+<span class="k">def</span> <span class="nf">dump_db</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">db_port</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">,</span> <span class="n">target_folder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dump Full DB into target folder</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">db_host</span> <span class="o">=</span> <span class="n">db_host</span> <span class="k">if</span> <span class="n">db_host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;localhost&quot;</span>
+    <span class="n">db_port</span> <span class="o">=</span> <span class="n">db_port</span> <span class="k">if</span> <span class="n">db_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">5432</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Dumping data tables&quot;</span><span class="p">)</span>
+    <span class="n">pg_tables</span> <span class="o">=</span> <span class="n">get_tables</span><span class="p">(</span><span class="n">db_user</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_port</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tables found: </span><span class="si">{</span><span class="n">pg_tables</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">include_filter</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">gs_data_datasetname_filter</span>
+    <span class="n">exclude_filter</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">gs_data_datasetname_exclude_filter</span>
+
+    <span class="k">if</span> <span class="n">include_filter</span><span class="p">:</span>
+        <span class="n">filtered_tables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pat</span> <span class="ow">in</span> <span class="n">include_filter</span><span class="p">:</span>
+            <span class="n">filtered_tables</span> <span class="o">+=</span> <span class="n">glob_filter</span><span class="p">(</span><span class="n">pg_tables</span><span class="p">,</span> <span class="n">pat</span><span class="p">)</span>
+        <span class="n">pg_tables</span> <span class="o">=</span> <span class="n">filtered_tables</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tables found after INCLUDE filtering: </span><span class="si">{</span><span class="n">pg_tables</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">exclude_filter</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pat</span> <span class="ow">in</span> <span class="n">exclude_filter</span><span class="p">:</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">glob_filter</span><span class="p">(</span><span class="n">pg_tables</span><span class="p">,</span> <span class="n">pat</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">exclude_table</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+                <span class="n">pg_tables</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">exclude_table</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tables found after EXCLUDE filtering: </span><span class="si">{</span><span class="n">pg_tables</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cleaning up destination folder </span><span class="si">{</span><span class="n">target_folder</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="n">empty_folder</span><span class="p">(</span><span class="n">target_folder</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pg_tables</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; - Dumping data table: </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">pg_dump_cmd</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; -h </span><span class="si">{</span><span class="n">db_host</span><span class="si">}</span><span class="s2"> -p </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">db_port</span><span class="p">)</span><span class="si">}</span><span class="s2"> -U </span><span class="si">{</span><span class="n">db_user</span><span class="si">}</span><span class="s2"> -d </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; -b &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; -t &#39;</span><span class="se">\&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">table</span><span class="p">)</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&#39; &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; -f </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">target_folder</span><span class="p">,</span><span class="w"> </span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s1">.sql &#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;PGPASSWORD&quot;</span><span class="p">:</span> <span class="n">db_passwd</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">ret</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DUMP FAILED FOR TABLE </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="restore_db">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.restore_db">[docs]</a>
+<span class="k">def</span> <span class="nf">restore_db</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">db_port</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">,</span> <span class="n">source_folder</span><span class="p">,</span> <span class="n">preserve_tables</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Restore Full DB into target folder</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">db_host</span> <span class="o">=</span> <span class="n">db_host</span> <span class="k">if</span> <span class="n">db_host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;localhost&quot;</span>
+    <span class="n">db_port</span> <span class="o">=</span> <span class="n">db_port</span> <span class="k">if</span> <span class="n">db_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">5432</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Restoring data tables&quot;</span><span class="p">)</span>
+
+    <span class="n">dump_extensions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;dump&quot;</span><span class="p">,</span> <span class="s2">&quot;sql&quot;</span><span class="p">]</span>
+    <span class="n">file_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">fn</span> <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">source_folder</span><span class="p">)</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">fn</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span> <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">dump_extensions</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">file_names</span><span class="p">):</span>
+        <span class="n">table_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; - restoring data table: </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;dump&quot;</span><span class="p">):</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">pg_restore_cmd</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; -h </span><span class="si">{</span><span class="n">db_host</span><span class="si">}</span><span class="s2"> -p </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">db_port</span><span class="p">)</span><span class="si">}</span><span class="s2"> -d </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; -U </span><span class="si">{</span><span class="n">db_user</span><span class="si">}</span><span class="s2"> --role=</span><span class="si">{</span><span class="n">db_user</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s1">&#39; -t &quot;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s1">&quot; &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39; </span><span class="si">{</span><span class="s2">&quot;-c&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">preserve_tables</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="si">}</span><span class="s1"> &#39;</span>
+                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;PGPASSWORD&quot;</span><span class="p">:</span> <span class="n">db_passwd</span><span class="p">},</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RESTORE FAILED FOR FILE </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;sql&quot;</span><span class="p">):</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">psql_cmd</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; -h </span><span class="si">{</span><span class="n">db_host</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; -p </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">db_port</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; -d </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; -U </span><span class="si">{</span><span class="n">db_user</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; -f </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_folder</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot; -q -b &quot;</span>
+            <span class="p">)</span>
+            <span class="n">cproc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;PGPASSWORD&quot;</span><span class="p">:</span> <span class="n">db_passwd</span><span class="p">},</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">cproc</span><span class="o">.</span><span class="n">returncode</span>
+            <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RESTORE FAILED FOR FILE </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CMD:: </span><span class="si">{</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="c1"># logger.error(f&#39;OUT:: {cproc.stdout}&#39;)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ERR:: </span><span class="si">{</span><span class="n">cproc</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="remove_existing_tables">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.remove_existing_tables">[docs]</a>
+<span class="k">def</span> <span class="nf">remove_existing_tables</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">db_port</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Dropping existing GeoServer vector data from DB&quot;</span><span class="p">)</span>
+    <span class="n">pg_tables</span> <span class="o">=</span> <span class="n">get_tables</span><span class="p">(</span><span class="n">db_user</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_port</span><span class="p">)</span>
+    <span class="n">bad_tables</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">get_db_conn</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">db_port</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_passwd</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">pg_tables</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- Drop Table: </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">curs</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+            <span class="n">curs</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DROP TABLE &quot;</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s1">&quot; CASCADE&#39;</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error Dropping Table </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">bad_tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">bad_tables</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Some tables could not be removed. This error will probably break the procedure in next steps.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bad tables list: </span><span class="si">{</span><span class="n">bad_tables</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">curs</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="confirm">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.confirm">[docs]</a>
+<span class="k">def</span> <span class="nf">confirm</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prompts for yes or no response from the user. Returns True for yes and False for no.</span>
+
+<span class="sd">    ``resp`` should be set to the default value assumed by the caller when</span>
+<span class="sd">    user simply types ENTER.</span>
+
+<span class="sd">    &gt;&gt;&gt; confirm(prompt=&#39;Create Directory?&#39;, resp=True)</span>
+<span class="sd">    Create Directory? [y]|n:</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; confirm(prompt=&#39;Create Directory?&#39;, resp=False)</span>
+<span class="sd">    Create Directory? [n]|y:</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; confirm(prompt=&#39;Create Directory?&#39;, resp=False)</span>
+<span class="sd">    Create Directory? [n]|y: y</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">prompt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot;Confirm&quot;</span>
+
+    <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2"> [y]|n: &quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2"> [n]|y: &quot;</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ans</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resp</span>
+        <span class="k">if</span> <span class="n">ans</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">}:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;please enter y or n.&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">ans</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span> <span class="ow">or</span> <span class="n">ans</span> <span class="o">==</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">ans</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span> <span class="ow">or</span> <span class="n">ans</span> <span class="o">==</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="md5_file_hash">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/tests/index.html#geonode.br.management.commands.utils.utils.md5_file_hash">[docs]</a>
+<span class="k">def</span> <span class="nf">md5_file_hash</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A method generating MD5 hash of the provided file.</span>
+
+<span class="sd">    :param file_path: file&#39;s path with an extension, which will be opened for reading and generating md5 hash</span>
+<span class="sd">    :return: hex representation of md5 hash</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">hash_md5</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4096</span><span class="p">),</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+            <span class="n">hash_md5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hash_md5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="ignore_time">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.ignore_time">[docs]</a>
+<span class="k">def</span> <span class="nf">ignore_time</span><span class="p">(</span><span class="n">cmp_operator</span><span class="p">,</span> <span class="n">iso_date</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">ignoref</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">contents</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cmp_operator</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">iso_date</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">_timestamp</span> <span class="o">=</span> <span class="n">dateutil</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">isoparse</span><span class="p">(</span><span class="n">iso_date</span><span class="p">)</span><span class="o">.</span><span class="n">timestamp</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cmp_operator</span> <span class="o">==</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">contents</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">_timestamp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cmp_operator</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">contents</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="n">_timestamp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cmp_operator</span> <span class="o">==</span> <span class="s2">&quot;=&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">contents</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="o">==</span> <span class="n">_timestamp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cmp_operator</span> <span class="o">==</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">contents</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">_timestamp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cmp_operator</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">contents</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="n">_timestamp</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ignoref</span></div>
+
+
+
+<div class="viewcode-block" id="glob2re">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.glob2re">[docs]</a>
+<span class="k">def</span> <span class="nf">glob2re</span><span class="p">(</span><span class="n">pat</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Translate a shell PATTERN to a regular expression.</span>
+
+<span class="sd">    There is no way to quote meta-characters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pat</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">pat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+            <span class="c1"># res = res + &#39;.*&#39;</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2">[^/]*&quot;</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;?&quot;</span><span class="p">:</span>
+            <span class="c1"># res = res + &#39;.&#39;</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2">[^/]&quot;</span>
+        <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">&quot;[&quot;</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">pat</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;!&quot;</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">pat</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;]&quot;</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">pat</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;]&quot;</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="se">\\</span><span class="s2">[&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stuff</span> <span class="o">=</span> <span class="n">pat</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">stuff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;!&quot;</span><span class="p">:</span>
+                    <span class="n">stuff</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;^</span><span class="si">{</span><span class="n">stuff</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">elif</span> <span class="n">stuff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;^&quot;</span><span class="p">:</span>
+                    <span class="n">stuff</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\\</span><span class="si">{</span><span class="n">stuff</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">res</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">stuff</span><span class="si">}</span><span class="s2">]&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">res</span> <span class="o">+</span> <span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="se">\\</span><span class="s2">Z(?ms)&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="glob_filter">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.glob_filter">[docs]</a>
+<span class="k">def</span> <span class="nf">glob_filter</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">pat</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">glob2re</span><span class="p">(</span><span class="n">pat</span><span class="p">),</span> <span class="n">name</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="empty_folder">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.empty_folder">[docs]</a>
+<span class="k">def</span> <span class="nf">empty_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to delete </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">. Reason: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="setup_logger">
+<a class="viewcode-back" href="../../../../../../autoapi/geonode/br/management/commands/utils/utils/index.html#geonode.br.management.commands.utils.utils.setup_logger">[docs]</a>
+<span class="k">def</span> <span class="nf">setup_logger</span><span class="p">():</span>
+    <span class="k">if</span> <span class="s2">&quot;geonode.br&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">LOGGING</span><span class="p">[</span><span class="s2">&quot;loggers&quot;</span><span class="p">]:</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">LOGGING</span><span class="p">[</span><span class="s2">&quot;formatters&quot;</span><span class="p">][</span><span class="s2">&quot;br&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">%(levelname)-7s</span><span class="s2"> </span><span class="si">%(asctime)s</span><span class="s2"> </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">}</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">LOGGING</span><span class="p">[</span><span class="s2">&quot;handlers&quot;</span><span class="p">][</span><span class="s2">&quot;br&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;DEBUG&quot;</span><span class="p">,</span> <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot;logging.StreamHandler&quot;</span><span class="p">,</span> <span class="s2">&quot;formatter&quot;</span><span class="p">:</span> <span class="s2">&quot;br&quot;</span><span class="p">}</span>
+        <span class="n">settings</span><span class="o">.</span><span class="n">LOGGING</span><span class="p">[</span><span class="s2">&quot;loggers&quot;</span><span class="p">][</span><span class="s2">&quot;geonode.br&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;handlers&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;br&quot;</span><span class="p">],</span> <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="s2">&quot;propagate&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;geonode.br&quot;</span><span class="p">)</span>
+
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">StreamHandler</span><span class="p">()</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">Formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(levelname)-7s</span><span class="s2"> </span><span class="si">%(asctime)s</span><span class="s2"> </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,546 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.geoapps.views &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../geoapps.html">geonode.geoapps</a></li>
+      <li class="breadcrumb-item active">geonode.geoapps.views</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.geoapps.views</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2020 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.decorators</span> <span class="kn">import</span> <span class="n">login_required</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span><span class="p">,</span> <span class="n">HttpResponseRedirect</span><span class="p">,</span> <span class="n">Http404</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">PermissionDenied</span><span class="p">,</span> <span class="n">ObjectDoesNotExist</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.clickjacking</span> <span class="kn">import</span> <span class="n">xframe_options_sameorigin</span>
+<span class="kn">from</span> <span class="nn">geonode.base.enumerations</span> <span class="kn">import</span> <span class="n">SOURCE_TYPE_LOCAL</span>
+
+<span class="kn">from</span> <span class="nn">geonode.client.hooks</span> <span class="kn">import</span> <span class="n">hookset</span>
+<span class="kn">from</span> <span class="nn">geonode.people.forms</span> <span class="kn">import</span> <span class="n">ProfileForm</span>
+<span class="kn">from</span> <span class="nn">geonode.base</span> <span class="kn">import</span> <span class="n">register_event</span>
+<span class="kn">from</span> <span class="nn">geonode.groups.models</span> <span class="kn">import</span> <span class="n">GroupProfile</span>
+<span class="kn">from</span> <span class="nn">geonode.monitoring.models</span> <span class="kn">import</span> <span class="n">EventType</span>
+<span class="kn">from</span> <span class="nn">geonode.base.auth</span> <span class="kn">import</span> <span class="n">get_or_create_token</span>
+<span class="kn">from</span> <span class="nn">geonode.security.views</span> <span class="kn">import</span> <span class="n">_perms_info_json</span>
+<span class="kn">from</span> <span class="nn">geonode.security.utils</span> <span class="kn">import</span> <span class="n">get_user_visible_groups</span><span class="p">,</span> <span class="n">AdvancedSecurityWorkflowManager</span>
+<span class="kn">from</span> <span class="nn">geonode.geoapps.models</span> <span class="kn">import</span> <span class="n">GeoApp</span>
+<span class="kn">from</span> <span class="nn">geonode.resource.manager</span> <span class="kn">import</span> <span class="n">resource_manager</span>
+<span class="kn">from</span> <span class="nn">geonode.decorators</span> <span class="kn">import</span> <span class="n">check_keyword_write_perms</span>
+
+<span class="kn">from</span> <span class="nn">geonode.base.forms</span> <span class="kn">import</span> <span class="n">CategoryForm</span><span class="p">,</span> <span class="n">TKeywordForm</span><span class="p">,</span> <span class="n">ThesaurusAvailableForm</span>
+<span class="kn">from</span> <span class="nn">geonode.base.models</span> <span class="kn">import</span> <span class="n">Thesaurus</span><span class="p">,</span> <span class="n">TopicCategory</span>
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">resolve_object</span>
+
+<span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">GeoAppForm</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;geonode.geoapps.views&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_PERMISSION_MSG_DELETE">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views._PERMISSION_MSG_DELETE">[docs]</a>
+<span class="n">_PERMISSION_MSG_DELETE</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You are not permitted to delete this app.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_PERMISSION_MSG_GENERIC">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views._PERMISSION_MSG_GENERIC">[docs]</a>
+<span class="n">_PERMISSION_MSG_GENERIC</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You do not have permissions for this app.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_PERMISSION_MSG_LOGIN">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views._PERMISSION_MSG_LOGIN">[docs]</a>
+<span class="n">_PERMISSION_MSG_LOGIN</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You must be logged in to save this app&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_PERMISSION_MSG_SAVE">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views._PERMISSION_MSG_SAVE">[docs]</a>
+<span class="n">_PERMISSION_MSG_SAVE</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You are not permitted to save or edit this app.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_PERMISSION_MSG_METADATA">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views._PERMISSION_MSG_METADATA">[docs]</a>
+<span class="n">_PERMISSION_MSG_METADATA</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You are not allowed to modify this app&#39;s metadata.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_PERMISSION_MSG_VIEW">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views._PERMISSION_MSG_VIEW">[docs]</a>
+<span class="n">_PERMISSION_MSG_VIEW</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;You are not allowed to view this app.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_PERMISSION_MSG_UNKNOWN">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views._PERMISSION_MSG_UNKNOWN">[docs]</a>
+<span class="n">_PERMISSION_MSG_UNKNOWN</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;An unknown error has occured.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_resolve_geoapp">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views._resolve_geoapp">[docs]</a>
+<span class="k">def</span> <span class="nf">_resolve_geoapp</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">permission</span><span class="o">=</span><span class="s2">&quot;base.change_resourcebase&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="n">_PERMISSION_MSG_GENERIC</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resolve the GeoApp by the provided typename and check the optional permission.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">return</span> <span class="n">resolve_object</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">GeoApp</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="nb">id</span><span class="p">},</span> <span class="n">permission</span><span class="o">=</span><span class="n">permission</span><span class="p">,</span> <span class="n">permission_msg</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@login_required</span>
+<div class="viewcode-block" id="new_geoapp">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views.new_geoapp">[docs]</a>
+<span class="k">def</span> <span class="nf">new_geoapp</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s2">&quot;apps/app_new.html&quot;</span><span class="p">):</span>
+    <span class="n">access_token</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">request</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">:</span>
+        <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_or_create_token</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">access_token</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">access_token</span><span class="o">.</span><span class="n">is_expired</span><span class="p">():</span>
+            <span class="n">access_token</span> <span class="o">=</span> <span class="n">access_token</span><span class="o">.</span><span class="n">token</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">access_token</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;GET&quot;</span><span class="p">:</span>
+        <span class="n">_ctx</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+            <span class="s2">&quot;access_token&quot;</span><span class="p">:</span> <span class="n">access_token</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">_ctx</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_list_url</span><span class="p">())</span></div>
+
+
+
+<span class="nd">@xframe_options_sameorigin</span>
+<div class="viewcode-block" id="geoapp_edit">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views.geoapp_edit">[docs]</a>
+<span class="k">def</span> <span class="nf">geoapp_edit</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">geoappid</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s2">&quot;apps/app_edit.html&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The view that returns the app composer opened to the app with the given app ID.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">geoapp_obj</span> <span class="o">=</span> <span class="n">_resolve_geoapp</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">geoappid</span><span class="p">,</span> <span class="s2">&quot;base.view_resourcebase&quot;</span><span class="p">,</span> <span class="n">_PERMISSION_MSG_VIEW</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">PermissionDenied</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not allowed&quot;</span><span class="p">),</span> <span class="n">status</span><span class="o">=</span><span class="mi">403</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">Http404</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not found&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">geoapp_obj</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">Http404</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not found&quot;</span><span class="p">))</span>
+
+    <span class="c1"># Call this first in order to be sure &quot;perms_list&quot; is correct</span>
+    <span class="n">permissions_json</span> <span class="o">=</span> <span class="n">_perms_info_json</span><span class="p">(</span><span class="n">geoapp_obj</span><span class="p">)</span>
+
+    <span class="n">perms_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">get_self_resource</span><span class="p">()</span><span class="o">.</span><span class="n">get_user_perms</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">geoapp_obj</span><span class="o">.</span><span class="n">get_user_perms</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">))</span>
+    <span class="p">)</span>
+
+    <span class="n">group</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">group</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="n">geoapp_obj</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;PATCH&quot;</span><span class="p">,</span> <span class="s2">&quot;PUT&quot;</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">resource_manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">geoapp_obj</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="p">,</span> <span class="n">notify</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">resource_manager</span><span class="o">.</span><span class="n">set_permissions</span><span class="p">(</span>
+            <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="p">,</span> <span class="n">permissions</span><span class="o">=</span><span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">permissions_json</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">resource_manager</span><span class="o">.</span><span class="n">set_thumbnail</span><span class="p">(</span><span class="n">geoapp_obj</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">access_token</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">request</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">:</span>
+        <span class="n">access_token</span> <span class="o">=</span> <span class="n">get_or_create_token</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">access_token</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">access_token</span><span class="o">.</span><span class="n">is_expired</span><span class="p">():</span>
+            <span class="n">access_token</span> <span class="o">=</span> <span class="n">access_token</span><span class="o">.</span><span class="n">token</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">access_token</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">blob</span><span class="p">)</span>
+    <span class="n">_ctx</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;appId&quot;</span><span class="p">:</span> <span class="n">geoappid</span><span class="p">,</span>
+        <span class="s2">&quot;appType&quot;</span><span class="p">:</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">resource_type</span><span class="p">,</span>
+        <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">_config</span><span class="p">,</span>
+        <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+        <span class="s2">&quot;access_token&quot;</span><span class="p">:</span> <span class="n">access_token</span><span class="p">,</span>
+        <span class="s2">&quot;resource&quot;</span><span class="p">:</span> <span class="n">geoapp_obj</span><span class="p">,</span>
+        <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="n">group</span><span class="p">,</span>
+        <span class="s2">&quot;perms_list&quot;</span><span class="p">:</span> <span class="n">perms_list</span><span class="p">,</span>
+        <span class="s2">&quot;permissions_json&quot;</span><span class="p">:</span> <span class="n">permissions_json</span><span class="p">,</span>
+        <span class="s2">&quot;preview&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;GEONODE_CLIENT_LAYER_PREVIEW_LIBRARY&quot;</span><span class="p">,</span> <span class="s2">&quot;mapstore&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">_ctx</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="geoapp_metadata_detail">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views.geoapp_metadata_detail">[docs]</a>
+<span class="k">def</span> <span class="nf">geoapp_metadata_detail</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">geoappid</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s2">&quot;apps/app_metadata_detail.html&quot;</span><span class="p">,</span> <span class="n">custom_metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">geoapp_obj</span> <span class="o">=</span> <span class="n">_resolve_geoapp</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">geoappid</span><span class="p">,</span> <span class="s2">&quot;view_resourcebase&quot;</span><span class="p">,</span> <span class="n">_PERMISSION_MSG_METADATA</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">PermissionDenied</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not allowed&quot;</span><span class="p">),</span> <span class="n">status</span><span class="o">=</span><span class="mi">403</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">Http404</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not found&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">geoapp_obj</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">Http404</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not found&quot;</span><span class="p">))</span>
+
+    <span class="n">group</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">group</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="n">GroupProfile</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slug</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="n">group</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">site_url</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">settings</span><span class="o">.</span><span class="n">SITEURL</span>
+    <span class="n">register_event</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">EventType</span><span class="o">.</span><span class="n">EVENT_VIEW_METADATA</span><span class="p">,</span> <span class="n">geoapp_obj</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span>
+        <span class="n">request</span><span class="p">,</span>
+        <span class="n">template</span><span class="p">,</span>
+        <span class="n">context</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;resource&quot;</span><span class="p">:</span> <span class="n">geoapp_obj</span><span class="p">,</span>
+            <span class="s2">&quot;group&quot;</span><span class="p">:</span> <span class="n">group</span><span class="p">,</span>
+            <span class="s2">&quot;SITEURL&quot;</span><span class="p">:</span> <span class="n">site_url</span><span class="p">,</span>
+            <span class="s2">&quot;custom_metadata&quot;</span><span class="p">:</span> <span class="n">custom_metadata</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="nd">@login_required</span>
+<span class="nd">@check_keyword_write_perms</span>
+<div class="viewcode-block" id="geoapp_metadata">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views.geoapp_metadata">[docs]</a>
+<span class="k">def</span> <span class="nf">geoapp_metadata</span><span class="p">(</span>
+    <span class="n">request</span><span class="p">,</span>
+    <span class="n">geoappid</span><span class="p">,</span>
+    <span class="n">template</span><span class="o">=</span><span class="s2">&quot;apps/app_metadata.html&quot;</span><span class="p">,</span>
+    <span class="n">ajax</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">panel_template</span><span class="o">=</span><span class="s2">&quot;layouts/app_panels.html&quot;</span><span class="p">,</span>
+    <span class="n">custom_metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">geoapp_obj</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">geoapp_obj</span> <span class="o">=</span> <span class="n">_resolve_geoapp</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">geoappid</span><span class="p">,</span> <span class="s2">&quot;base.change_resourcebase_metadata&quot;</span><span class="p">,</span> <span class="n">_PERMISSION_MSG_METADATA</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">PermissionDenied</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not allowed&quot;</span><span class="p">),</span> <span class="n">status</span><span class="o">=</span><span class="mi">403</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">Http404</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not found&quot;</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">geoapp_obj</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">Http404</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s2">&quot;Not found&quot;</span><span class="p">))</span>
+
+    <span class="c1"># Add metadata_author or poc if missing</span>
+    <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">add_missing_metadata_author_or_poc</span><span class="p">()</span>
+    <span class="n">resource_type</span> <span class="o">=</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">resource_type</span>
+    <span class="n">topic_category</span> <span class="o">=</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">category</span>
+    <span class="n">current_keywords</span> <span class="o">=</span> <span class="p">[</span><span class="n">keyword</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">keywords</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span>
+
+    <span class="n">topic_thesaurus</span> <span class="o">=</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span><span class="p">:</span>
+        <span class="n">geoapp_form</span> <span class="o">=</span> <span class="n">GeoAppForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;resource&quot;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">category_form</span> <span class="o">=</span> <span class="n">CategoryForm</span><span class="p">(</span>
+            <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;category_choice_field&quot;</span><span class="p">,</span>
+            <span class="n">initial</span><span class="o">=</span><span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s2">&quot;category_choice_field&quot;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="s2">&quot;category_choice_field&quot;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">[</span><span class="s2">&quot;category_choice_field&quot;</span><span class="p">]</span>
+                <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;THESAURUS&quot;</span><span class="p">):</span>
+            <span class="n">tkeywords_form</span> <span class="o">=</span> <span class="n">TKeywordForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tkeywords_form</span> <span class="o">=</span> <span class="n">ThesaurusAvailableForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;tkeywords&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">geoapp_form</span> <span class="o">=</span> <span class="n">GeoAppForm</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;resource&quot;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">geoapp_form</span><span class="o">.</span><span class="n">disable_keywords_widget_for_non_superuser</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">category_form</span> <span class="o">=</span> <span class="n">CategoryForm</span><span class="p">(</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;category_choice_field&quot;</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="n">topic_category</span><span class="o">.</span><span class="n">id</span> <span class="k">if</span> <span class="n">topic_category</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Create THESAURUS widgets</span>
+        <span class="n">lang</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">THESAURUS_DEFAULT_LANG</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;THESAURUS_DEFAULT_LANG&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;en&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;THESAURUS&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">THESAURUS</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;The settings for Thesaurus has been moved to Model, </span><span class="se">\</span>
+<span class="s2">            this feature will be removed in next releases&quot;</span><span class="p">,</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">dataset_tkeywords</span> <span class="o">=</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="n">tkeywords_list</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">if</span> <span class="n">dataset_tkeywords</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset_tkeywords</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">tkeywords_ids</span> <span class="o">=</span> <span class="n">dataset_tkeywords</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;THESAURUS&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">THESAURUS</span><span class="p">:</span>
+                    <span class="n">el</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">THESAURUS</span>
+                    <span class="n">thesaurus_name</span> <span class="o">=</span> <span class="n">el</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">t</span> <span class="o">=</span> <span class="n">Thesaurus</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">identifier</span><span class="o">=</span><span class="n">thesaurus_name</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">tk</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">tkeywords_ids</span><span class="p">):</span>
+                            <span class="n">tkl</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">keyword</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">lang</span><span class="o">=</span><span class="n">lang</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tkl</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="n">tkl_ids</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">tkl</span><span class="o">.</span><span class="n">values_list</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+                                <span class="n">tkeywords_list</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;,</span><span class="si">{</span><span class="n">tkl_ids</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tkeywords_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">tkl_ids</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                        <span class="n">tb</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+            <span class="n">tkeywords_form</span> <span class="o">=</span> <span class="n">TKeywordForm</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tkeywords_form</span> <span class="o">=</span> <span class="n">ThesaurusAvailableForm</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;tkeywords&quot;</span><span class="p">)</span>
+            <span class="c1">#  set initial values for thesaurus form</span>
+            <span class="k">for</span> <span class="n">tid</span> <span class="ow">in</span> <span class="n">tkeywords_form</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">keyword</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">topic_thesaurus</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">tid</span><span class="p">)</span> <span class="o">==</span> <span class="n">keyword</span><span class="o">.</span><span class="n">thesaurus</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+                <span class="n">tkeywords_form</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">tid</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span> <span class="ow">and</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span> <span class="n">category_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">and</span> <span class="n">tkeywords_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+        <span class="n">new_keywords</span> <span class="o">=</span> <span class="n">current_keywords</span> <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">keyword_readonly</span> <span class="k">else</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;keywords&quot;</span><span class="p">)</span>
+        <span class="n">new_regions</span> <span class="o">=</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;regions&quot;</span><span class="p">)</span>
+
+        <span class="n">new_category</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">category_form</span>
+            <span class="ow">and</span> <span class="s2">&quot;category_choice_field&quot;</span> <span class="ow">in</span> <span class="n">category_form</span><span class="o">.</span><span class="n">cleaned_data</span>
+            <span class="ow">and</span> <span class="n">category_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">&quot;category_choice_field&quot;</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">new_category</span> <span class="o">=</span> <span class="n">TopicCategory</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">category_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">&quot;category_choice_field&quot;</span><span class="p">]))</span>
+        <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;ptype&quot;</span><span class="p">)</span>
+
+        <span class="n">geoapp_obj</span> <span class="o">=</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">instance</span>
+        <span class="c1"># update contact roles</span>
+        <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">set_contact_roles_from_metadata_edit</span><span class="p">(</span><span class="n">geoapp_form</span><span class="p">)</span>
+
+        <span class="n">vals</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">new_category</span><span class="p">)</span>
+
+        <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">)</span>
+        <span class="n">extra_metadata</span> <span class="o">=</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;extra_metadata&quot;</span><span class="p">)</span>
+
+        <span class="n">geoapp_form</span><span class="o">.</span><span class="n">save_linked_resources</span><span class="p">()</span>
+        <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;linked_resources&quot;</span><span class="p">)</span>
+
+        <span class="n">vals</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="n">resource_type</span><span class="p">,</span> <span class="s2">&quot;sourcetype&quot;</span><span class="p">:</span> <span class="n">SOURCE_TYPE_LOCAL</span><span class="p">})</span>
+
+        <span class="n">register_event</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">EventType</span><span class="o">.</span><span class="n">EVENT_CHANGE_METADATA</span><span class="p">,</span> <span class="n">geoapp_obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ajax</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="n">hookset</span><span class="o">.</span><span class="n">geoapp_detail_url</span><span class="p">(</span><span class="n">geoapp_obj</span><span class="p">))</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">id</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Keywords from THESAURUS management</span>
+            <span class="c1"># Rewritten to work with updated autocomplete</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tkeywords_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Invalid thesaurus keywords&quot;</span><span class="p">},</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">))</span>
+
+            <span class="n">thesaurus_setting</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;THESAURUS&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">thesaurus_setting</span><span class="p">:</span>
+                <span class="n">tkeywords_data</span> <span class="o">=</span> <span class="n">tkeywords_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">&quot;tkeywords&quot;</span><span class="p">]</span>
+                <span class="n">tkeywords_data</span> <span class="o">=</span> <span class="n">tkeywords_data</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">thesaurus__identifier</span><span class="o">=</span><span class="n">thesaurus_setting</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+                <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">tkeywords_data</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">Thesaurus</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="n">tkeywords_form</span><span class="o">.</span><span class="n">cleaned_data</span>
+                <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">tkeywords</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">tkeywords_form</span><span class="o">.</span><span class="n">cleanx</span><span class="p">(</span><span class="n">fields</span><span class="p">))</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">tb</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;group&quot;</span> <span class="ow">in</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">changed_data</span><span class="p">:</span>
+            <span class="n">vals</span><span class="p">[</span><span class="s2">&quot;group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;group&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">x</span> <span class="ow">in</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">changed_data</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;is_approved&quot;</span><span class="p">,</span> <span class="s2">&quot;is_published&quot;</span><span class="p">]]):</span>
+            <span class="n">vals</span><span class="p">[</span><span class="s2">&quot;is_approved&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_approved&quot;</span><span class="p">,</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">is_approved</span><span class="p">)</span>
+            <span class="n">vals</span><span class="p">[</span><span class="s2">&quot;is_published&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_published&quot;</span><span class="p">,</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">is_published</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vals</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;is_approved&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">vals</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;is_published&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">resource_manager</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="n">instance</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="p">,</span>
+            <span class="n">keywords</span><span class="o">=</span><span class="n">new_keywords</span><span class="p">,</span>
+            <span class="n">regions</span><span class="o">=</span><span class="n">new_regions</span><span class="p">,</span>
+            <span class="n">notify</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">vals</span><span class="o">=</span><span class="n">vals</span><span class="p">,</span>
+            <span class="n">extra_metadata</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">extra_metadata</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">resource_manager</span><span class="o">.</span><span class="n">set_thumbnail</span><span class="p">(</span><span class="n">geoapp_obj</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="n">geoapp_obj</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">message</span><span class="p">}))</span>
+    <span class="k">elif</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;POST&quot;</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="ow">not</span> <span class="n">geoapp_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">category_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">tkeywords_form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">()</span>
+    <span class="p">):</span>
+        <span class="n">errors_list</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="o">**</span><span class="n">geoapp_form</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">as_data</span><span class="p">(),</span>
+            <span class="o">**</span><span class="n">category_form</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">as_data</span><span class="p">(),</span>
+            <span class="o">**</span><span class="n">tkeywords_form</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">as_data</span><span class="p">(),</span>
+        <span class="p">}</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GeoApp Metadata form is not valid: </span><span class="si">{</span><span class="n">errors_list</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">messages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">errors_list</span><span class="o">.</span><span class="n">items</span><span class="p">()]}</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+    <span class="c1"># - POST Request Ends here -</span>
+
+    <span class="c1"># define contact role forms</span>
+    <span class="n">contact_role_forms_context</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">get_multivalue_role_property_names</span><span class="p">():</span>
+        <span class="n">geoapp_form</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">role</span><span class="p">]</span><span class="o">.</span><span class="n">initial</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">username</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">role</span><span class="p">)]</span>
+        <span class="n">role_form</span> <span class="o">=</span> <span class="n">ProfileForm</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">role</span><span class="p">)</span>
+        <span class="n">role_form</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">contact_role_forms_context</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="s2">_form&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">role_form</span>
+
+    <span class="n">metadata_author_groups</span> <span class="o">=</span> <span class="n">get_user_visible_groups</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_allowed_to_publish</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">geoapp_obj</span><span class="p">):</span>
+        <span class="n">geoapp_form</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;is_published&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;disabled&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">AdvancedSecurityWorkflowManager</span><span class="o">.</span><span class="n">is_allowed_to_approve</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">geoapp_obj</span><span class="p">):</span>
+        <span class="n">geoapp_form</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="s2">&quot;is_approved&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">widget</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;disabled&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">})</span>
+
+    <span class="n">register_event</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">EventType</span><span class="o">.</span><span class="n">EVENT_VIEW_METADATA</span><span class="p">,</span> <span class="n">geoapp_obj</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span>
+        <span class="n">request</span><span class="p">,</span>
+        <span class="n">template</span><span class="p">,</span>
+        <span class="n">context</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;resource&quot;</span><span class="p">:</span> <span class="n">geoapp_obj</span><span class="p">,</span>
+            <span class="s2">&quot;geoapp&quot;</span><span class="p">:</span> <span class="n">geoapp_obj</span><span class="p">,</span>
+            <span class="s2">&quot;panel_template&quot;</span><span class="p">:</span> <span class="n">panel_template</span><span class="p">,</span>
+            <span class="s2">&quot;custom_metadata&quot;</span><span class="p">:</span> <span class="n">custom_metadata</span><span class="p">,</span>
+            <span class="s2">&quot;geoapp_form&quot;</span><span class="p">:</span> <span class="n">geoapp_form</span><span class="p">,</span>
+            <span class="s2">&quot;category_form&quot;</span><span class="p">:</span> <span class="n">category_form</span><span class="p">,</span>
+            <span class="s2">&quot;tkeywords_form&quot;</span><span class="p">:</span> <span class="n">tkeywords_form</span><span class="p">,</span>
+            <span class="s2">&quot;metadata_author_groups&quot;</span><span class="p">:</span> <span class="n">metadata_author_groups</span><span class="p">,</span>
+            <span class="s2">&quot;TOPICCATEGORY_MANDATORY&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;TOPICCATEGORY_MANDATORY&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+            <span class="s2">&quot;GROUP_MANDATORY_RESOURCES&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;GROUP_MANDATORY_RESOURCES&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+            <span class="s2">&quot;UI_MANDATORY_FIELDS&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="nb">set</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;UI_DEFAULT_MANDATORY_FIELDS&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+                <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;UI_REQUIRED_FIELDS&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="p">),</span>
+            <span class="o">**</span><span class="n">contact_role_forms_context</span><span class="p">,</span>
+            <span class="s2">&quot;UI_ROLES_IN_TOGGLE_VIEW&quot;</span><span class="p">:</span> <span class="n">geoapp_obj</span><span class="o">.</span><span class="n">get_ui_toggled_role_property_names</span><span class="p">(),</span>
+        <span class="p">},</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="nd">@login_required</span>
+<div class="viewcode-block" id="geoapp_metadata_advanced">
+<a class="viewcode-back" href="../../../autoapi/geonode/geoapps/views/index.html#geonode.geoapps.views.geoapp_metadata_advanced">[docs]</a>
+<span class="k">def</span> <span class="nf">geoapp_metadata_advanced</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">geoappid</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">geoapp_metadata</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">geoappid</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s2">&quot;apps/app_metadata_advanced.html&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

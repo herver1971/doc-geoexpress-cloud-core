@@ -1,0 +1,996 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.geoserver.helpers &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="geonode.geoserver.manager" href="../manager/index.html" />
+    <link rel="prev" title="geonode.geoserver.context_processors" href="../context_processors/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../../ec2/index.html">ec2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../setup/index.html">setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../tasks/index.html">tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../manage/index.html">manage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../upload/index.html">upload</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../fabfile/index.html">fabfile</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">geonode</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../api/index.html">geonode.api</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../base/index.html">geonode.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../br/index.html">geonode.br</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../catalogue/index.html">geonode.catalogue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../client/index.html">geonode.client</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../documents/index.html">geonode.documents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../facets/index.html">geonode.facets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../favorite/index.html">geonode.favorite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../geoapps/index.html">geonode.geoapps</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">geonode.geoserver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../groups/index.html">geonode.groups</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../harvesting/index.html">geonode.harvesting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../invitations/index.html">geonode.invitations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../layers/index.html">geonode.layers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../management_commands_http/index.html">geonode.management_commands_http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../maps/index.html">geonode.maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../messaging/index.html">geonode.messaging</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../monitoring/index.html">geonode.monitoring</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../people/index.html">geonode.people</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../proxy/index.html">geonode.proxy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resource/index.html">geonode.resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../security/index.html">geonode.security</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../services/index.html">geonode.services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../social/index.html">geonode.social</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../storage/index.html">geonode.storage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tasks/index.html">geonode.tasks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../tests/index.html">geonode.tests</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../themes/index.html">geonode.themes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../thumbs/index.html">geonode.thumbs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../upload/index.html">geonode.upload</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../pavement/index.html">pavement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../changepw/index.html">changepw</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../demo_site/index.html">demo_site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../create-envfile/index.html">create-envfile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">geonode.geoserver</a></li>
+      <li class="breadcrumb-item active">geonode.geoserver.helpers</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/geonode/geoserver/helpers/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-geonode.geoserver.helpers">
+<span id="geonode-geoserver-helpers"></span><h1>geonode.geoserver.helpers<a class="headerlink" href="#module-geonode.geoserver.helpers" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.logger" title="geonode.geoserver.helpers.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.temp_style_name_regex" title="geonode.geoserver.helpers.temp_style_name_regex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temp_style_name_regex</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.LAYER_SUBTYPES" title="geonode.geoserver.helpers.LAYER_SUBTYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LAYER_SUBTYPES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.WPS_ACCEPTABLE_FORMATS" title="geonode.geoserver.helpers.WPS_ACCEPTABLE_FORMATS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WPS_ACCEPTABLE_FORMATS</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.DEFAULT_STYLE_NAME" title="geonode.geoserver.helpers.DEFAULT_STYLE_NAME"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_STYLE_NAME</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.msg" title="geonode.geoserver.helpers.msg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">msg</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._raster_template" title="geonode.geoserver.helpers._raster_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_raster_template</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._polygon_template" title="geonode.geoserver.helpers._polygon_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_polygon_template</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._line_template" title="geonode.geoserver.helpers._line_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_line_template</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._point_template" title="geonode.geoserver.helpers._point_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_point_template</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._style_templates" title="geonode.geoserver.helpers._style_templates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_style_templates</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.STYLES_VERSION" title="geonode.geoserver.helpers.STYLES_VERSION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">STYLES_VERSION</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.GEOSERVER_LAYER_TYPES" title="geonode.geoserver.helpers.GEOSERVER_LAYER_TYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GEOSERVER_LAYER_TYPES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.ogc_server_settings" title="geonode.geoserver.helpers.ogc_server_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ogc_server_settings</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._wms" title="geonode.geoserver.helpers._wms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_wms</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._csw" title="geonode.geoserver.helpers._csw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_csw</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.url" title="geonode.geoserver.helpers.url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">url</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.gs_catalog" title="geonode.geoserver.helpers.gs_catalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gs_catalog</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.gs_uploader" title="geonode.geoserver.helpers.gs_uploader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gs_uploader</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.acl" title="geonode.geoserver.helpers.acl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">acl</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.acl_utils" title="geonode.geoserver.helpers.acl_utils"><code class="xref py py-obj docutils literal notranslate"><span class="pre">acl_utils</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._punc" title="geonode.geoserver.helpers._punc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_punc</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._foregrounds" title="geonode.geoserver.helpers._foregrounds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_foregrounds</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._backgrounds" title="geonode.geoserver.helpers._backgrounds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_backgrounds</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._marks" title="geonode.geoserver.helpers._marks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_marks</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._style_contexts" title="geonode.geoserver.helpers._style_contexts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_style_contexts</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._default_style_names" title="geonode.geoserver.helpers._default_style_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_default_style_names</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._esri_types" title="geonode.geoserver.helpers._esri_types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_esri_types</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.SpatialFilesLayerType" title="geonode.geoserver.helpers.SpatialFilesLayerType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpatialFilesLayerType</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.check_geoserver_is_up" title="geonode.geoserver.helpers.check_geoserver_is_up"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_geoserver_is_up</span></code></a>()</p></td>
+<td><p>Verifies all geoserver is running,</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._add_sld_boilerplate" title="geonode.geoserver.helpers._add_sld_boilerplate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_add_sld_boilerplate</span></code></a>(symbolizer)</p></td>
+<td><p>Wrap an XML snippet representing a single symbolizer in the appropriate</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._extract_style_version_from_sld" title="geonode.geoserver.helpers._extract_style_version_from_sld"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_extract_style_version_from_sld</span></code></a>(sld)</p></td>
+<td><p>Assume: SLD as a byte</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._style_name" title="geonode.geoserver.helpers._style_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_style_name</span></code></a>(resource)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.extract_name_from_sld" title="geonode.geoserver.helpers.extract_name_from_sld"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_name_from_sld</span></code></a>(gs_catalog, sld[, sld_file])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_sld_for" title="geonode.geoserver.helpers.get_sld_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_sld_for</span></code></a>(gs_catalog, layer)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.set_dataset_style" title="geonode.geoserver.helpers.set_dataset_style"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_dataset_style</span></code></a>(saved_dataset, title, sld[, base_file])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.cascading_delete" title="geonode.geoserver.helpers.cascading_delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cascading_delete</span></code></a>([dataset_name, catalog])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.delete_from_postgis" title="geonode.geoserver.helpers.delete_from_postgis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_from_postgis</span></code></a>(dataset_name, store)</p></td>
+<td><p>Delete a table from PostGIS (because Geoserver won't do it yet);</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.gs_slurp" title="geonode.geoserver.helpers.gs_slurp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gs_slurp</span></code></a>([ignore_errors, verbosity, console, owner, ...])</p></td>
+<td><p>Configure the layers available in GeoServer in GeoNode.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_stores" title="geonode.geoserver.helpers.get_stores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stores</span></code></a>([store_type])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.set_attributes" title="geonode.geoserver.helpers.set_attributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_attributes</span></code></a>(layer, attribute_map[, overwrite, ...])</p></td>
+<td><p>Parameters:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.set_attributes_from_geoserver" title="geonode.geoserver.helpers.set_attributes_from_geoserver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_attributes_from_geoserver</span></code></a>(layer[, overwrite])</p></td>
+<td><p>Retrieve layer attribute names &amp; types from Geoserver,</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_dataset" title="geonode.geoserver.helpers.get_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dataset</span></code></a>(layer, gs_catalog)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.clean_styles" title="geonode.geoserver.helpers.clean_styles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clean_styles</span></code></a>(layer, gs_catalog)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.set_styles" title="geonode.geoserver.helpers.set_styles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_styles</span></code></a>(layer, gs_catalog)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.save_style" title="geonode.geoserver.helpers.save_style"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_style</span></code></a>(gs_style, layer)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.is_dataset_attribute_aggregable" title="geonode.geoserver.helpers.is_dataset_attribute_aggregable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_dataset_attribute_aggregable</span></code></a>(store_type, ...)</p></td>
+<td><p>Decipher whether layer attribute is suitable for statistical derivation</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_attribute_statistics" title="geonode.geoserver.helpers.get_attribute_statistics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_attribute_statistics</span></code></a>(dataset_name, field)</p></td>
+<td><p>Generate statistics (range, mean, median, standard deviation, unique values)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_wcs_record" title="geonode.geoserver.helpers.get_wcs_record"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_wcs_record</span></code></a>(instance[, retry])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_coverage_grid_extent" title="geonode.geoserver.helpers.get_coverage_grid_extent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coverage_grid_extent</span></code></a>(instance)</p></td>
+<td><p>Returns a list of integers with the size of the coverage</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.cleanup" title="geonode.geoserver.helpers.cleanup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cleanup</span></code></a>(name, uuid)</p></td>
+<td><p>Deletes GeoServer and Catalogue records for a given name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.create_geoserver_db_featurestore" title="geonode.geoserver.helpers.create_geoserver_db_featurestore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_geoserver_db_featurestore</span></code></a>([store_type, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._create_featurestore" title="geonode.geoserver.helpers._create_featurestore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_featurestore</span></code></a>(name, data[, overwrite, charset, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._create_coveragestore" title="geonode.geoserver.helpers._create_coveragestore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_coveragestore</span></code></a>(name, data[, overwrite, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._create_db_featurestore" title="geonode.geoserver.helpers._create_db_featurestore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_db_featurestore</span></code></a>(name, data[, overwrite, ...])</p></td>
+<td><p>Create a database store then use it to import a shapefile.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_store" title="geonode.geoserver.helpers.get_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_store</span></code></a>(cat, name[, workspace])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.fetch_gs_resource" title="geonode.geoserver.helpers.fetch_gs_resource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_gs_resource</span></code></a>(instance, values, tries)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.wps_execute_dataset_attribute_statistics" title="geonode.geoserver.helpers.wps_execute_dataset_attribute_statistics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wps_execute_dataset_attribute_statistics</span></code></a>(dataset_name, ...)</p></td>
+<td><p>Derive aggregate statistics from WPS endpoint</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._stylefilterparams_geowebcache_dataset" title="geonode.geoserver.helpers._stylefilterparams_geowebcache_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_stylefilterparams_geowebcache_dataset</span></code></a>(dataset_name)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._invalidate_geowebcache_dataset" title="geonode.geoserver.helpers._invalidate_geowebcache_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_invalidate_geowebcache_dataset</span></code></a>(dataset_name[, url])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.style_update" title="geonode.geoserver.helpers.style_update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">style_update</span></code></a>(request, url[, workspace])</p></td>
+<td><p>Sync style stuff from GS to GN.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.set_time_info" title="geonode.geoserver.helpers.set_time_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_time_info</span></code></a>(layer, attribute, end_attribute, ...[, ...])</p></td>
+<td><p>Configure the time dimension for a layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_time_info" title="geonode.geoserver.helpers.get_time_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_time_info</span></code></a>(layer)</p></td>
+<td><p>Get the configured time dimension metadata for the layer as a dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._create_acl_client" title="geonode.geoserver.helpers._create_acl_client"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_create_acl_client</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers._dump_image_spec" title="geonode.geoserver.helpers._dump_image_spec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_dump_image_spec</span></code></a>(request_body, image_spec)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.mosaic_delete_first_granule" title="geonode.geoserver.helpers.mosaic_delete_first_granule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mosaic_delete_first_granule</span></code></a>(cat, layer)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.set_time_dimension" title="geonode.geoserver.helpers.set_time_dimension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_time_dimension</span></code></a>(cat, name, workspace, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.create_gs_thumbnail" title="geonode.geoserver.helpers.create_gs_thumbnail"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_gs_thumbnail</span></code></a>(instance[, overwrite, check_bbox])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.sync_instance_with_geoserver" title="geonode.geoserver.helpers.sync_instance_with_geoserver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sync_instance_with_geoserver</span></code></a>(instance_id, *args, **kwargs)</p></td>
+<td><p>Synchronizes the Django Instance with GeoServer layers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_dataset_storetype" title="geonode.geoserver.helpers.get_dataset_storetype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dataset_storetype</span></code></a>(element)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.write_uploaded_files_to_disk" title="geonode.geoserver.helpers.write_uploaded_files_to_disk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_uploaded_files_to_disk</span></code></a>(target_dir, files)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.select_relevant_files" title="geonode.geoserver.helpers.select_relevant_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_relevant_files</span></code></a>(allowed_extensions, files)</p></td>
+<td><p>Filter the input files list for relevant files only</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_spatial_files_dataset_type" title="geonode.geoserver.helpers.get_spatial_files_dataset_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_spatial_files_dataset_type</span></code></a>(→ SpatialFilesLayerType)</p></td>
+<td><p>Reutnrs 'vector' or 'raster' whether a file from the allowed extensins has been identified.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_dataset_type" title="geonode.geoserver.helpers.get_dataset_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dataset_type</span></code></a>(spatial_files)</p></td>
+<td><p>Returns 'FeatureType.resource_type' or 'Coverage.resource_type' accordingly to the provided SpatialFiles</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_dataset_capabilities_url" title="geonode.geoserver.helpers.get_dataset_capabilities_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dataset_capabilities_url</span></code></a>(layer[, version, ...])</p></td>
+<td><p>Generate the layer-specific GetCapabilities URL</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.get_layer_ows_url" title="geonode.geoserver.helpers.get_layer_ows_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_layer_ows_url</span></code></a>(layer[, access_token])</p></td>
+<td><p>Generate the layer-specific GetCapabilities URL</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.wps_format_is_supported" title="geonode.geoserver.helpers.wps_format_is_supported"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wps_format_is_supported</span></code></a>(_format, dataset_type)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#geonode.geoserver.helpers.ows_endpoint_in_path" title="geonode.geoserver.helpers.ows_endpoint_in_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ows_endpoint_in_path</span></code></a>(path)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.logger">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.temp_style_name_regex">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">temp_style_name_regex</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}_ms_.*'</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#temp_style_name_regex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.temp_style_name_regex" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.LAYER_SUBTYPES">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">LAYER_SUBTYPES</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#LAYER_SUBTYPES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.LAYER_SUBTYPES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.WPS_ACCEPTABLE_FORMATS">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">WPS_ACCEPTABLE_FORMATS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('application/json',</span> <span class="pre">'vector'),</span> <span class="pre">('application/arcgrid',</span> <span class="pre">'raster'),</span> <span class="pre">('image/tiff',</span> <span class="pre">'raster'),...</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#WPS_ACCEPTABLE_FORMATS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.WPS_ACCEPTABLE_FORMATS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.DEFAULT_STYLE_NAME">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_STYLE_NAME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['generic',</span> <span class="pre">'line',</span> <span class="pre">'point',</span> <span class="pre">'polygon',</span> <span class="pre">'raster']</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#DEFAULT_STYLE_NAME"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.DEFAULT_STYLE_NAME" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.msg">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">msg</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Please</span> <span class="pre">configure</span> <span class="pre">OGC_SERVER</span> <span class="pre">when</span> <span class="pre">enabling</span> <span class="pre">geonode.geoserver.</span> <span class="pre">More</span> <span class="pre">info</span> <span class="pre">can</span> <span class="pre">be</span> <span class="pre">found</span> <span class="pre">at...</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#msg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.msg" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.check_geoserver_is_up">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">check_geoserver_is_up</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#check_geoserver_is_up"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.check_geoserver_is_up" title="Link to this definition"></a></dt>
+<dd><p>Verifies all geoserver is running,
+this is needed to be able to upload.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._add_sld_boilerplate">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_add_sld_boilerplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbolizer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_add_sld_boilerplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._add_sld_boilerplate" title="Link to this definition"></a></dt>
+<dd><p>Wrap an XML snippet representing a single symbolizer in the appropriate
+elements to make it a valid SLD which applies that symbolizer to all features,
+including format strings to allow interpolating a “name” variable in.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._raster_template">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_raster_template</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_raster_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._raster_template" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&lt;RasterSymbolizer&gt;</span>
+<span class="sd">    &lt;Opacity&gt;1.0&lt;/Opacity&gt;</span>
+<span class="sd">&lt;/RasterSymbolizer&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._polygon_template">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_polygon_template</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_polygon_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._polygon_template" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&lt;PolygonSymbolizer&gt;</span>
+<span class="sd">  &lt;Fill&gt;</span>
+<span class="sd">    &lt;CssParameter name=&quot;fill&quot;&gt;%(bg)s&lt;/CssParameter&gt;</span>
+<span class="sd">  &lt;/Fill&gt;</span>
+<span class="sd">  &lt;Stroke&gt;</span>
+<span class="sd">    &lt;CssParameter name=&quot;stroke&quot;&gt;%(fg)s&lt;/CssParameter&gt;</span>
+<span class="sd">    &lt;CssParameter name=&quot;stroke-width&quot;&gt;0.7&lt;/CssParameter&gt;</span>
+<span class="sd">  &lt;/Stroke&gt;</span>
+<span class="sd">&lt;/PolygonSymbolizer&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._line_template">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_line_template</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_line_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._line_template" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&lt;LineSymbolizer&gt;</span>
+<span class="sd">  &lt;Stroke&gt;</span>
+<span class="sd">    &lt;CssParameter name=&quot;stroke&quot;&gt;%(bg)s&lt;/CssParameter&gt;</span>
+<span class="sd">    &lt;CssParameter name=&quot;stroke-width&quot;&gt;3&lt;/CssParameter&gt;</span>
+<span class="sd">  &lt;/Stroke&gt;</span>
+<span class="sd">&lt;/LineSymbolizer&gt;</span>
+<span class="sd">&lt;/Rule&gt;</span>
+<span class="sd">&lt;/FeatureTypeStyle&gt;</span>
+<span class="sd">&lt;FeatureTypeStyle&gt;</span>
+<span class="sd">&lt;Rule&gt;</span>
+<span class="sd">&lt;LineSymbolizer&gt;</span>
+<span class="sd">  &lt;Stroke&gt;</span>
+<span class="sd">    &lt;CssParameter name=&quot;stroke&quot;&gt;%(fg)s&lt;/CssParameter&gt;</span>
+<span class="sd">  &lt;/Stroke&gt;</span>
+<span class="sd">&lt;/LineSymbolizer&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._point_template">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_point_template</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">Multiline-String</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_point_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._point_template" title="Link to this definition"></a></dt>
+<dd><details><summary>Show Value</summary><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&lt;PointSymbolizer&gt;</span>
+<span class="sd">  &lt;Graphic&gt;</span>
+<span class="sd">    &lt;Mark&gt;</span>
+<span class="sd">      &lt;WellKnownName&gt;%(mark)s&lt;/WellKnownName&gt;</span>
+<span class="sd">      &lt;Fill&gt;</span>
+<span class="sd">        &lt;CssParameter name=&quot;fill&quot;&gt;%(bg)s&lt;/CssParameter&gt;</span>
+<span class="sd">      &lt;/Fill&gt;</span>
+<span class="sd">      &lt;Stroke&gt;</span>
+<span class="sd">        &lt;CssParameter name=&quot;stroke&quot;&gt;%(fg)s&lt;/CssParameter&gt;</span>
+<span class="sd">      &lt;/Stroke&gt;</span>
+<span class="sd">    &lt;/Mark&gt;</span>
+<span class="sd">    &lt;Size&gt;10&lt;/Size&gt;</span>
+<span class="sd">  &lt;/Graphic&gt;</span>
+<span class="sd">&lt;/PointSymbolizer&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</details></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._style_templates">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_style_templates</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_style_templates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._style_templates" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.STYLES_VERSION">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">STYLES_VERSION</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#STYLES_VERSION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.STYLES_VERSION" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._extract_style_version_from_sld">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_extract_style_version_from_sld</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sld</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_extract_style_version_from_sld"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._extract_style_version_from_sld" title="Link to this definition"></a></dt>
+<dd><p>Assume: SLD as a byte</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._style_name">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_style_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resource</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_style_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._style_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.extract_name_from_sld">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">extract_name_from_sld</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gs_catalog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#extract_name_from_sld"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.extract_name_from_sld" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_sld_for">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_sld_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gs_catalog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_sld_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_sld_for" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.set_dataset_style">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">set_dataset_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">saved_dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sld</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#set_dataset_style"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.set_dataset_style" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.cascading_delete">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">cascading_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#cascading_delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.cascading_delete" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.delete_from_postgis">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">delete_from_postgis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#delete_from_postgis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.delete_from_postgis" title="Link to this definition"></a></dt>
+<dd><p>Delete a table from PostGIS (because Geoserver won’t do it yet);
+to be used after deleting a layer from the system.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.gs_slurp">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">gs_slurp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ignore_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">console</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owner</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_unadvertised</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_geonode_registered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_deleted</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permissions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">execute_signals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#gs_slurp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.gs_slurp" title="Link to this definition"></a></dt>
+<dd><p>Configure the layers available in GeoServer in GeoNode.
+It returns a list of dictionaries with the name of the layer,
+the result of the operation and the errors and traceback if it failed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_stores">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_stores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_stores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_stores" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.set_attributes">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">set_attributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute_stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#set_attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.set_attributes" title="Link to this definition"></a></dt>
+<dd><p>Parameters:</p>
+<ul>
+<li><p><em>layer</em>: A <cite>geonode.layers.models.Dataset</cite> instance representing the dataset layer.</p></li>
+<li><p><em>attribute_map</em>: A list of 2-item lists specifying attribute names and types.</p>
+<blockquote>
+<div><p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">attribute_map</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;Integer&#39;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;String&#39;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;Date&#39;</span><span class="p">]</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><em>overwrite</em>: Boolean flag to replace existing attributes with new values if their name/type matches.</p></li>
+<li><p><em>attribute_stats</em>: A dictionary containing return values from <cite>get_attribute_statistics()</cite>.</p>
+<blockquote>
+<div><p>Structure:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">attribute_stats</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;&lt;dataset_name&gt;&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;&lt;field_name&gt;&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">stat_value</span><span class="o">&gt;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Use <cite>attribute_stats[&lt;dataset_name&gt;][&lt;field_name&gt;]</cite> to access specific values.</p>
+</div></blockquote>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.set_attributes_from_geoserver">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">set_attributes_from_geoserver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#set_attributes_from_geoserver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.set_attributes_from_geoserver" title="Link to this definition"></a></dt>
+<dd><p>Retrieve layer attribute names &amp; types from Geoserver,
+then store in GeoNode database using Attribute model</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_dataset">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs_catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">geoserver.catalog.Catalog</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.clean_styles">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">clean_styles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs_catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">geoserver.catalog.Catalog</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#clean_styles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.clean_styles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.set_styles">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">set_styles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gs_catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">geoserver.catalog.Catalog</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#set_styles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.set_styles" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.save_style">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">save_style</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gs_style</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#save_style"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.save_style" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.is_dataset_attribute_aggregable">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">is_dataset_attribute_aggregable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#is_dataset_attribute_aggregable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.is_dataset_attribute_aggregable" title="Link to this definition"></a></dt>
+<dd><p>Decipher whether layer attribute is suitable for statistical derivation</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_attribute_statistics">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_attribute_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_attribute_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_attribute_statistics" title="Link to this definition"></a></dt>
+<dd><p>Generate statistics (range, mean, median, standard deviation, unique values)
+for layer attribute</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_wcs_record">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_wcs_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_wcs_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_wcs_record" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_coverage_grid_extent">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_coverage_grid_extent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_coverage_grid_extent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_coverage_grid_extent" title="Link to this definition"></a></dt>
+<dd><p>Returns a list of integers with the size of the coverage
+extent in pixels</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.GEOSERVER_LAYER_TYPES">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">GEOSERVER_LAYER_TYPES</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#GEOSERVER_LAYER_TYPES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.GEOSERVER_LAYER_TYPES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.cleanup">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">cleanup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uuid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#cleanup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.cleanup" title="Link to this definition"></a></dt>
+<dd><p>Deletes GeoServer and Catalogue records for a given name.
+Useful to clean the mess when something goes terribly wrong.
+It also verifies if the Django record existed, in which case
+it performs no action.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.create_geoserver_db_featurestore">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">create_geoserver_db_featurestore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">author_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'admin'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">author_email</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'admin&#64;geonode.org'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'UTF-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#create_geoserver_db_featurestore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.create_geoserver_db_featurestore" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._create_featurestore">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_create_featurestore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'UTF-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_create_featurestore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._create_featurestore" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._create_coveragestore">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_create_coveragestore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'UTF-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_create_coveragestore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._create_coveragestore" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._create_db_featurestore">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_create_db_featurestore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'UTF-8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_create_db_featurestore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._create_db_featurestore" title="Link to this definition"></a></dt>
+<dd><p>Create a database store then use it to import a shapefile.</p>
+<p>If the import into the database fails then delete the store
+(and delete the PostGIS table for it).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_store">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_store" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.fetch_gs_resource">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">fetch_gs_resource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tries</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#fetch_gs_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.fetch_gs_resource" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.wps_execute_dataset_attribute_statistics">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">wps_execute_dataset_attribute_statistics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#wps_execute_dataset_attribute_statistics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.wps_execute_dataset_attribute_statistics" title="Link to this definition"></a></dt>
+<dd><p>Derive aggregate statistics from WPS endpoint</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._stylefilterparams_geowebcache_dataset">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_stylefilterparams_geowebcache_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_stylefilterparams_geowebcache_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._stylefilterparams_geowebcache_dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._invalidate_geowebcache_dataset">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_invalidate_geowebcache_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_invalidate_geowebcache_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._invalidate_geowebcache_dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.style_update">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">style_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#style_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.style_update" title="Link to this definition"></a></dt>
+<dd><p>Sync style stuff from GS to GN.
+Ideally we should call this from a view straight from GXP, and we should use
+gsConfig, that at this time does not support styles updates. Before gsConfig
+is updated, for now we need to parse xml.
+In case of a DELETE, we need to query request.path to get the style name,
+and then remove it.
+In case of a POST or PUT, we need to parse the xml from
+request.body, which is in this format:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.set_time_info">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">set_time_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">presentation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#set_time_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.set_time_info" title="Link to this definition"></a></dt>
+<dd><p>Configure the time dimension for a layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layer</strong> – the layer to configure</p></li>
+<li><p><strong>attribute</strong> – the attribute used to represent the instant or period
+start</p></li>
+<li><p><strong>end_attribute</strong> – the optional attribute used to represent the end
+period</p></li>
+<li><p><strong>presentation</strong> – either ‘LIST’, ‘DISCRETE_INTERVAL’, or
+‘CONTINUOUS_INTERVAL’</p></li>
+<li><p><strong>precision_value</strong> – number representing number of steps</p></li>
+<li><p><strong>precision_step</strong> – one of ‘seconds’, ‘minutes’, ‘hours’, ‘days’,
+‘months’, ‘years’</p></li>
+<li><p><strong>enabled</strong> – defaults to True</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_time_info">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_time_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_time_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_time_info" title="Link to this definition"></a></dt>
+<dd><p>Get the configured time dimension metadata for the layer as a dict.</p>
+<p>The keys of the dict will be those of the parameters of <cite>set_time_info</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of values or None if not configured</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.ogc_server_settings">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">ogc_server_settings</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#ogc_server_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.ogc_server_settings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._wms">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_wms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_wms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._wms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._csw">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_csw</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_csw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._csw" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.url">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">url</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.gs_catalog">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">gs_catalog</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#gs_catalog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.gs_catalog" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.gs_uploader">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">gs_uploader</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#gs_uploader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.gs_uploader" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._create_acl_client">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_create_acl_client</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_create_acl_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._create_acl_client" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.acl">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">acl</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#acl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.acl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.acl_utils">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">acl_utils</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#acl_utils"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.acl_utils" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._punc">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_punc</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_punc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._punc" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._foregrounds">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_foregrounds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['#ffbbbb',</span> <span class="pre">'#bbffbb',</span> <span class="pre">'#bbbbff',</span> <span class="pre">'#ffffbb',</span> <span class="pre">'#bbffff',</span> <span class="pre">'#ffbbff']</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_foregrounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._foregrounds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._backgrounds">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_backgrounds</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['#880000',</span> <span class="pre">'#008800',</span> <span class="pre">'#000088',</span> <span class="pre">'#888800',</span> <span class="pre">'#008888',</span> <span class="pre">'#880088']</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_backgrounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._backgrounds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._marks">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_marks</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['square',</span> <span class="pre">'circle',</span> <span class="pre">'cross',</span> <span class="pre">'x',</span> <span class="pre">'triangle']</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_marks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._marks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._style_contexts">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_style_contexts</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_style_contexts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._style_contexts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._default_style_names">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_default_style_names</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['point',</span> <span class="pre">'line',</span> <span class="pre">'polygon',</span> <span class="pre">'raster']</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_default_style_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._default_style_names" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._esri_types">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_esri_types</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_esri_types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._esri_types" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers._dump_image_spec">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">_dump_image_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request_body</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_spec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#_dump_image_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers._dump_image_spec" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.mosaic_delete_first_granule">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">mosaic_delete_first_granule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#mosaic_delete_first_granule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.mosaic_delete_first_granule" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.set_time_dimension">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">set_time_dimension</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_presentation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_presentation_res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_presentation_default_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_presentation_reference_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#set_time_dimension"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.set_time_dimension" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.create_gs_thumbnail">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">create_gs_thumbnail</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_bbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#create_gs_thumbnail"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.create_gs_thumbnail" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.sync_instance_with_geoserver">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">sync_instance_with_geoserver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance_id</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#sync_instance_with_geoserver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.sync_instance_with_geoserver" title="Link to this definition"></a></dt>
+<dd><p>Synchronizes the Django Instance with GeoServer layers.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_dataset_storetype">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_dataset_storetype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_dataset_storetype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_dataset_storetype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.write_uploaded_files_to_disk">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">write_uploaded_files_to_disk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#write_uploaded_files_to_disk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.write_uploaded_files_to_disk" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.select_relevant_files">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">select_relevant_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allowed_extensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#select_relevant_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.select_relevant_files" title="Link to this definition"></a></dt>
+<dd><p>Filter the input files list for relevant files only</p>
+<p>Relevant files are those whose extension is in the <code class="docutils literal notranslate"><span class="pre">allowed_extensions</span></code>
+iterable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>allowed_extensions</strong> – list of strings with the extensions to keep</p></li>
+<li><p><strong>files</strong> – list of django files with the files to be filtered</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.SpatialFilesLayerType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">SpatialFilesLayerType</span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#SpatialFilesLayerType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.SpatialFilesLayerType" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.SpatialFilesLayerType.base_file">
+<span class="sig-name descname"><span class="pre">base_file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#SpatialFilesLayerType.base_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.SpatialFilesLayerType.base_file" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.SpatialFilesLayerType.scan_hint">
+<span class="sig-name descname"><span class="pre">scan_hint</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#SpatialFilesLayerType.scan_hint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.SpatialFilesLayerType.scan_hint" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.SpatialFilesLayerType.spatial_files">
+<span class="sig-name descname"><span class="pre">spatial_files</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#SpatialFilesLayerType.spatial_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.SpatialFilesLayerType.spatial_files" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.SpatialFilesLayerType.dataset_type">
+<span class="sig-name descname"><span class="pre">dataset_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#SpatialFilesLayerType.dataset_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.SpatialFilesLayerType.dataset_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_spatial_files_dataset_type">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_spatial_files_dataset_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allowed_extensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'UTF-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#geonode.geoserver.helpers.SpatialFilesLayerType" title="geonode.geoserver.helpers.SpatialFilesLayerType"><span class="pre">SpatialFilesLayerType</span></a></span></span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_spatial_files_dataset_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_spatial_files_dataset_type" title="Link to this definition"></a></dt>
+<dd><p>Reutnrs ‘vector’ or ‘raster’ whether a file from the allowed extensins has been identified.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_dataset_type">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_dataset_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spatial_files</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_dataset_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_dataset_type" title="Link to this definition"></a></dt>
+<dd><p>Returns ‘FeatureType.resource_type’ or ‘Coverage.resource_type’ accordingly to the provided SpatialFiles</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_dataset_capabilities_url">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_dataset_capabilities_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1.3.0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">access_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_dataset_capabilities_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_dataset_capabilities_url" title="Link to this definition"></a></dt>
+<dd><p>Generate the layer-specific GetCapabilities URL</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.get_layer_ows_url">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">get_layer_ows_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">access_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#get_layer_ows_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.get_layer_ows_url" title="Link to this definition"></a></dt>
+<dd><p>Generate the layer-specific GetCapabilities URL</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.wps_format_is_supported">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">wps_format_is_supported</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#wps_format_is_supported"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.wps_format_is_supported" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geonode.geoserver.helpers.ows_endpoint_in_path">
+<span class="sig-prename descclassname"><span class="pre">geonode.geoserver.helpers.</span></span><span class="sig-name descname"><span class="pre">ows_endpoint_in_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/geonode/geoserver/helpers.html#ows_endpoint_in_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geonode.geoserver.helpers.ows_endpoint_in_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../context_processors/index.html" class="btn btn-neutral float-left" title="geonode.geoserver.context_processors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../manager/index.html" class="btn btn-neutral float-right" title="geonode.geoserver.manager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

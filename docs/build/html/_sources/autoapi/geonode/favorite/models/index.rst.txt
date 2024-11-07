@@ -1,0 +1,106 @@
+geonode.favorite.models
+=======================
+
+.. py:module:: geonode.favorite.models
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.favorite.models.FavoriteManager
+   geonode.favorite.models.Favorite
+
+
+Module Contents
+---------------
+
+.. py:class:: FavoriteManager
+
+   Bases: :py:obj:`django.db.models.Manager`
+
+
+   .. py:method:: favorites_for_user(user)
+
+
+   .. py:method:: _favorite_ct_for_user(user, model)
+
+
+   .. py:method:: favorite_documents_for_user(user)
+
+
+   .. py:method:: favorite_maps_for_user(user)
+
+
+   .. py:method:: favorite_datasets_for_user(user)
+
+
+   .. py:method:: favorite_users_for_user(user)
+
+
+   .. py:method:: favorite_for_user_and_content_object(user, content_object)
+
+      Returns the Favorite object if it exists for the given user, type, and the primary key
+      of the input content_object. If no Favorite exists, returns None.
+
+      .. note::
+          Due to the class's `unique_together` constraint, there can be only 0 or 1 Favorite
+          object for the given combination of user, type, and content_object.
+
+
+
+
+   .. py:method:: bulk_favorite_objects(user)
+
+      Get the actual favorite objects for a user as a dict by content_type
+
+
+
+   .. py:method:: create_favorite(content_object, user)
+
+
+.. py:class:: Favorite
+
+   Bases: :py:obj:`django.db.models.Model`
+
+
+   .. py:attribute:: user
+
+
+   .. py:attribute:: content_type
+
+
+   .. py:attribute:: object_id
+
+
+   .. py:attribute:: content_object
+
+
+   .. py:attribute:: created_on
+
+
+   .. py:attribute:: objects
+
+
+   .. py:class:: Meta
+
+      .. py:attribute:: verbose_name
+         :value: 'favorite'
+
+
+
+      .. py:attribute:: verbose_name_plural
+         :value: 'favorites'
+
+
+
+      .. py:attribute:: unique_together
+         :value: (('user', 'content_type', 'object_id'),)
+
+
+
+
+   .. py:method:: __str__()
+
+

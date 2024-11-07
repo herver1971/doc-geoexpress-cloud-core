@@ -1,0 +1,924 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.thumbs.background &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../geonode.html">geonode</a></li>
+      <li class="breadcrumb-item active">geonode.thumbs.background</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.thumbs.background</h1><div class="highlight"><pre>
+<span></span><span class="c1">#########################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">mercantile</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">pyproj</span> <span class="kn">import</span> <span class="n">Transformer</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">floor</span><span class="p">,</span> <span class="n">copysign</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">UnidentifiedImageError</span>
+<span class="kn">from</span> <span class="nn">owslib.wmts</span> <span class="kn">import</span> <span class="n">WebMapTileService</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.utils.html</span> <span class="kn">import</span> <span class="n">strip_tags</span>
+
+<span class="kn">from</span> <span class="nn">geonode.thumbs</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">geonode.utils</span> <span class="kn">import</span> <span class="n">http_client</span>
+<span class="kn">from</span> <span class="nn">geonode.thumbs.exceptions</span> <span class="kn">import</span> <span class="n">ThumbnailError</span>
+
+<div class="viewcode-block" id="logger">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.logger">[docs]</a>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="BaseThumbBackground">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.BaseThumbBackground">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseThumbBackground</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thumbnail_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">thumbnail_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Base class for thumbnails background retrieval.</span>
+
+<span class="sd">        :param thumbnail_width: target width of the background image in pixels</span>
+<span class="sd">        :param thumbnail_height: target height of the background image in pixels</span>
+<span class="sd">        :param max_retries: maximum number of retrieval retries before raising an exception</span>
+<span class="sd">        :param retry_delay: number of seconds waited between consecutive retrieval retries</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaseThumbBackground.thumbnail_width">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.BaseThumbBackground.thumbnail_width">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span> <span class="o">=</span> <span class="n">thumbnail_width</span></div>
+
+<div class="viewcode-block" id="BaseThumbBackground.thumbnail_height">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.BaseThumbBackground.thumbnail_height">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span> <span class="o">=</span> <span class="n">thumbnail_height</span></div>
+
+<div class="viewcode-block" id="BaseThumbBackground.max_retries">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.BaseThumbBackground.max_retries">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span> <span class="o">=</span> <span class="n">max_retries</span></div>
+
+<div class="viewcode-block" id="BaseThumbBackground.retry_delay">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.BaseThumbBackground.retry_delay">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retry_delay</span> <span class="o">=</span> <span class="n">retry_delay</span></div>
+
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="BaseThumbBackground.fetch">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.BaseThumbBackground.fetch">[docs]</a>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function fetching background image, based on the given BBOX.</span>
+<span class="sd">        On error should raise an exception or return None.</span>
+
+<span class="sd">        :param bbox: a dataset compliant BBOX: [west, east, south, north, CRS]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GenericWMSBackground">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMSBackground">[docs]</a>
+<span class="k">class</span> <span class="nc">GenericWMSBackground</span><span class="p">(</span><span class="n">BaseThumbBackground</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">thumbnail_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">thumbnail_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generic WMS background generation class.</span>
+
+<span class="sd">        Initialization options (valid in settings.THUMBNAIL_BACKGROUND[&#39;options&#39;]):</span>
+<span class="sd">        :key service_url: dataset&#39;s provider (OGC server&#39;s location)</span>
+<span class="sd">        :key dataset_name: name of a dataset to be used as the background</span>
+<span class="sd">        :key format: retrieve image&#39;s format/mime-type (defautl &#39;image/png&#39;)</span>
+<span class="sd">        :key version: WMS service version (default &#39;1.3.0&#39;)</span>
+<span class="sd">        :key styles: dataset&#39;s style (default None)</span>
+<span class="sd">        :key srid: CRS which an image should be retrieved in (default &#39;EPSG:3857&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thumbnail_width</span><span class="p">,</span> <span class="n">thumbnail_height</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GenericWMSBackground.options">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMSBackground.options">[docs]</a>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">THUMBNAIL_BACKGROUND</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;options&quot;</span><span class="p">,</span> <span class="p">{})</span></div>
+
+
+        <span class="c1"># WMS specific attributes (to be overwritten in specific background classes)</span>
+<div class="viewcode-block" id="GenericWMSBackground.service_url">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMSBackground.service_url">[docs]</a>
+        <span class="n">service_url</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;service_url&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">service_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">service_url</span><span class="si">}</span><span class="s2">/&quot;</span> <span class="k">if</span> <span class="n">service_url</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">service_url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">service_url</span>
+<div class="viewcode-block" id="GenericWMSBackground.dataset_name">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMSBackground.dataset_name">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_name</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dataset_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericWMSBackground.format">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMSBackground.format">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;format&quot;</span><span class="p">,</span> <span class="s2">&quot;image/png&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericWMSBackground.version">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMSBackground.version">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;1.3.0&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericWMSBackground.styles">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMSBackground.styles">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">styles</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;styles&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericWMSBackground.srid">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMSBackground.srid">[docs]</a>
+        <span class="n">srid</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;srid&quot;</span><span class="p">,</span> <span class="s2">&quot;EPSG:3857&quot;</span><span class="p">)</span></div>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">srid</span> <span class="o">=</span> <span class="n">srid</span> <span class="k">if</span> <span class="s2">&quot;EPSG:&quot;</span> <span class="ow">in</span> <span class="n">srid</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;EPSG:</span><span class="si">{</span><span class="n">srid</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="c1"># ---</span>
+
+<div class="viewcode-block" id="GenericWMSBackground.bbox_to_projection">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMSBackground.bbox_to_projection">[docs]</a>
+    <span class="k">def</span> <span class="nf">bbox_to_projection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function converting BBOX to target projection system, keeping the order of the coordinates.</span>
+<span class="sd">        To ensure no additional change is performed, conversion is based on top-left and bottom-right</span>
+<span class="sd">        points conversion.</span>
+
+<span class="sd">        :param bbox: a dataset compliant BBOX: [west, east, south, north, CRS]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">srid</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">left</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">top</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GenericWMSBackground.fetch">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMSBackground.fetch">[docs]</a>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function fetching background image, based on the given BBOX.</span>
+<span class="sd">        On error should raise an exception or return None.</span>
+
+<span class="sd">        :param bbox: a dataset compliant BBOX: [west, east, south, north, CRS]</span>
+<span class="sd">        :param *args*: not used, kept for API compatibility</span>
+<span class="sd">        :param **kargs**: not used, kept for API compatibility</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">service_url</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_name</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Thumbnail background configured improperly: service URL and dataset name may not be empty&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">background</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span><span class="p">),</span> <span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_map</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">service_url</span><span class="p">,</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset_name</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bbox_to_projection</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">srid</span><span class="p">],</span>
+            <span class="n">wms_version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+            <span class="n">mime_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+            <span class="n">styles</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">styles</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span><span class="p">,</span>
+            <span class="n">max_retries</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">,</span>
+            <span class="n">retry_delay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">retry_delay</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="k">as</span> <span class="n">image</span><span class="p">:</span>
+                <span class="n">image</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>  <span class="c1"># verify that it is, in fact an image</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>  <span class="c1"># &quot;re-open&quot; the file (required after running verify method)</span>
+                <span class="n">background</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">UnidentifiedImageError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thumbnail generation. Error occurred while fetching background image: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thumbnail generation. Error occurred while fetching background image: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">background</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GenericXYZBackground">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericXYZBackground">[docs]</a>
+<span class="k">class</span> <span class="nc">GenericXYZBackground</span><span class="p">(</span><span class="n">BaseThumbBackground</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">thumbnail_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">thumbnail_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generic Slippy Maps background generation class for services EPSG:3857 compliant.</span>
+
+<span class="sd">        Initialization options (valid in settings.THUMBNAIL_BACKGROUND[&#39;options&#39;]):</span>
+<span class="sd">        :key url: XYZ url template with &#39;{x}&#39;, &#39;{y}&#39; and &#39;{z}&#39; placeholders for x, y coordinates and zoom respectively</span>
+<span class="sd">        :key tile_size: tile size in pixels (default 256)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thumbnail_width</span><span class="p">,</span> <span class="n">thumbnail_height</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GenericXYZBackground.options">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericXYZBackground.options">[docs]</a>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">THUMBNAIL_BACKGROUND</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;options&quot;</span><span class="p">,</span> <span class="p">{})</span></div>
+
+
+        <span class="c1"># Slippy Maps specific attributes (to be overwritten in specific background classes)</span>
+<div class="viewcode-block" id="GenericXYZBackground.url">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericXYZBackground.url">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericXYZBackground.tile_size">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericXYZBackground.tile_size">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tile_size&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericXYZBackground.tms">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericXYZBackground.tms">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tms</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tms</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tms&quot;</span><span class="p">)))</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="c1"># ---</span>
+
+        <span class="c1"># class&#39;s internal attributes</span>
+<div class="viewcode-block" id="GenericXYZBackground.crs">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericXYZBackground.crs">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="s2">&quot;EPSG:3857&quot;</span></div>
+
+<div class="viewcode-block" id="GenericXYZBackground._epsg3857_max_x">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericXYZBackground._epsg3857_max_x">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_x</span> <span class="o">=</span> <span class="mf">20026376.39</span></div>
+
+<div class="viewcode-block" id="GenericXYZBackground._epsg3857_max_y">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericXYZBackground._epsg3857_max_y">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_y</span> <span class="o">=</span> <span class="mf">20048966.10</span></div>
+
+<div class="viewcode-block" id="GenericXYZBackground._mercantile_bbox">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericXYZBackground._mercantile_bbox">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mercantile_bbox</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># BBOX compliant with mercantile lib: [west, south, east, north] bounds list</span></div>
+
+
+<div class="viewcode-block" id="GenericXYZBackground.point3857to4326">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericXYZBackground.point3857to4326">[docs]</a>
+    <span class="k">def</span> <span class="nf">point3857to4326</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="s2">&quot;EPSG:3857&quot;</span><span class="p">,</span> <span class="s2">&quot;EPSG:4326&quot;</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GenericXYZBackground.point4326to3857">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericXYZBackground.point4326to3857">[docs]</a>
+    <span class="k">def</span> <span class="nf">point4326to3857</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="s2">&quot;EPSG:4326&quot;</span><span class="p">,</span> <span class="s2">&quot;EPSG:3857&quot;</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GenericXYZBackground.bbox3857to4326">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericXYZBackground.bbox3857to4326">[docs]</a>
+    <span class="k">def</span> <span class="nf">bbox3857to4326</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function converting BBOX from EPSG:3857 to EPSG:4326, keeping the order of the coordinates.</span>
+<span class="sd">        To ensure no additional change is performed, conversion is based on top-left and bottom-right</span>
+<span class="sd">        points conversion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point3857to4326</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">)</span>
+        <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point3857to4326</span><span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">top</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GenericXYZBackground.bbox4326to3857">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericXYZBackground.bbox4326to3857">[docs]</a>
+    <span class="k">def</span> <span class="nf">bbox4326to3857</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function converting BBOX from EPSG:4326 to EPSG:3857, keeping the order of the coordinates.</span>
+<span class="sd">        To ensure no additional change is performed, conversion is based on top-left and bottom-right</span>
+<span class="sd">        points conversion.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point4326to3857</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">)</span>
+        <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point4326to3857</span><span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_min</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">,</span> <span class="n">top</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GenericXYZBackground.fetch">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericXYZBackground.fetch">[docs]</a>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="n">zoom</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The function fetching tiles from a Slippy Map provider, composing them into a single image, and cropping it to match the given BBOX. Retrieval of each tile is repeated self.max_retries times, waiting self.retry_delay seconds between consecutive requests.</span>
+
+<span class="sd">        :param bbox: bounding box of the background image, dataset compliant format: [west, east, south, north, CRS]</span>
+<span class="sd">        :param zoom: zoom with which to retrieve Slippy Map&#39;s tiles (by default, it&#39;s calculated based on width, height)</span>
+<span class="sd">        :return: None if the CRS is different from self.tiles_crs, or background Image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Thumbnail background requires url to be configured.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ThumbnailError</span><span class="p">(</span><span class="s2">&quot;Tiled background improperly configured.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bbox</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="c1"># background service is not available the requested CRS CRS</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Thumbnail background generation skipped. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Clashing CRSs: requested </span><span class="si">{</span><span class="n">bbox</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">, supported </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">bbox</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">coord</span><span class="p">)</span> <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]]</span>
+
+        <span class="c1"># check if BBOX fits within the EPSG:3857 map, if not - return an empty background</span>
+        <span class="k">if</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_y</span> <span class="ow">or</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&lt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_y</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span><span class="p">),</span> <span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
+
+        <span class="n">bbox4326</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox3857to4326</span><span class="p">(</span><span class="o">*</span><span class="n">bbox</span><span class="p">)</span>
+
+        <span class="c1"># change bbox from dataset (left, right, bottom, top) to mercantile (left, bottom, right, top)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mercantile_bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">bbox4326</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bbox4326</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">bbox4326</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bbox4326</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+
+        <span class="c1"># calculate zoom level</span>
+        <span class="k">if</span> <span class="n">zoom</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">zoom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_zoom</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">zoom</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span>
+
+        <span class="n">top_left_tile</span> <span class="o">=</span> <span class="n">mercantile</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">bbox4326</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bbox4326</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">zoom</span><span class="p">)</span>
+        <span class="n">bottom_right_tile</span> <span class="o">=</span> <span class="n">mercantile</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">bbox4326</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bbox4326</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">zoom</span><span class="p">)</span>
+
+        <span class="c1"># rescaling factors - indicators of how west and east BBOX boundaries are offset in respect to the world&#39;s map;</span>
+        <span class="c1"># east and west boundaries may exceed the maximum coordinate of the world in EPSG:3857. In such case additinal</span>
+        <span class="c1"># number of tiles need to be fetched to compose the image and the boundary tiles&#39; coordinates need to be</span>
+        <span class="c1"># rescaled to ensure the proper image cropping.</span>
+        <span class="n">epsg3857_world_width</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_x</span>
+
+        <span class="n">west_rescaling_factor</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_x</span><span class="p">:</span>
+            <span class="n">west_rescaling_factor</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_x</span><span class="p">)</span> <span class="o">/</span> <span class="n">epsg3857_world_width</span><span class="p">)</span> <span class="o">*</span> <span class="n">copysign</span><span class="p">(</span>
+                <span class="mi">1</span><span class="p">,</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="n">east_rescaling_factor</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_x</span><span class="p">:</span>
+            <span class="n">east_rescaling_factor</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_x</span><span class="p">)</span> <span class="o">/</span> <span class="n">epsg3857_world_width</span><span class="p">)</span> <span class="o">*</span> <span class="n">copysign</span><span class="p">(</span>
+                <span class="mi">1</span><span class="p">,</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="n">map_row_tiles</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="n">zoom</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># number of tiles in the Map&#39;s row for a certain zoom level</span>
+
+        <span class="n">map_worlds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">east_rescaling_factor</span> <span class="o">-</span> <span class="n">west_rescaling_factor</span><span class="p">)</span>  <span class="c1"># number maps in an image</span>
+        <span class="n">worlds_between</span> <span class="o">=</span> <span class="n">map_worlds</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># number of full maps in an image</span>
+        <span class="k">if</span> <span class="n">top_left_tile</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">bottom_right_tile</span><span class="o">.</span><span class="n">x</span> <span class="ow">or</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">epsg3857_world_width</span> <span class="ow">or</span> <span class="n">map_worlds</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># BBOX crosses Slippy Map&#39;s border</span>
+            <span class="k">if</span> <span class="n">worlds_between</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">tiles_rows</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">top_left_tile</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">map_row_tiles</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="o">+</span> <span class="n">worlds_between</span> <span class="o">*</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">map_row_tiles</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">bottom_right_tile</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tiles_rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">top_left_tile</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">map_row_tiles</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">bottom_right_tile</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># BBOx is contained by the Slippy Map</span>
+            <span class="k">if</span> <span class="n">worlds_between</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">tiles_rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">top_left_tile</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">bottom_right_tile</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">worlds_between</span> <span class="o">*</span> <span class="nb">list</span><span class="p">(</span>
+                    <span class="nb">range</span><span class="p">(</span><span class="n">map_row_tiles</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tiles_rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">top_left_tile</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">bottom_right_tile</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">tiles_cols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">top_left_tile</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">bottom_right_tile</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># if latitude boundaries extend world&#39;s height - add background&#39;s height, and set constant Y offset for tiles</span>
+        <span class="n">additional_height</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fixed_top_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fixed_bottom_offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">north_extension3857</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_y</span><span class="p">)</span>
+        <span class="n">south_extension3857</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epsg3857_max_y</span><span class="p">))</span>
+        <span class="n">extension3857</span> <span class="o">=</span> <span class="n">north_extension3857</span> <span class="o">+</span> <span class="n">south_extension3857</span>
+
+        <span class="k">if</span> <span class="n">extension3857</span><span class="p">:</span>
+            <span class="c1"># get single tile&#39;s height in ESPG:3857</span>
+            <span class="n">tile_bounds</span> <span class="o">=</span> <span class="n">mercantile</span><span class="o">.</span><span class="n">bounds</span><span class="p">(</span><span class="n">tiles_rows</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tiles_cols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">zoom</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">south</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point4326to3857</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tile_bounds</span><span class="p">,</span> <span class="s2">&quot;west&quot;</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tile_bounds</span><span class="p">,</span> <span class="s2">&quot;south&quot;</span><span class="p">))</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">north</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point4326to3857</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">tile_bounds</span><span class="p">,</span> <span class="s2">&quot;west&quot;</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tile_bounds</span><span class="p">,</span> <span class="s2">&quot;north&quot;</span><span class="p">))</span>
+            <span class="n">tile_hight3857</span> <span class="o">=</span> <span class="n">north</span> <span class="o">-</span> <span class="n">south</span>
+
+            <span class="n">additional_height</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">*</span> <span class="n">extension3857</span> <span class="o">/</span> <span class="n">tile_hight3857</span><span class="p">)</span>  <span class="c1"># based on linear proportion</span>
+
+            <span class="k">if</span> <span class="n">north_extension3857</span><span class="p">:</span>
+                <span class="n">fixed_top_offset</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">*</span> <span class="n">north_extension3857</span> <span class="o">/</span> <span class="n">tile_hight3857</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">south_extension3857</span><span class="p">:</span>
+                <span class="n">fixed_bottom_offset</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">*</span> <span class="n">south_extension3857</span> <span class="o">/</span> <span class="n">tile_hight3857</span><span class="p">)</span>
+
+        <span class="n">background</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span>
+            <span class="s2">&quot;RGB&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tiles_rows</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tiles_cols</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">+</span> <span class="n">additional_height</span><span class="p">),</span>
+            <span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">offset_x</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tiles_rows</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">offset_y</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tiles_cols</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tms</span><span class="p">:</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">zoom</span><span class="p">)</span> <span class="o">-</span> <span class="n">y</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">imgurl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">zoom</span><span class="p">)</span>
+
+                <span class="n">im</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">retries</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">resp</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="n">http_client</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">imgurl</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&gt;</span> <span class="mi">400</span><span class="p">:</span>
+                            <span class="n">retries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span> <span class="o">-</span> <span class="mi">1</span>
+                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strip_tags</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">im</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+                        <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">im</span><span class="p">)</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>  <span class="c1"># verify that it is, in fact an image</span>
+                        <span class="k">break</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thumbnail background fetching from </span><span class="si">{</span><span class="n">imgurl</span><span class="si">}</span><span class="s2"> failed </span><span class="si">{</span><span class="n">retries</span><span class="si">}</span><span class="s2"> time(s) with: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">retries</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="n">e</span>
+                        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retry_delay</span><span class="p">)</span>
+                        <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">im</span><span class="p">:</span>
+                    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>  <span class="c1"># &quot;re-open&quot; the file (required after running verify method)</span>
+
+                    <span class="c1"># add the fetched tile to the background image, placing it under proper coordinates</span>
+                    <span class="n">background</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">offset_x</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">,</span> <span class="n">offset_y</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">+</span> <span class="n">fixed_top_offset</span><span class="p">))</span>
+
+        <span class="c1"># get BBOX of the tiles</span>
+        <span class="n">top_left_bounds</span> <span class="o">=</span> <span class="n">mercantile</span><span class="o">.</span><span class="n">bounds</span><span class="p">(</span><span class="n">top_left_tile</span><span class="p">)</span>
+        <span class="n">bottom_right_bounds</span> <span class="o">=</span> <span class="n">mercantile</span><span class="o">.</span><span class="n">bounds</span><span class="p">(</span><span class="n">bottom_right_tile</span><span class="p">)</span>
+
+        <span class="n">tiles_bbox3857</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox4326to3857</span><span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">top_left_bounds</span><span class="p">,</span> <span class="s2">&quot;west&quot;</span><span class="p">),</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">bottom_right_bounds</span><span class="p">,</span> <span class="s2">&quot;east&quot;</span><span class="p">),</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">bottom_right_bounds</span><span class="p">,</span> <span class="s2">&quot;south&quot;</span><span class="p">),</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">top_left_bounds</span><span class="p">,</span> <span class="s2">&quot;north&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># rescale tiles&#39; boundaries - if space covered by the input BBOX extends the width of the world,</span>
+        <span class="c1"># (e.g. two &quot;worlds&quot; are present on the map), translation between tiles&#39; BBOX and image&#39;s pixel requires</span>
+        <span class="c1"># additional rescaling, for tiles&#39; BBOX coordinates to match input BBOX coordinates</span>
+        <span class="n">west_coord</span> <span class="o">=</span> <span class="n">tiles_bbox3857</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">west_rescaling_factor</span> <span class="o">*</span> <span class="n">epsg3857_world_width</span>
+        <span class="n">east_coord</span> <span class="o">=</span> <span class="n">tiles_bbox3857</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">east_rescaling_factor</span> <span class="o">*</span> <span class="n">epsg3857_world_width</span>
+
+        <span class="c1"># prepare translating function from received BBOX to pixel values of the background image</span>
+        <span class="n">src_quad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fixed_top_offset</span><span class="p">,</span> <span class="n">background</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">background</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">fixed_bottom_offset</span><span class="p">)</span>
+        <span class="n">to_src_px</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">make_bbox_to_pixels_transf</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">west_coord</span><span class="p">,</span> <span class="n">tiles_bbox3857</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">east_coord</span><span class="p">,</span> <span class="n">tiles_bbox3857</span><span class="p">[</span><span class="mi">3</span><span class="p">]],</span> <span class="n">src_quad</span>
+        <span class="p">)</span>
+
+        <span class="c1"># translate received BBOX to pixel values</span>
+        <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span> <span class="o">=</span> <span class="n">to_src_px</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">to_src_px</span><span class="p">(</span><span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+        <span class="c1"># max and min function for Y axis were introduced to mitigate rounding errors</span>
+        <span class="n">crop_box</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ceil</span><span class="p">(</span><span class="n">minx</span><span class="p">),</span>
+            <span class="nb">max</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="n">maxy</span><span class="p">)</span> <span class="o">+</span> <span class="n">fixed_top_offset</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">floor</span><span class="p">(</span><span class="n">maxx</span><span class="p">),</span>
+            <span class="nb">min</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">miny</span><span class="p">)</span> <span class="o">+</span> <span class="n">fixed_top_offset</span><span class="p">,</span> <span class="n">background</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">crop_x</span> <span class="o">&lt;=</span> <span class="n">background</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">crop_x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">crop_box</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">crop_box</span><span class="p">[</span><span class="mi">2</span><span class="p">]]]):</span>
+            <span class="k">raise</span> <span class="n">ThumbnailError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tiled background cropping error. Boundaries outside of the image: </span><span class="si">{</span><span class="n">crop_box</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># crop background image to the desired bbox and resize it</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">box</span><span class="o">=</span><span class="n">crop_box</span><span class="p">)</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">background</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;L&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getextrema</span><span class="p">())</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="c1"># either all black or all white</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Thumbnail background outside the allowed area.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ThumbnailError</span><span class="p">(</span><span class="s2">&quot;Thumbnail background outside the allowed area.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">background</span></div>
+
+
+<div class="viewcode-block" id="GenericXYZBackground.calculate_zoom">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericXYZBackground.calculate_zoom">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_zoom</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># maximum number of needed tiles for thumbnail of given width and height</span>
+        <span class="n">max_tiles</span> <span class="o">=</span> <span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="c1"># zoom for which there are less needed tiles than max_tiles</span>
+        <span class="n">zoom</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">mercantile</span><span class="o">.</span><span class="n">tiles</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_mercantile_bbox</span><span class="p">,</span> <span class="n">z</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="n">max_tiles</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">zoom</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">zoom</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">zoom</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="WikiMediaTileBackground">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.WikiMediaTileBackground">[docs]</a>
+<span class="k">class</span> <span class="nc">WikiMediaTileBackground</span><span class="p">(</span><span class="n">GenericXYZBackground</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">thumbnail_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">thumbnail_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Specific Wikimedia background generation class for thumbnails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thumbnail_width</span><span class="p">,</span> <span class="n">thumbnail_height</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WikiMediaTileBackground.url">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.WikiMediaTileBackground.url">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://maps.wikimedia.org/osm-intl/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span></div>
+
+<div class="viewcode-block" id="WikiMediaTileBackground.tile_size">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.WikiMediaTileBackground.tile_size">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">=</span> <span class="mi">256</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="OSMTileBackground">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.OSMTileBackground">[docs]</a>
+<span class="k">class</span> <span class="nc">OSMTileBackground</span><span class="p">(</span><span class="n">GenericXYZBackground</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">thumbnail_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">thumbnail_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Specific OpenStreetMaps background generation class for thumbnails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thumbnail_width</span><span class="p">,</span> <span class="n">thumbnail_height</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OSMTileBackground.url">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.OSMTileBackground.url">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://tile.openstreetmap.org/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span></div>
+
+<div class="viewcode-block" id="OSMTileBackground.tile_size">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.OSMTileBackground.tile_size">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tile_size</span> <span class="o">=</span> <span class="mi">256</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="WMTS_TILEMATRIXSET_LEVELS">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.WMTS_TILEMATRIXSET_LEVELS">[docs]</a>
+<span class="n">WMTS_TILEMATRIXSET_LEVELS</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="GenericWMTSBackground">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground">[docs]</a>
+<span class="k">class</span> <span class="nc">GenericWMTSBackground</span><span class="p">(</span><span class="n">BaseThumbBackground</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thumbnail_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">thumbnail_height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thumbnail_width</span><span class="p">,</span> <span class="n">thumbnail_height</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">,</span> <span class="n">retry_delay</span><span class="p">)</span>
+<div class="viewcode-block" id="GenericWMTSBackground.options">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMTSBackground.options">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">THUMBNAIL_BACKGROUND</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;options&quot;</span><span class="p">,</span> <span class="p">{})</span></div>
+
+<div class="viewcode-block" id="GenericWMTSBackground.levels">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMTSBackground.levels">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">levels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_levels_for_tilematrix</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.thumbnail_width">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMTSBackground.thumbnail_width">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span> <span class="o">=</span> <span class="n">thumbnail_width</span></div>
+
+<div class="viewcode-block" id="GenericWMTSBackground.thumbnail_height">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/background/index.html#geonode.thumbs.background.GenericWMTSBackground.thumbnail_height">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span> <span class="o">=</span> <span class="n">thumbnail_height</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.fetch">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground.fetch">[docs]</a>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">bbox</span> <span class="o">=</span> <span class="p">[</span><span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+        <span class="n">target_pixelspan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_target_pixelspan</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_level_for_targetpixelspan</span><span class="p">(</span><span class="n">target_pixelspan</span><span class="p">)</span>
+
+        <span class="n">tilewidth</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;tilewidth&quot;</span><span class="p">]</span>
+        <span class="n">tileheight</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;tileheight&quot;</span><span class="p">]</span>
+        <span class="n">zoom</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;zoom&quot;</span><span class="p">]</span>
+        <span class="n">pixelspan</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;pixelspan&quot;</span><span class="p">]</span>
+        <span class="n">tilespanx</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;tilespanx&quot;</span><span class="p">]</span>
+        <span class="n">tilespany</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;tilespany&quot;</span><span class="p">]</span>
+
+        <span class="n">pixelspan_ratio</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;pixelspan&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">target_pixelspan</span>
+
+        <span class="n">tile_rowcols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tiles_coords</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span>
+        <span class="n">tiles_cols_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">tile_rowcol</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tile_rowcol</span> <span class="ow">in</span> <span class="n">tile_rowcols</span><span class="p">])</span>
+        <span class="n">tiles_mincol</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">tiles_cols_list</span><span class="p">)</span>
+        <span class="n">tiles_maxcol</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">tiles_cols_list</span><span class="p">)</span>
+        <span class="n">tiles_minx</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tiles_mincol</span> <span class="o">*</span> <span class="n">tilespanx</span><span class="p">)</span>
+        <span class="n">tiles_rows_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">tile_rowcol</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">tile_rowcol</span> <span class="ow">in</span> <span class="n">tile_rowcols</span><span class="p">])</span>
+        <span class="n">tiles_minrow</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">tiles_rows_list</span><span class="p">)</span>
+        <span class="n">tiles_maxrow</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">tiles_rows_list</span><span class="p">)</span>
+        <span class="n">tiles_maxy</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">tiles_minrow</span> <span class="o">*</span> <span class="n">tilespany</span><span class="p">)</span>
+
+        <span class="n">tiles_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">tiles_maxcol</span> <span class="o">-</span> <span class="n">tiles_mincol</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">tilewidth</span>
+        <span class="n">tiles_height</span> <span class="o">=</span> <span class="p">(</span><span class="n">tiles_maxrow</span> <span class="o">-</span> <span class="n">tiles_minrow</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">tileheight</span>
+
+        <span class="n">background</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">tiles_width</span><span class="p">,</span> <span class="n">tiles_height</span><span class="p">),</span> <span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">tile_coord</span> <span class="ow">in</span> <span class="n">tile_rowcols</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">im</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">imgurl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_request</span><span class="p">([</span><span class="n">tile_coord</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tile_coord</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">zoom</span><span class="p">])</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">imgurl</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&gt;</span> <span class="mi">400</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">strip_tags</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">im</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+                <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">im</span><span class="p">)</span><span class="o">.</span><span class="n">verify</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">im</span><span class="p">:</span>
+                    <span class="n">offsetx</span> <span class="o">=</span> <span class="p">(</span><span class="n">tile_coord</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tiles_mincol</span><span class="p">)</span> <span class="o">*</span> <span class="n">tilewidth</span>
+                    <span class="n">offsety</span> <span class="o">=</span> <span class="p">(</span><span class="n">tile_coord</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tiles_minrow</span><span class="p">)</span> <span class="o">*</span> <span class="n">tileheight</span>
+                    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+                    <span class="n">background</span><span class="o">.</span><span class="n">paste</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">offsetx</span><span class="p">,</span> <span class="n">offsety</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error fetching </span><span class="si">{</span><span class="n">imgurl</span><span class="si">}</span><span class="s2"> for thumbnail: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tiles_minx</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">pixelspan</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tiles_maxy</span> <span class="o">-</span> <span class="n">bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="n">pixelspan</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">top</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span>
+        <span class="n">background</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">))</span>
+
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span> <span class="o">*</span> <span class="n">pixelspan_ratio</span><span class="p">)</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span> <span class="o">*</span> <span class="n">pixelspan_ratio</span><span class="p">)</span>
+
+        <span class="n">background</span> <span class="o">=</span> <span class="n">background</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+        <span class="n">background</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span><span class="n">left</span><span class="p">,</span> <span class="n">top</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">bottom</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">background</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.build_kvp_request">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground.build_kvp_request">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_kvp_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">baseurl</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">xyz</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">baseurl</span><span class="si">}</span><span class="s2">?&amp;Service=WMTS&amp;Request=GetTile&amp;Version=1.0.0&amp;Format=image/png&amp;layer=</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">&amp;style=</span><span class="si">{</span><span class="n">style</span><span class="si">}</span><span class="se">\</span>
+<span class="s2">&amp;tilematrixset=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;tilematrixset&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&amp;TileMatrix=</span><span class="si">{</span><span class="n">xyz</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">&amp;TileRow=</span><span class="si">{</span><span class="n">xyz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&amp;TileCol=</span><span class="si">{</span><span class="n">xyz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.build_request">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground.build_request">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">):</span>
+        <span class="n">request_encoding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;requestencoding&quot;</span><span class="p">,</span> <span class="s2">&quot;KVP&quot;</span><span class="p">)</span>
+        <span class="n">baseurl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;layer&quot;</span><span class="p">]</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;style&quot;</span><span class="p">]</span>
+
+        <span class="n">imgurl</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">request_encoding</span> <span class="o">==</span> <span class="s2">&quot;KVP&quot;</span><span class="p">:</span>
+            <span class="n">imgurl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_kvp_request</span><span class="p">(</span><span class="n">baseurl</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">style</span><span class="p">,</span> <span class="n">xyz</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">imgurl</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.get_image_bbox_for_level">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground.get_image_bbox_for_level">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_image_bbox_for_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+        <span class="n">image_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span>
+        <span class="n">image_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_height</span>
+
+        <span class="n">half_imagespanx</span> <span class="o">=</span> <span class="n">image_width</span> <span class="o">*</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;pixelspan&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">half_imagespany</span> <span class="o">=</span> <span class="n">image_height</span> <span class="o">*</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;pixelspan&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="p">(</span>
+            <span class="n">boundsminx</span><span class="p">,</span>
+            <span class="n">boundsminy</span><span class="p">,</span>
+            <span class="n">boundsmaxx</span><span class="p">,</span>
+            <span class="n">boundsmaxy</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">bbox</span>
+
+        <span class="n">bboxcentrex</span> <span class="o">=</span> <span class="n">boundsminx</span> <span class="o">+</span> <span class="p">((</span><span class="n">boundsmaxx</span> <span class="o">-</span> <span class="n">boundsminx</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">bboxcentrey</span> <span class="o">=</span> <span class="n">boundsminy</span> <span class="o">+</span> <span class="p">((</span><span class="n">boundsmaxy</span> <span class="o">-</span> <span class="n">boundsminy</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">image_minx</span> <span class="o">=</span> <span class="n">bboxcentrex</span> <span class="o">-</span> <span class="n">half_imagespanx</span>
+        <span class="n">image_maxx</span> <span class="o">=</span> <span class="n">bboxcentrex</span> <span class="o">+</span> <span class="n">half_imagespanx</span>
+        <span class="n">image_miny</span> <span class="o">=</span> <span class="n">bboxcentrey</span> <span class="o">-</span> <span class="n">half_imagespany</span>
+        <span class="n">image_maxy</span> <span class="o">=</span> <span class="n">bboxcentrey</span> <span class="o">+</span> <span class="n">half_imagespany</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">image_minx</span><span class="p">,</span> <span class="n">image_miny</span><span class="p">,</span> <span class="n">image_maxx</span><span class="p">,</span> <span class="n">image_maxy</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.get_tiles_coords">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground.get_tiles_coords">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_tiles_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+        <span class="n">tile_coords</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">tilematrixminx</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">tilematrixmaxy</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;bounds&quot;</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">tilespanx</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;tilespanx&quot;</span><span class="p">]</span>
+        <span class="n">tilespany</span> <span class="o">=</span> <span class="n">level</span><span class="p">[</span><span class="s2">&quot;tilespany&quot;</span><span class="p">]</span>
+
+        <span class="n">boundsminx</span><span class="p">,</span> <span class="n">boundsminy</span><span class="p">,</span> <span class="n">boundsmaxx</span><span class="p">,</span> <span class="n">boundsmaxy</span> <span class="o">=</span> <span class="n">bbox</span>
+
+        <span class="n">tile_coord_minx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">boundsminx</span> <span class="o">-</span> <span class="n">tilematrixminx</span><span class="p">)</span> <span class="o">/</span> <span class="n">tilespanx</span><span class="p">)</span>
+        <span class="c1"># min tile coord corresponds to the maxy coordinate</span>
+        <span class="n">tile_coord_miny</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">tilematrixmaxy</span> <span class="o">-</span> <span class="n">boundsmaxy</span><span class="p">)</span> <span class="o">/</span> <span class="n">tilespany</span><span class="p">)</span>
+        <span class="n">tile_coord_maxx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">boundsmaxx</span> <span class="o">-</span> <span class="n">tilematrixminx</span><span class="p">)</span> <span class="o">/</span> <span class="n">tilespanx</span><span class="p">)</span>
+        <span class="c1"># max tile coord corresponds to the miny coordinate</span>
+        <span class="n">tile_coord_maxy</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">tilematrixmaxy</span> <span class="o">-</span> <span class="n">boundsminy</span><span class="p">)</span> <span class="o">/</span> <span class="n">tilespany</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tile_coord_minx</span><span class="p">,</span> <span class="n">tile_coord_maxx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tile_coord_miny</span><span class="p">,</span> <span class="n">tile_coord_maxy</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">tile_coords</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">tile_coords</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.get_level_for_targetpixelspan">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground.get_level_for_targetpixelspan">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_level_for_targetpixelspan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_pixelspan</span><span class="p">):</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">_level</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">levels</span><span class="p">:</span>
+            <span class="n">is_level_under_minscaledenominator</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">minscaledenominator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;minscaledenominator&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">minscaledenominator</span><span class="p">:</span>
+                <span class="n">is_level_under_minscaledenominator</span> <span class="o">=</span> <span class="n">_level</span><span class="p">[</span><span class="s2">&quot;scaledenominator&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;minscaledenominator&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">_level</span><span class="p">[</span><span class="s2">&quot;pixelspan&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">target_pixelspan</span> <span class="ow">or</span> <span class="n">is_level_under_minscaledenominator</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">level</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">_level</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.get_target_pixelspan">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground.get_target_pixelspan">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_target_pixelspan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+        <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">bbox</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x_max</span> <span class="o">-</span> <span class="n">x_min</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">thumbnail_width</span></div>
+
+
+<div class="viewcode-block" id="GenericWMTSBackground.get_levels_for_tilematrix">
+<a class="viewcode-back" href="../../../autoapi/geonode/thumbs/tests/index.html#geonode.thumbs.background.GenericWMTSBackground.get_levels_for_tilematrix">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_levels_for_tilematrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]</span>
+        <span class="n">tilematrixset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;tilematrixset&quot;</span><span class="p">]</span>
+        <span class="k">global</span> <span class="n">WMTS_TILEMATRIXSET_LEVELS</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">WMTS_TILEMATRIXSET_LEVELS</span><span class="p">:</span>
+            <span class="n">service</span> <span class="o">=</span> <span class="n">WebMapTileService</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">tilematrixsset</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="n">tilematrixsets</span><span class="p">[</span><span class="n">tilematrixset</span><span class="p">]</span>
+
+            <span class="n">levels</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">tilematrix</span> <span class="ow">in</span> <span class="n">tilematrixsset</span><span class="o">.</span><span class="n">tilematrix</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">scaledenominator</span> <span class="o">=</span> <span class="n">tilematrix</span><span class="o">.</span><span class="n">scaledenominator</span> <span class="o">*</span> <span class="mi">1</span>  <span class="c1"># here we assume 3857</span>
+                <span class="n">matrixheight</span> <span class="o">=</span> <span class="n">tilematrix</span><span class="o">.</span><span class="n">matrixheight</span>
+                <span class="n">matrixwidth</span> <span class="o">=</span> <span class="n">tilematrix</span><span class="o">.</span><span class="n">matrixwidth</span>
+                <span class="n">tileheight</span> <span class="o">=</span> <span class="n">tilematrix</span><span class="o">.</span><span class="n">tileheight</span>
+                <span class="n">tilewidth</span> <span class="o">=</span> <span class="n">tilematrix</span><span class="o">.</span><span class="n">tilewidth</span>
+                <span class="n">tilematrixminx</span> <span class="o">=</span> <span class="n">tilematrix</span><span class="o">.</span><span class="n">topleftcorner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># here we assume 3857</span>
+                <span class="n">tilematrixmaxy</span> <span class="o">=</span> <span class="n">tilematrix</span><span class="o">.</span><span class="n">topleftcorner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># here we assume 3857</span>
+
+                <span class="n">pixelspan</span> <span class="o">=</span> <span class="n">scaledenominator</span> <span class="o">*</span> <span class="mf">0.00028</span>  <span class="c1"># OGC standardized rendering pixel size</span>
+                <span class="n">tilespanx</span> <span class="o">=</span> <span class="n">tilewidth</span> <span class="o">*</span> <span class="n">pixelspan</span>
+                <span class="n">tilespany</span> <span class="o">=</span> <span class="n">tileheight</span> <span class="o">*</span> <span class="n">pixelspan</span>
+                <span class="n">tilematrixmaxx</span> <span class="o">=</span> <span class="n">tilematrixminx</span> <span class="o">+</span> <span class="n">tilespanx</span> <span class="o">*</span> <span class="n">matrixwidth</span>
+                <span class="n">tilematrixminy</span> <span class="o">=</span> <span class="n">tilematrixmaxy</span> <span class="o">-</span> <span class="n">tilespany</span> <span class="o">*</span> <span class="n">matrixheight</span>
+
+                <span class="n">levels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;zoom&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">),</span>
+                        <span class="s2">&quot;bounds&quot;</span><span class="p">:</span> <span class="p">[</span>
+                            <span class="n">tilematrixminx</span><span class="p">,</span>
+                            <span class="n">tilematrixminy</span><span class="p">,</span>
+                            <span class="n">tilematrixmaxx</span><span class="p">,</span>
+                            <span class="n">tilematrixmaxy</span><span class="p">,</span>
+                        <span class="p">],</span>
+                        <span class="s2">&quot;scaledenominator&quot;</span><span class="p">:</span> <span class="n">scaledenominator</span><span class="p">,</span>
+                        <span class="s2">&quot;tilewidth&quot;</span><span class="p">:</span> <span class="n">tilewidth</span><span class="p">,</span>
+                        <span class="s2">&quot;tileheight&quot;</span><span class="p">:</span> <span class="n">tileheight</span><span class="p">,</span>
+                        <span class="s2">&quot;pixelspan&quot;</span><span class="p">:</span> <span class="n">pixelspan</span><span class="p">,</span>
+                        <span class="s2">&quot;tilespanx&quot;</span><span class="p">:</span> <span class="n">tilespanx</span><span class="p">,</span>
+                        <span class="s2">&quot;tilespany&quot;</span><span class="p">:</span> <span class="n">tilespany</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="n">WMTS_TILEMATRIXSET_LEVELS</span> <span class="o">=</span> <span class="n">levels</span>
+        <span class="k">return</span> <span class="n">WMTS_TILEMATRIXSET_LEVELS</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

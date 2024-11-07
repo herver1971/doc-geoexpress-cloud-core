@@ -1,0 +1,219 @@
+geonode.base.views
+==================
+
+.. py:module:: geonode.base.views
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   geonode.base.views.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   geonode.base.views.SimpleSelect2View
+   geonode.base.views.ResourceBaseAutocomplete
+   geonode.base.views.LinkedResourcesAutocomplete
+   geonode.base.views.RegionAutocomplete
+   geonode.base.views.HierarchicalKeywordAutocomplete
+   geonode.base.views.ThesaurusKeywordLabelAutocomplete
+   geonode.base.views.DatasetsAutocomplete
+   geonode.base.views.ThesaurusAvailable
+   geonode.base.views.OwnerRightsRequestView
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   geonode.base.views.get_url_for_app_model
+   geonode.base.views.get_url_for_model
+   geonode.base.views.user_and_group_permission
+   geonode.base.views.batch_modify
+   geonode.base.views.resource_clone
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:function:: get_url_for_app_model(model, model_class)
+
+.. py:function:: get_url_for_model(model)
+
+.. py:function:: user_and_group_permission(request, model)
+
+.. py:function:: batch_modify(request, model)
+
+.. py:class:: SimpleSelect2View(*args, **kwargs)
+
+   Bases: :py:obj:`dal.autocomplete.Select2QuerySetView`
+
+
+   Generic select2 view for autocompletes.
+
+   :param model: The model to perform the autocomplete query on.
+   :type model: Model
+
+   :param filter_arg: The property to filter with (e.g., `name__icontains`).
+   :type filter_arg: str
+
+
+   .. py:method:: get_queryset()
+
+
+.. py:class:: ResourceBaseAutocomplete
+
+   Bases: :py:obj:`dal.autocomplete.Select2QuerySetView`
+
+
+   Base resource autocomplete - searches all the resources by title returns any visible resources in this queryset for autocomplete
+
+
+   .. py:method:: get_queryset()
+
+
+.. py:class:: LinkedResourcesAutocomplete
+
+   Bases: :py:obj:`dal.autocomplete.Select2QuerySetView`
+
+
+   .. py:method:: get_queryset()
+
+
+   .. py:method:: get_result_label(result)
+
+
+.. py:class:: RegionAutocomplete(*args, **kwargs)
+
+   Bases: :py:obj:`SimpleSelect2View`
+
+
+   Generic select2 view for autocompletes.
+
+   :param model: The model to perform the autocomplete query on.
+   :type model: Model
+
+   :param filter_arg: The property to filter with (e.g., `name__icontains`).
+   :type filter_arg: str
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: filter_arg
+      :value: 'name__icontains'
+
+
+
+.. py:class:: HierarchicalKeywordAutocomplete(*args, **kwargs)
+
+   Bases: :py:obj:`SimpleSelect2View`
+
+
+   Generic select2 view for autocompletes.
+
+   :param model: The model to perform the autocomplete query on.
+   :type model: Model
+
+   :param filter_arg: The property to filter with (e.g., `name__icontains`).
+   :type filter_arg: str
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: filter_arg
+      :value: 'slug__icontains'
+
+
+
+.. py:class:: ThesaurusKeywordLabelAutocomplete
+
+   Bases: :py:obj:`dal.autocomplete.Select2QuerySetView`
+
+
+   .. py:method:: get_queryset()
+
+
+   .. py:method:: get_results(context)
+
+
+.. py:class:: DatasetsAutocomplete(*args, **kwargs)
+
+   Bases: :py:obj:`SimpleSelect2View`
+
+
+   Generic select2 view for autocompletes.
+
+   :param model: The model to perform the autocomplete query on.
+   :type model: Model
+
+   :param filter_arg: The property to filter with (e.g., `name__icontains`).
+   :type filter_arg: str
+
+
+   .. py:attribute:: model
+
+
+   .. py:attribute:: filter_arg
+      :value: 'title__icontains'
+
+
+
+   .. py:method:: get_results(context)
+
+
+.. py:class:: ThesaurusAvailable
+
+   Bases: :py:obj:`dal.autocomplete.Select2QuerySetView`
+
+
+   .. py:method:: get_queryset()
+
+
+   .. py:method:: get_results(context)
+
+
+.. py:class:: OwnerRightsRequestView
+
+   Bases: :py:obj:`django.contrib.auth.mixins.LoginRequiredMixin`, :py:obj:`django.views.generic.FormView`
+
+
+   .. py:attribute:: template_name
+      :value: 'owner_rights_request.html'
+
+
+
+   .. py:attribute:: form_class
+
+
+   .. py:attribute:: resource
+      :value: None
+
+
+
+   .. py:attribute:: redirect_field_name
+      :value: 'next'
+
+
+
+   .. py:method:: get_success_url()
+
+
+   .. py:method:: get(request, *args, **kwargs)
+
+
+   .. py:method:: post(request, *args, **kwargs)
+
+
+.. py:function:: resource_clone(request)
+

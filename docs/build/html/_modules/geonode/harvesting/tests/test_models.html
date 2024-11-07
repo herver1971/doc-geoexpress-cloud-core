@@ -1,0 +1,359 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>geonode.harvesting.tests.test_models &mdash; GeoNode Cloud Core 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            GeoNode Cloud Core
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenido</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">GeoNode Cloud Core</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../../../geonode.html">geonode</a></li>
+          <li class="breadcrumb-item"><a href="../../harvesting.html">geonode.harvesting</a></li>
+      <li class="breadcrumb-item active">geonode.harvesting.tests.test_models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for geonode.harvesting.tests.test_models</h1><div class="highlight"><pre>
+<span></span><span class="c1">##############################################</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (C) 2021 OSGeo</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1">#########################################################################</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span> <span class="k">as</span> <span class="nn">dt</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">mock</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">get_user_model</span>
+<span class="kn">from</span> <span class="nn">django.test</span> <span class="kn">import</span> <span class="n">SimpleTestCase</span>
+<span class="kn">from</span> <span class="nn">geonode.tests.base</span> <span class="kn">import</span> <span class="n">GeoNodeBaseTestSupport</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">models</span>
+
+
+<div class="viewcode-block" id="HarvesterTestCase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase">[docs]</a>
+<span class="k">class</span> <span class="nc">HarvesterTestCase</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="HarvesterTestCase.remote_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.remote_url">[docs]</a>
+    <span class="n">remote_url</span> <span class="o">=</span> <span class="s2">&quot;test.com&quot;</span></div>
+
+<div class="viewcode-block" id="HarvesterTestCase.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;This is geonode harvester&quot;</span></div>
+
+<div class="viewcode-block" id="HarvesterTestCase.user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.user">[docs]</a>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvesterTestCase.harvester_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.harvester_type">[docs]</a>
+    <span class="n">harvester_type</span> <span class="o">=</span> <span class="s2">&quot;geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester&quot;</span></div>
+
+
+<div class="viewcode-block" id="HarvesterTestCase.setUp">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">remote_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">default_owner</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">harvester_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester_type</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HarvesterTestCase.test_get_worker_works">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.test_get_worker_works">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_get_worker_works</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="o">.</span><span class="n">get_harvester_worker</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">worker</span><span class="o">.</span><span class="n">remote_url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="p">)</span></div>
+
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.models.jsonschema&quot;</span><span class="p">)</span>
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.models.import_string&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="HarvesterTestCase.test_validate_worker_configuration">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.test_validate_worker_configuration">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_validate_worker_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_import_string</span><span class="p">,</span> <span class="n">mock_jsonschema</span><span class="p">):</span>
+        <span class="n">extra_config_schema</span> <span class="o">=</span> <span class="s2">&quot;fake_config_schema&quot;</span>
+        <span class="n">mock_worker_class</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">mock_worker_class</span><span class="o">.</span><span class="n">get_extra_config_schema</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">extra_config_schema</span>
+        <span class="n">mock_import_string</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_worker_class</span>
+
+        <span class="n">harvester_type</span> <span class="o">=</span> <span class="s2">&quot;fake_harvester_type&quot;</span>
+        <span class="n">configuration</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fake_key&quot;</span><span class="p">:</span> <span class="s2">&quot;fake_configuration&quot;</span><span class="p">}</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">validate_worker_configuration</span><span class="p">(</span><span class="n">harvester_type</span><span class="p">,</span> <span class="n">configuration</span><span class="p">)</span>
+
+        <span class="n">mock_import_string</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">harvester_type</span><span class="p">)</span>
+        <span class="n">mock_worker_class</span><span class="o">.</span><span class="n">get_extra_config_schema</span><span class="o">.</span><span class="n">assert_called</span><span class="p">()</span>
+        <span class="n">mock_jsonschema</span><span class="o">.</span><span class="n">validate</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">extra_config_schema</span><span class="p">)</span></div>
+
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.models.timezone&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="HarvesterTestCase.test_get_next_check_availability_dispatch_time">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.test_get_next_check_availability_dispatch_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_get_next_check_availability_dispatch_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_timezone</span><span class="p">):</span>
+        <span class="n">fixtures</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;2020-01-01T00:00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-01-01T00:05:00&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;2020-01-01T00:10:00&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;2020-01-01T00:00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-01-01T00:11:00&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;2020-01-01T00:11:00&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">last_checked</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="n">fixtures</span><span class="p">:</span>
+            <span class="n">mock_timezone</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">now</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+            <span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="p">(</span><span class="n">check_availability_frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">)</span>
+            <span class="n">harvester</span><span class="o">.</span><span class="n">last_checked_availability</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">last_checked</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">tzinfo</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span>
+            <span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">get_next_check_availability_dispatch_time</span><span class="p">()</span>
+            <span class="n">expected_result</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected_result</span><span class="p">)</span></div>
+
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.models.timezone&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="HarvesterTestCase.test_get_next_dispatch_time">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvesterTestCase.test_get_next_dispatch_time">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_get_next_dispatch_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_timezone</span><span class="p">):</span>
+        <span class="n">fixtures</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s2">&quot;2020-01-01T00:00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-01-01T00:05:00&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;2020-01-01T00:10:00&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;2020-01-01T00:00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-01-01T00:11:00&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;2020-01-01T00:11:00&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">last_check</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">expected</span> <span class="ow">in</span> <span class="n">fixtures</span><span class="p">:</span>
+            <span class="n">mock_timezone</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">now</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span>
+                <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="p">,</span> <span class="s2">&quot;latest_refresh_session&quot;</span><span class="p">,</span> <span class="n">new_callable</span><span class="o">=</span><span class="n">mock</span><span class="o">.</span><span class="n">PropertyMock</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">mock_latest_refresh_session</span><span class="p">:</span>
+                <span class="n">mock_latest_refresh_session</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">(</span>
+                    <span class="n">started</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">last_check</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="p">(</span>
+                    <span class="n">harvesting_session_update_frequency</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                    <span class="n">refresh_harvestable_resources_update_frequency</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">harvester</span><span class="o">.</span><span class="n">_get_next_dispatch_time</span><span class="p">(</span>
+                    <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_DISCOVER_HARVESTABLE_RESOURCES</span>
+                <span class="p">)</span>
+                <span class="n">expected_result</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected_result</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionTestCase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.AsynchronousHarvestingSessionTestCase">[docs]</a>
+<span class="k">class</span> <span class="nc">AsynchronousHarvestingSessionTestCase</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="AsynchronousHarvestingSessionTestCase.remote_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.AsynchronousHarvestingSessionTestCase.remote_url">[docs]</a>
+    <span class="n">remote_url</span> <span class="o">=</span> <span class="s2">&quot;test.com&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionTestCase.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.AsynchronousHarvestingSessionTestCase.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;This is geonode harvester&quot;</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionTestCase.user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.AsynchronousHarvestingSessionTestCase.user">[docs]</a>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionTestCase.harvester_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.AsynchronousHarvestingSessionTestCase.harvester_type">[docs]</a>
+    <span class="n">harvester_type</span> <span class="o">=</span> <span class="s2">&quot;geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester&quot;</span></div>
+
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionTestCase.setUp">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.AsynchronousHarvestingSessionTestCase.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">remote_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">default_owner</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">harvester_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester_type</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvesting_session</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">harvester</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span> <span class="n">session_type</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">AsynchronousHarvestingSession</span><span class="o">.</span><span class="n">TYPE_HARVESTING</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsynchronousHarvestingSessionTestCase.test_check_attributes">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.AsynchronousHarvestingSessionTestCase.test_check_attributes">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_check_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Test attributes of harvester_session after created.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvesting_session</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvesting_session</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvesting_session</span><span class="o">.</span><span class="n">records_done</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="HarvestableResourceTestCase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase">[docs]</a>
+<span class="k">class</span> <span class="nc">HarvestableResourceTestCase</span><span class="p">(</span><span class="n">GeoNodeBaseTestSupport</span><span class="p">):</span>
+<div class="viewcode-block" id="HarvestableResourceTestCase.unique_identifier">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase.unique_identifier">[docs]</a>
+    <span class="n">unique_identifier</span> <span class="o">=</span> <span class="s2">&quot;id&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceTestCase.title">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase.title">[docs]</a>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Test&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceTestCase.remote_url">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase.remote_url">[docs]</a>
+    <span class="n">remote_url</span> <span class="o">=</span> <span class="s2">&quot;test.com&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceTestCase.name">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase.name">[docs]</a>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;This is geonode harvester&quot;</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceTestCase.user">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase.user">[docs]</a>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">get_user_model</span><span class="p">()</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;AnonymousUser&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarvestableResourceTestCase.harvester_type">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase.harvester_type">[docs]</a>
+    <span class="n">harvester_type</span> <span class="o">=</span> <span class="s2">&quot;geonode.harvesting.harvesters.geonodeharvester.GeonodeLegacyHarvester&quot;</span></div>
+
+
+<div class="viewcode-block" id="HarvestableResourceTestCase.setUp">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase.setUp">[docs]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Harvester</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">remote_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_url</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">default_owner</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">harvester_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester_type</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">unique_identifier</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
+            <span class="n">harvester</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span>
+            <span class="n">last_refreshed</span><span class="o">=</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HarvestableResourceTestCase.test_check_attributes">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.HarvestableResourceTestCase.test_check_attributes">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_check_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIsNotNone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">harvester</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">harvester</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_identifier</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">should_be_harvested</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">harvestable_resource</span><span class="o">.</span><span class="n">status</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">HarvestableResource</span><span class="o">.</span><span class="n">STATUS_READY</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="WorkerConfigValidationTestCase">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.WorkerConfigValidationTestCase">[docs]</a>
+<span class="k">class</span> <span class="nc">WorkerConfigValidationTestCase</span><span class="p">(</span><span class="n">SimpleTestCase</span><span class="p">):</span>
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.models.jsonschema&quot;</span><span class="p">)</span>
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;geonode.harvesting.models.import_string&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="WorkerConfigValidationTestCase.test_validate_worker_configuration">
+<a class="viewcode-back" href="../../../../autoapi/geonode/harvesting/tests/test_models/index.html#geonode.harvesting.tests.test_models.WorkerConfigValidationTestCase.test_validate_worker_configuration">[docs]</a>
+    <span class="k">def</span> <span class="nf">test_validate_worker_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_import_string</span><span class="p">,</span> <span class="n">mock_jsonschema</span><span class="p">):</span>
+        <span class="n">extra_config_schema</span> <span class="o">=</span> <span class="s2">&quot;fake_config_schema&quot;</span>
+        <span class="n">mock_worker_class</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">MagicMock</span><span class="p">()</span>
+        <span class="n">mock_worker_class</span><span class="o">.</span><span class="n">get_extra_config_schema</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">extra_config_schema</span>
+        <span class="n">mock_import_string</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">mock_worker_class</span>
+
+        <span class="n">harvester_type</span> <span class="o">=</span> <span class="s2">&quot;fake_harvester_type&quot;</span>
+        <span class="n">configuration</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;somekey&quot;</span><span class="p">:</span> <span class="s2">&quot;fake_configuration&quot;</span><span class="p">}</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">validate_worker_configuration</span><span class="p">(</span><span class="n">harvester_type</span><span class="p">,</span> <span class="n">configuration</span><span class="p">)</span>
+
+        <span class="n">mock_import_string</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">harvester_type</span><span class="p">)</span>
+        <span class="n">mock_worker_class</span><span class="o">.</span><span class="n">get_extra_config_schema</span><span class="o">.</span><span class="n">assert_called</span><span class="p">()</span>
+        <span class="n">mock_jsonschema</span><span class="o">.</span><span class="n">validate</span><span class="o">.</span><span class="n">assert_called_with</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">extra_config_schema</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Kan Territory &amp; IT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
