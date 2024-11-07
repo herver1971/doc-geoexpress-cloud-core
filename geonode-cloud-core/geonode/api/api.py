@@ -754,7 +754,7 @@ def _get_resource_counts(request, resourcebase_filter_kwargs):
 
     The ``resourcebase_filter_kwargs`` argument should be a dict with a suitable
     queryset filter that can be applied to select only the relevant
-    ``ResourceBase`` objects to use when retrieving counts. For example::
+    ``ResourceBase`` objects to use when retrieving counts. For example:
 
     Example usage:
     
